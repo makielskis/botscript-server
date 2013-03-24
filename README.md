@@ -128,3 +128,14 @@ Sendet Map { $(identifier): $(configuration), ... }
         'success': "error message"
       }
     }
+
+# Generating the JNI header
+
+In `src/net/makielski/botscript`:  
+
+    javac BotscriptServer.java
+
+
+In `src` javac BotscriptServer.java`:  
+
+    javah -jni net.makielski.botscript.BotscriptServer
