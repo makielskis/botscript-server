@@ -24,11 +24,31 @@ set(BOTSCRIPT_SOURCES
   "${BOTSCRIPT_PATH}/src/bot.cc"
 )
 
-add_executable(botscript-server
+set(HTTP_SERVER_SOURCES
+  external_lib/http_server/mime_types.cpp
+  external_lib/http_server/reply.cpp
+  external_lib/http_server/request_parser.cpp
+  external_lib/http_server/server.cpp
+)
+
+add_library(botscript-server SHARED
+  ${HTTP_SERVER_SOURCES}
   ${BOTSCRIPT_SOURCES}
-  src/main.cc
+  src/contents.cpp
   src/botserver_handler.cc
   src/message.cc
+  src/service.cc
+  src/net_makielski_botscript_BotscriptServer.cpp
+)
+
+add_executable(botscript-server-exe
+  ${HTTP_SERVER_SOURCES}
+  ${BOTSCRIPT_SOURCES}
+  src/contents.cpp
+  src/botserver_handler.cc
+  src/message.cc
+  src/service.cc
+  src/main.cc
 )
 
 include_directories(${BOOST_PATH})
@@ -38,19 +58,39 @@ include_directories(${TIDY_PATH})
 include_directories("${BOTSCRIPT_PATH}/src")
 include_directories("external_lib/websocketpp/src")
 include_directories("external_lib/rapidjson-r64/include")
+include_directories("external_lib/http_server")
+include_directories("/usr/lib/jvm/java-6-openjdk-amd64/include/")
 
 set_target_properties(botscript-server PROPERTIES LINK_FLAGS "-L../ -L${BOTSCRIPT_PATH} -L${BOOST_PATH}stage/lib/")
 target_link_libraries(botscript-server
   boost_system
+  boost_thread
+  boost_date_time
   boost_filesystem
   boost_iostreams
   z
-  boost_thread -pthread
   websocketpp
   boost_regex
-  boost_date_time
   tidy
   pugixml
   lua
   dl
+  -pthread
+)
+
+set_target_properties(botscript-server-exe PROPERTIES LINK_FLAGS "-L../ -L${BOTSCRIPT_PATH} -L${BOOST_PATH}stage/lib/")
+target_link_libraries(botscript-server-exe
+  boost_system
+  boost_thread
+  boost_date_time
+  boost_filesystem
+  boost_iostreams
+  z
+  websocketpp
+  boost_regex
+  tidy
+  pugixml
+  lua
+  dl
+  -pthread
 )
