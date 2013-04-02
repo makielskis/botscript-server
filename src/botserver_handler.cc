@@ -74,6 +74,7 @@ void bot_server_handler::on_message(websocketpp::server::connection_ptr con,
         bots_[b->identifier()] = b;
         send_bots();
       } else {
+        b->shutdown();
         send("{\
                 \"type\": \"account\",\
                 \"arguments\": {\
@@ -90,6 +91,7 @@ void bot_server_handler::on_message(websocketpp::server::connection_ptr con,
       std::cout << "bot \"" << m.identifier() << "\" not found\n";
       return;
     }
+    it->second->shutdown();
     bots_.erase(it);
     send_bots();
   } else if (execute_message::fits(doc)) {
