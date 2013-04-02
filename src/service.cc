@@ -3,6 +3,7 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/uuid/sha1.hpp>
 #include <boost/function.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <server.hpp>
 #include <request.hpp>
@@ -79,12 +80,9 @@ bool service::url_decode(const std::string& in, std::string& out)
   return true;
 }
 
-void service::start(short ws_port, short http_port) {
-  std::cerr << "service::start(" << ws_port << ", " << http_port << ")";
-  std::cout << "loading contents\n";
-  std::map<std::string, std::string> content = contents::load();
+void service::start(short ws_port) {
+  std::cerr << "service::start(" << ws_port << ")";
   std::cerr << "starting ..\n";
-  std::string http_port_str = std::to_string(http_port);
   try {
     // Instatiate handler and Web Socket server endpoint.
     bot_server_handler* bsh = new bot_server_handler();
@@ -92,61 +90,15 @@ void service::start(short ws_port, short http_port) {
     server endpoint(handler);
     bsh->io_service(endpoint.io_service());
 
-    // Create filehandler.
-    using http_server::request;
-    using http_server::reply;
-    typedef boost::function<void(const request&, reply&)> http_handler;
-    http_handler h = [this, &content](const request& req, reply& rep) {
-      // Decode url to path.
-      std::string request_path;
-      if (!url_decode(req.uri, request_path))
-      {
-        rep = reply::stock_reply(reply::bad_request);
-        return;
-      }
-
-      // If path ends in slash (i.e. is a directory) then add "index.html".
-      if (request_path[request_path.size() - 1] == '/')
-      {
-        request_path += "index.html";
-      }
-
-      // Determine the file extension.
-      std::size_t last_slash_pos = request_path.find_last_of("/");
-      std::size_t last_dot_pos = request_path.find_last_of(".");
-      std::string extension;
-      if (last_dot_pos != std::string::npos && last_dot_pos > last_slash_pos)
-      {
-        extension = request_path.substr(last_dot_pos + 1);
-      }
-
-      // Find response content.
-      std::string sha1 = sha1sum(request_path.c_str(), request_path.length());
-      const auto it = content.find(sha1);
-      if (it == content.end())
-      {
-        rep = reply::stock_reply(reply::not_found);
-        return;
-      }
-
-      // Write response.
-      rep.status = reply::ok;
-      rep.content = it->second;
-      rep.headers.resize(3);
-      rep.headers[0].name = "Content-Length";
-      rep.headers[0].value = std::to_string(rep.content.size());
-      rep.headers[1].name = "Content-Type";
-      rep.headers[1].value = http_server::mime_types::extension_to_type(extension);
-      rep.headers[2].name = "Content-Encoding";
-      rep.headers[2].value = "gzip";
-    };
-
-    http_server::server(*endpoint.io_service(), "127.0.0.1", http_port_str, h)();
     io_service_ = endpoint.io_service();
     endpoint.listen(ws_port);
   } catch (std::exception& e) {
     std::cerr << "Exception: " << e.what() << std::endl;
   }
+}
+
+void service::stop() {
+  io_service_->stop();
 }
 
 }  // namespace botscript_server
