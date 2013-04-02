@@ -23,7 +23,7 @@ class service {
   ///
   /// \param ws_port the web socket port to listen on
   /// \param http_port the HTTP port to listen on
-  void start(short ws_port, short http_port);
+  void start(short ws_port);
 
   /// Stops the service again.
   void stop();

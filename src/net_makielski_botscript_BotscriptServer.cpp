@@ -38,7 +38,7 @@ JNIEXPORT void JNICALL Java_net_makielski_botscript_BotscriptServer_start
     std::cerr << "operation not possible, object not initialized\n";
   }
   std::cerr << "handle = " << ((long) s) << "\n";
-  s->start(9003, 8080);
+  s->start(9003);
 }
 
 JNIEXPORT void JNICALL Java_net_makielski_botscript_BotscriptServer_stop
