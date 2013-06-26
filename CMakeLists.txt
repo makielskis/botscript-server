@@ -83,9 +83,9 @@ add_library(botscript-server SHARED
   src/net_makielski_botscript_BotscriptServer.cpp
 )
 if(MSVC)
-  target_link_libraries(botscript-server ${Boost_LIBRARIES} tidy pugixml lua websocketpp botscript_static)
+  target_link_libraries(botscript-server ${Boost_LIBRARIES} websocketpp botscript_static)
 else()
-  target_link_libraries(botscript-server ${Boost_LIBRARIES} tidy pugixml lua z dl websocketpp botscript_static -pthread)
+  target_link_libraries(botscript-server ${Boost_LIBRARIES} websocketpp botscript_static -pthread)
 endif()
 
 ################################
@@ -96,7 +96,7 @@ add_executable(botscript-server-exe
   src/main.cc
 )
 if(MSVC)
-  target_link_libraries(botscript-server-exe ${Boost_LIBRARIES} tidy pugixml lua websocketpp botscript_static)
+  target_link_libraries(botscript-server-exe ${Boost_LIBRARIES} websocketpp botscript_static)
 else()
-  target_link_libraries(botscript-server-exe ${Boost_LIBRARIES} tidy pugixml lua z dl websocketpp botscript_static -pthread)
+  target_link_libraries(botscript-server-exe ${Boost_LIBRARIES} websocketpp botscript_static -pthread)
 endif()
