@@ -1,13 +1,28 @@
+# Compile and run release version:
+# mkdir build
+# cd build
+# cmake -DCMAKE_BUILD_TYPE=Release ..
+# cd ..
+# ./build/botscript
+
+# Compile and run debug version
+# mkdir build
+# cd build
+# cmake -DCMAKE_BUILD_TYPE=Debug ..
+# cd ..
+# ./build/botscript
+
+
 cmake_minimum_required (VERSION 2.8.8)
 project(botscript-server)
 
-SET (CMAKE_CXX_FLAGS "-std=c++0x")
 
 ################################
 # Dependencies
 ################################
 add_subdirectory(external_lib/botscript)
 add_subdirectory(external_lib/websocketpp)
+
 
 ################################
 # Boost
@@ -32,6 +47,7 @@ else(Boost_FOUND)
 	message("No Boost found.")
 endif(Boost_FOUND)
 link_directories(${CMAKE_LIBRARY_PATH})
+
 
 ################################
 # Compile flags
@@ -61,6 +77,7 @@ include_directories("external_lib/botscript/external_lib/pugixml-1.0/src")
 include_directories("external_lib/botscript/external_lib/lua-5.2.0/src")
 include_directories("/usr/lib/jvm/java-7-openjdk-amd64/include/")
 
+
 ################################
 # Object library
 ################################
@@ -69,11 +86,11 @@ add_library(botscriptserver_obj_lib OBJECT
   external_lib/http_server/reply.cpp
   external_lib/http_server/request_parser.cpp
   external_lib/http_server/server.cpp
-  src/contents.cpp
   src/botserver_handler.cc
   src/message.cc
   src/service.cc
 )
+
 
 ################################
 # Shared Library
@@ -83,10 +100,11 @@ add_library(botscript-server SHARED
   src/net_makielski_botscript_BotscriptServer.cpp
 )
 if(MSVC)
-  target_link_libraries(botscript-server ${Boost_LIBRARIES} websocketpp botscript_static)
+  target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp)
 else()
-  target_link_libraries(botscript-server ${Boost_LIBRARIES} websocketpp botscript_static -pthread)
+  target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp -pthread)
 endif()
+
 
 ################################
 # Main executable
@@ -96,7 +114,7 @@ add_executable(botscript-server-exe
   src/main.cc
 )
 if(MSVC)
-  target_link_libraries(botscript-server-exe ${Boost_LIBRARIES} websocketpp botscript_static)
+  target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} websocketpp)
 else()
-  target_link_libraries(botscript-server-exe ${Boost_LIBRARIES} websocketpp botscript_static -pthread)
+  target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} websocketpp rt -pthread)
 endif()
