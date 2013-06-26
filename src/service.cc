@@ -11,7 +11,6 @@
 #include <mime_types.hpp>
 
 #include "./botserver_handler.h"
-#include "./contents.h"
 
 namespace botscript_server {
 
