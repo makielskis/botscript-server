@@ -99,7 +99,7 @@ add_library(botscript-server SHARED
 if(MSVC)
   target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp kyotocabinet)
 else()
-  target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp kyotocabinet -pthread)
+  target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp kyotocabinet rt -pthread)
 endif()
 
 
