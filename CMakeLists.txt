@@ -22,6 +22,7 @@ project(botscript-server)
 ################################
 add_subdirectory(external_lib/botscript)
 add_subdirectory(external_lib/websocketpp)
+add_subdirectory(external_lib/kyotocabinet-1.2.76)
 
 
 ################################
@@ -100,9 +101,9 @@ add_library(botscript-server SHARED
   src/net_makielski_botscript_BotscriptServer.cpp
 )
 if(MSVC)
-  target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp)
+  target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp kyotocabinet)
 else()
-  target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp -pthread)
+  target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp kyotocabinet -pthread)
 endif()
 
 
@@ -113,8 +114,8 @@ add_executable(botscript-server-exe
   $<TARGET_OBJECTS:botscriptserver_obj_lib>
   src/main.cc
 )
-if(MSVC)
-  target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} websocketpp)
+if(MSVC) 
+  target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} websocketpp kyotocabinet)
 else()
-  target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} websocketpp rt -pthread)
+  target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} websocketpp kyotocabinet rt -pthread)
 endif()
