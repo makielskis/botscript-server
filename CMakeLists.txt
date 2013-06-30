@@ -72,10 +72,10 @@ endif()
 ################################
 include_directories("external_lib/rapidjson-r64/include")
 include_directories("external_lib/websocketpp/src")
-include_directories("external_lib/http_server")
 include_directories("external_lib/botscript/src")
 include_directories("external_lib/botscript/external_lib/pugixml-1.0/src")
 include_directories("external_lib/botscript/external_lib/lua-5.2.0/src")
+include_directories("external_lib/kyotocabinet-1.2.76")
 include_directories("/usr/lib/jvm/java-7-openjdk-amd64/include/")
 
 
@@ -83,10 +83,6 @@ include_directories("/usr/lib/jvm/java-7-openjdk-amd64/include/")
 # Object library
 ################################
 add_library(botscriptserver_obj_lib OBJECT
-  external_lib/http_server/mime_types.cpp
-  external_lib/http_server/reply.cpp
-  external_lib/http_server/request_parser.cpp
-  external_lib/http_server/server.cpp
   src/botserver_handler.cc
   src/message.cc
   src/service.cc
