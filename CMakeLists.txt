@@ -22,6 +22,7 @@ project(botscript-server)
 ################################
 add_subdirectory(external_lib/botscript)
 add_subdirectory(external_lib/websocketpp)
+add_subdirectory(external_lib/kyotocabinet-1.2.76)
 
 
 ################################
@@ -71,10 +72,10 @@ endif()
 ################################
 include_directories("external_lib/rapidjson-r64/include")
 include_directories("external_lib/websocketpp/src")
-include_directories("external_lib/http_server")
 include_directories("external_lib/botscript/src")
 include_directories("external_lib/botscript/external_lib/pugixml-1.0/src")
 include_directories("external_lib/botscript/external_lib/lua-5.2.0/src")
+include_directories("external_lib/kyotocabinet-1.2.76")
 include_directories("/usr/lib/jvm/java-7-openjdk-amd64/include/")
 
 
@@ -82,10 +83,6 @@ include_directories("/usr/lib/jvm/java-7-openjdk-amd64/include/")
 # Object library
 ################################
 add_library(botscriptserver_obj_lib OBJECT
-  external_lib/http_server/mime_types.cpp
-  external_lib/http_server/reply.cpp
-  external_lib/http_server/request_parser.cpp
-  external_lib/http_server/server.cpp
   src/botserver_handler.cc
   src/message.cc
   src/service.cc
@@ -100,9 +97,9 @@ add_library(botscript-server SHARED
   src/net_makielski_botscript_BotscriptServer.cpp
 )
 if(MSVC)
-  target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp)
+  target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp kyotocabinet)
 else()
-  target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp -pthread)
+  target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp kyotocabinet rt -pthread)
 endif()
 
 
@@ -114,7 +111,41 @@ add_executable(botscript-server-exe
   src/main.cc
 )
 if(MSVC)
-  target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} websocketpp)
+  target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} websocketpp kyotocabinet)
 else()
-  target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} websocketpp rt -pthread)
+  target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} websocketpp kyotocabinet rt -pthread)
+endif()
+
+
+################################
+# GUI executable
+################################
+if(WITH_GUI)
+  find_package(Qt4 REQUIRED)
+
+  include(${QT_USE_FILE})
+
+  QT4_ADD_RESOURCES(res0 src/qtgui/res/systray.qrc)
+  QT4_WRAP_CPP(qobj src/qtgui/Window.h)
+  QT4_WRAP_CPP(qobj src/qtgui/BotThread.h)
+
+  add_executable(botscript-server-gui
+    $<TARGET_OBJECTS:botscriptserver_obj_lib>
+    src/qtgui/main.cpp
+    src/qtgui/Window.cpp
+    src/qtgui/BotThread.cpp
+    ${res0}
+    ${qobj}
+  )
+
+  if(MSVC)
+    target_link_libraries(botscript-server-gui bs ${QT_LIBRARIES} ${Boost_LIBRARIES} websocketpp kyotocabinet)
+  else()
+    target_link_libraries(botscript-server-gui bs ${QT_LIBRARIES} ${Boost_LIBRARIES} websocketpp kyotocabinet rt -pthread)
+  endif()
+
+
+  if(MSVC)
+    set_target_properties(botscript-server-gui PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
+  endif()
 endif()
