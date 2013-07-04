@@ -110,8 +110,42 @@ add_executable(botscript-server-exe
   $<TARGET_OBJECTS:botscriptserver_obj_lib>
   src/main.cc
 )
-if(MSVC) 
+if(MSVC)
   target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} websocketpp kyotocabinet)
 else()
   target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} websocketpp kyotocabinet rt -pthread)
+endif()
+
+
+################################
+# GUI executable
+################################
+if(WITH_GUI)
+  find_package(Qt4 REQUIRED)
+
+  include(${QT_USE_FILE})
+
+  QT4_ADD_RESOURCES(res0 src/qtgui/res/systray.qrc)
+  QT4_WRAP_CPP(qobj src/qtgui/Window.h)
+  QT4_WRAP_CPP(qobj src/qtgui/BotThread.h)
+
+  add_executable(botscript-server-gui
+    $<TARGET_OBJECTS:botscriptserver_obj_lib>
+    src/qtgui/main.cpp
+    src/qtgui/Window.cpp
+    src/qtgui/BotThread.cpp
+    ${res0}
+    ${qobj}
+  )
+
+  if(MSVC)
+    target_link_libraries(botscript-server-gui bs ${QT_LIBRARIES} ${Boost_LIBRARIES} websocketpp kyotocabinet)
+  else()
+    target_link_libraries(botscript-server-gui bs ${QT_LIBRARIES} ${Boost_LIBRARIES} websocketpp kyotocabinet rt -pthread)
+  endif()
+
+
+  if(MSVC)
+    set_target_properties(botscript-server-gui PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
+  endif()
 endif()
