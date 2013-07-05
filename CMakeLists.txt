@@ -29,8 +29,8 @@ add_subdirectory(external_lib/kyotocabinet-1.2.76)
 # Boost
 ################################
 if(MSVC)
-  set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} "C:/boost_1_52_0")
-  set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} "C:/boost_1_52_0/stage/lib")
+  set(CMAKE_INCLUDE_PATH "C:/boost_1_52_0")
+  set(CMAKE_LIBRARY_PATH "C:/boost_1_52_0/stage/lib") 
 endif()
 
 set(Boost_USE_STATIC_LIBS ON)
@@ -121,31 +121,44 @@ endif()
 # GUI executable
 ################################
 if(WITH_GUI)
-  find_package(Qt4 REQUIRED)
+  # Tell CMake to run moc when necessary:
+  set(CMAKE_AUTOMOC ON)
 
-  include(${QT_USE_FILE})
+  # As moc files are generated in the binary dir, tell CMake
+  # to always look for includes there:
+  set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-  QT4_ADD_RESOURCES(res0 src/qtgui/res/systray.qrc)
-  QT4_WRAP_CPP(qobj src/qtgui/Window.h)
-  QT4_WRAP_CPP(qobj src/qtgui/BotThread.h)
+  # Widgets finds its own dependencies.
+  find_package(Qt5Widgets REQUIRED)
+  find_package(Qt5Core REQUIRED)
+
+  set(systray_SRCS src/qtgui/res/systray.qrc)
+  qt5_add_resources(systray_RCC_SRCS ${systray_SRCS})
+
+  if(WIN32)
+	set(GUI_TYPE WIN32)
+  endif(WIN32)
 
   add_executable(botscript-server-gui
+    ${GUI_TYPE}
+    ${systray_RCC_SRCS}
     $<TARGET_OBJECTS:botscriptserver_obj_lib>
     src/qtgui/main.cpp
     src/qtgui/Window.cpp
     src/qtgui/BotThread.cpp
-    ${res0}
-    ${qobj}
   )
 
   if(MSVC)
-    target_link_libraries(botscript-server-gui bs ${QT_LIBRARIES} ${Boost_LIBRARIES} websocketpp kyotocabinet)
+    #set_target_properties(botscript-server-gui PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
+    #set_target_properties(botscript-server-gui PROPERTIES MINSIZEREL "/SUBSYSTEM:WINDOWS")
+	add_definitions(/D WIN32_LEAN_AND_MEAN)
+    target_link_libraries(botscript-server-gui
+      Qt5::WinMain
+      ${Qt5Widgets_LIBRARIES} bs ${Boost_LIBRARIES} websocketpp kyotocabinet
+    )
   else()
-    target_link_libraries(botscript-server-gui bs ${QT_LIBRARIES} ${Boost_LIBRARIES} websocketpp kyotocabinet rt -pthread)
+    target_link_libraries(botscript-server-gui bs ${Boost_LIBRARIES} websocketpp kyotocabinet rt -pthread)
   endif()
 
-
-  if(MSVC)
-    set_target_properties(botscript-server-gui PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
-  endif()
+  qt5_use_modules(botscript-server-gui Widgets)
 endif()
