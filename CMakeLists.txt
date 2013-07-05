@@ -120,45 +120,13 @@ endif()
 ################################
 # GUI executable
 ################################
-if(WITH_GUI)
-  # Tell CMake to run moc when necessary:
-  set(CMAKE_AUTOMOC ON)
-
-  # As moc files are generated in the binary dir, tell CMake
-  # to always look for includes there:
-  set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-  # Widgets finds its own dependencies.
-  find_package(Qt5Widgets REQUIRED)
-  find_package(Qt5Core REQUIRED)
-
-  set(systray_SRCS src/qtgui/res/systray.qrc)
-  qt5_add_resources(systray_RCC_SRCS ${systray_SRCS})
-
-  if(WIN32)
-	set(GUI_TYPE WIN32)
-  endif(WIN32)
-
+if(MSVC)
   add_executable(botscript-server-gui
-    ${GUI_TYPE}
-    ${systray_RCC_SRCS}
+    WIN32
     $<TARGET_OBJECTS:botscriptserver_obj_lib>
-    src/qtgui/main.cpp
-    src/qtgui/Window.cpp
-    src/qtgui/BotThread.cpp
+    src/win32gui/TrayIcon.cpp
+    src/win32gui/main.cc
+    src/win32gui/Resource.rc
   )
-
-  if(MSVC)
-    #set_target_properties(botscript-server-gui PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
-    #set_target_properties(botscript-server-gui PROPERTIES MINSIZEREL "/SUBSYSTEM:WINDOWS")
-	add_definitions(/D WIN32_LEAN_AND_MEAN)
-    target_link_libraries(botscript-server-gui
-      Qt5::WinMain
-      ${Qt5Widgets_LIBRARIES} bs ${Boost_LIBRARIES} websocketpp kyotocabinet
-    )
-  else()
-    target_link_libraries(botscript-server-gui bs ${Boost_LIBRARIES} websocketpp kyotocabinet rt -pthread)
-  endif()
-
-  qt5_use_modules(botscript-server-gui Widgets)
+  target_link_libraries(botscript-server-gui bs ${Boost_LIBRARIES} websocketpp kyotocabinet)
 endif()
