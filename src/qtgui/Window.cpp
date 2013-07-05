@@ -5,6 +5,7 @@
 #include <QtGui>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QApplication>
 
 #include "Window.h"
 
@@ -21,6 +22,7 @@ void Window::bot() {
 
 void Window::stop() {
   botThread.stopService();
+  botThread.wait();
   QApplication::quit();
 }
 
