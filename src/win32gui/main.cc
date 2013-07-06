@@ -7,8 +7,11 @@
 
 #include "../service.h"
 
+#define MOBILE_UI_URL "http://makielski.net/mobileui"
+
 HWND g_hMainWnd = NULL;
-CTrayIcon g_TrayIcon("Makielskis Bot", true, LoadIcon (GetModuleHandle(NULL), MAKEINTRESOURCE(101)));
+CTrayIcon g_TrayIcon("Makielskis Bot", true,
+                     LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(101)));
 botscript_server::service s;
 std::thread t;
 
@@ -22,16 +25,22 @@ void on_action(CTrayIcon* pTrayIcon, UINT uMsg) {
     HMENU menu = CreatePopupMenu();
     AppendMenu(menu, MF_STRING, 1, "Bot");
     AppendMenu(menu, MF_STRING, 2, "Quit");
-    UINT cmd = TrackPopupMenu(menu, TPM_RETURNCMD|TPM_RIGHTBUTTON, pt.x, pt.y, 0, g_hMainWnd, NULL);
+
+    UINT cmd = TrackPopupMenu(menu, TPM_RETURNCMD|TPM_RIGHTBUTTON,
+                              pt.x, pt.y, 0, g_hMainWnd, NULL);
     if (cmd == 1) {
-      ShellExecute(NULL, "open", "http://makielski.net/mobileui", NULL, NULL, SW_SHOWNORMAL);
+      ShellExecute(NULL, "open", MOBILE_UI_URL, NULL, NULL, SW_SHOWNORMAL);
     } else if (cmd == 2) {
       PostMessage(g_hMainWnd, WM_CLOSE, 0, 0);
     }
   }
 }
 
-LRESULT CALLBACK MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK MainWndProc(
+  HWND hWnd,
+  UINT uMsg,
+  WPARAM wParam,
+  LPARAM lParam) {
   if (uMsg == WM_DESTROY) {
     s.stop();
     t.join();
