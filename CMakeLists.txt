@@ -126,7 +126,7 @@ if(MSVC)
     $<TARGET_OBJECTS:botscriptserver_obj_lib>
     src/win32gui/TrayIcon.cpp
     src/win32gui/main.cc
-    src/win32gui/Resource.rc
+    src/win32gui/res/Resource.rc
   )
   target_link_libraries(botscript-server-gui bs ${Boost_LIBRARIES} websocketpp kyotocabinet)
 endif()
