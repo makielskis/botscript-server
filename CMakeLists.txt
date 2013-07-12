@@ -63,7 +63,7 @@ else()
 
   # Show all warnings.
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
-  set(CMAKE_CSS_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
 endif()
 
 
@@ -121,8 +121,14 @@ endif()
 # GUI executable
 ################################
 if(MSVC)
+  if(CMAKE_BUILD_TYPE MATCHES DEBUG)
+    add_definitions(/D GUI_DEBUG_MODE)
+  else()
+	set(WIN32_GUI WIN32)
+  endif()
+
   add_executable(botscript-server-gui
-    WIN32
+    ${WIN32_GUI}
     $<TARGET_OBJECTS:botscriptserver_obj_lib>
     src/win32gui/TrayIcon.cpp
     src/win32gui/main.cc

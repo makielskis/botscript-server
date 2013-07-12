@@ -22,17 +22,19 @@ void on_action(CTrayIcon* pTrayIcon, UINT uMsg) {
 
   POINT pt;
   if (GetCursorPos(&pt)) {
-    HMENU menu = CreatePopupMenu();
-    AppendMenu(menu, MF_STRING, 1, "Bot");
-    AppendMenu(menu, MF_STRING, 2, "Quit");
+    HMENU hMenu = CreatePopupMenu();
+    AppendMenu(hMenu, MF_STRING, 1, "Bot");
+    AppendMenu(hMenu, MF_STRING, 2, "Quit");
 
-    UINT cmd = TrackPopupMenu(menu, TPM_RETURNCMD|TPM_RIGHTBUTTON,
+    SetForegroundWindow(g_hMainWnd);
+    UINT cmd = TrackPopupMenu(hMenu, TPM_RETURNCMD|TPM_RIGHTBUTTON,
                               pt.x, pt.y, 0, g_hMainWnd, NULL);
     if (cmd == 1) {
       ShellExecute(NULL, "open", MOBILE_UI_URL, NULL, NULL, SW_SHOWNORMAL);
     } else if (cmd == 2) {
       PostMessage(g_hMainWnd, WM_CLOSE, 0, 0);
     }
+    DestroyMenu(hMenu);
   }
 }
 
@@ -83,12 +85,16 @@ bool CreateMainWnd() {
   return true;
 }
 
+#ifndef GUI_DEBUG_MODE
 int CALLBACK WinMain(
   _In_  HINSTANCE hInstance,
   _In_  HINSTANCE hPrevInstance,
   _In_  LPSTR lpCmdLine,
   _In_  int nCmdShow
 ) {
+#else
+int main(void) {
+#endif
   if (!CreateMainWnd())
     return -1;
 
