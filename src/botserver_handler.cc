@@ -16,6 +16,10 @@ namespace bs = botscript;
 
 namespace botscript_server {
 
+bot_server_handler::bot_server_handler(config_store& config_store)
+  : config_store_(config_store) {
+}
+
 void bot_server_handler::io_service(boost::asio::io_service* io_service) {
   io_service_ = io_service;
   std::string packages = "[";
