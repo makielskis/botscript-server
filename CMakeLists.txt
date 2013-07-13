@@ -86,6 +86,7 @@ add_library(botscriptserver_obj_lib OBJECT
   src/botserver_handler.cc
   src/message.cc
   src/service.cc
+  src/file_config_store.cc
 )
 
 

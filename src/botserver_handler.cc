@@ -9,6 +9,7 @@
 #include "rapidjson/stringbuffer.h"
 
 #include "message.h"
+#include "file_config_store.h"
 
 namespace json = rapidjson;
 namespace bs = botscript;
@@ -72,6 +73,7 @@ void bot_server_handler::on_message(websocketpp::server::connection_ptr con,
     b->init(m.config(), [this](std::shared_ptr<bs::bot> b, std::string err){
       if (err.empty()) {
         bots_[b->identifier()] = b;
+        config_store_.add(*b);
         send_bots();
       } else {
         b->shutdown();
@@ -93,6 +95,7 @@ void bot_server_handler::on_message(websocketpp::server::connection_ptr con,
     }
     it->second->shutdown();
     bots_.erase(it);
+    config_store_.remove(m.identifier());
     send_bots();
   } else if (execute_message::fits(doc)) {
     execute_message m = execute_message(doc);
@@ -115,7 +118,17 @@ void bot_server_handler::send(const std::string& msg) {
 void bot_server_handler::callback(std::string i, std::string k, std::string v) {
   if (k == "log") {
     std::cout << v << std::flush;
+  } else {
+    const auto it = bots_.find(i);
+    if (it != bots_.end()) {
+      const auto seperator_pos = k.find('_');
+      const std::string module(k.substr(0, seperator_pos));
+      const std::string option(k.substr(seperator_pos + 1, k.length()));
+
+      config_store_.update_attribute(*(it->second), module, option, v);
+    }
   }
+
   send("{\
           \"type\": \"update\",\
           \"arguments\": {\
