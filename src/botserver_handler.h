@@ -12,6 +12,7 @@
 #include "websocketpp.hpp"
 
 #include "bot.h"
+#include "file_config_store.h"
 
 namespace botscript_server {
 
@@ -64,6 +65,7 @@ class bot_server_handler : public websocketpp::server::handler {
   websocketpp::server::connection_ptr connection_;
   std::map<std::string, std::shared_ptr<botscript::bot>> bots_;
   std::string packages_;
+  botscript_server::file_config_store config_store_;
 };
 
 }  // namespace botscript_server
