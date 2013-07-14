@@ -12,6 +12,7 @@
 #include "websocketpp.hpp"
 
 #include "bot.h"
+#include "config_store.h"
 
 namespace botscript_server {
 
@@ -19,6 +20,8 @@ namespace botscript_server {
 /// websocketpp::server::server::handler interface.
 class bot_server_handler : public websocketpp::server::handler {
  public:
+  bot_server_handler(config_store& config_store);
+
   /// \param io_service the Asio io_service object for the bots
   void io_service(boost::asio::io_service* io_service);
 
@@ -64,6 +67,7 @@ class bot_server_handler : public websocketpp::server::handler {
   websocketpp::server::connection_ptr connection_;
   std::map<std::string, std::shared_ptr<botscript::bot>> bots_;
   std::string packages_;
+  config_store& config_store_;
 };
 
 }  // namespace botscript_server
