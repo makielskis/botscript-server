@@ -9,11 +9,16 @@
 #include "rapidjson/stringbuffer.h"
 
 #include "message.h"
+#include "file_config_store.h"
 
 namespace json = rapidjson;
 namespace bs = botscript;
 
 namespace botscript_server {
+
+bot_server_handler::bot_server_handler(config_store& config_store)
+  : config_store_(config_store) {
+}
 
 void bot_server_handler::io_service(boost::asio::io_service* io_service) {
   io_service_ = io_service;
@@ -30,6 +35,21 @@ void bot_server_handler::io_service(boost::asio::io_service* io_service) {
                 \"type\": \"packages\",\
                 \"arguments\": " + packages + "\
               }";
+
+  for (const std::string& config : config_store_.get_all()) {
+    std::shared_ptr<bs::bot> b = std::make_shared<bs::bot>(io_service_);
+    b->callback_ = std::bind(&bot_server_handler::callback, this,
+                             std::placeholders::_1,
+                             std::placeholders::_2,
+                             std::placeholders::_3);
+    b->init(config, [this](std::shared_ptr<bs::bot> b, std::string err){
+      if (err.empty()) {
+        bots_[b->identifier()] = b;
+      } else {
+        b->shutdown();
+      }
+    });
+  }
 }
 
 void bot_server_handler::validate(websocketpp::server::connection_ptr con) {
@@ -41,6 +61,7 @@ void bot_server_handler::on_open(websocketpp::server::connection_ptr con) {
 }
 
 void bot_server_handler::on_close(websocketpp::server::connection_ptr con) {
+  connection_.reset();
 }
 
 void bot_server_handler::on_message(websocketpp::server::connection_ptr con,
@@ -72,6 +93,7 @@ void bot_server_handler::on_message(websocketpp::server::connection_ptr con,
     b->init(m.config(), [this](std::shared_ptr<bs::bot> b, std::string err){
       if (err.empty()) {
         bots_[b->identifier()] = b;
+        config_store_.add(*b);
         send_bots();
       } else {
         b->shutdown();
@@ -93,6 +115,7 @@ void bot_server_handler::on_message(websocketpp::server::connection_ptr con,
     }
     it->second->shutdown();
     bots_.erase(it);
+    config_store_.remove(m.identifier());
     send_bots();
   } else if (execute_message::fits(doc)) {
     execute_message m = execute_message(doc);
@@ -109,13 +132,25 @@ void bot_server_handler::on_message(websocketpp::server::connection_ptr con,
 }
 
 void bot_server_handler::send(const std::string& msg) {
-  connection_->send(msg);
+  if (connection_ != connection_ptr()) {
+    connection_->send(msg);
+  }
 }
 
 void bot_server_handler::callback(std::string i, std::string k, std::string v) {
   if (k == "log") {
     std::cout << v << std::flush;
+  } else {
+    const auto it = bots_.find(i);
+    if (it != bots_.end()) {
+      const auto seperator_pos = k.find('_');
+      const std::string module(k.substr(0, seperator_pos));
+      const std::string option(k.substr(seperator_pos + 1, k.length()));
+
+      config_store_.update_attribute(*(it->second), module, option, v);
+    }
   }
+
   send("{\
           \"type\": \"update\",\
           \"arguments\": {\

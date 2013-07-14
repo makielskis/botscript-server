@@ -3,6 +3,7 @@
 #include <boost/asio/io_service.hpp>
 
 #include "./botserver_handler.h"
+#include "./file_config_store.h"
 
 namespace botscript_server {
 
@@ -15,7 +16,8 @@ service::service()
 void service::start(short ws_port) {
   try {
     // Instatiate handler and Web Socket server endpoint.
-    bot_server_handler* bsh = new bot_server_handler();
+    file_config_store store("./configs");
+    bot_server_handler* bsh = new bot_server_handler(store);
     server::handler::ptr handler(bsh);
     server endpoint(handler);
     bsh->io_service(endpoint.io_service());
