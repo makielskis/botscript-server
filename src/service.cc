@@ -16,7 +16,7 @@ service::service()
 void service::start(short ws_port) {
   try {
     // Instatiate handler and Web Socket server endpoint.
-    file_config_store store;
+    file_config_store store("./configs");
     bot_server_handler* bsh = new bot_server_handler(store);
     server::handler::ptr handler(bsh);
     server endpoint(handler);

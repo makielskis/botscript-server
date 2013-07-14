@@ -5,6 +5,9 @@
 #ifndef CONFIG_STORE_H
 #define CONFIG_STORE_H
 
+#include <string>
+#include <vector>
+
 #include "bot.h"
 
 namespace botscript_server {
@@ -21,18 +24,28 @@ class config_store {
   /// \param configuration the configuration to store
   virtual void add(const botscript::bot& bot) = 0;
 
-  /// Removes all keys that start with the given identifier
+  /// Removes the configuration with the given identifier
+  ///
+  /// \param identifier the identifier to remove the config for
   virtual void remove(const std::string& identifier) = 0;
 
-  /// Reads all values from the database that start with the given identifier
-  /// and creates a bot_config object from it.
+  /// Get the configuration for the given identifier.
   ///
   /// \return the configuration of the bot with the given identifier
   virtual std::string get(const std::string& identifier) = 0;
 
-  /// Updates a single attribute (specified by module + key) of a bot (specified
-  /// by the identifier) and sets it to the given value. Basic configuration
-  /// values (username, password, package, ...) cannot be changed.
+  /// Get all configurations in the store.
+  ///
+  /// \return vector containing all configurations in the store
+  virtual std::vector<std::string> get_all() = 0;
+
+  /// Updates a single attribute of a bot and sets it to the given value.
+  /// Basic configuration values (username, password, ...) cannot be changed.
+  ///
+  /// \param bot the bot to update
+  /// \param module which module to update
+  /// \param key which key of the module to update
+  /// \param new_value the new value for the attribute to update
   virtual void update_attribute(const botscript::bot& bot,
                                 const std::string& module,
                                 const std::string& key,
