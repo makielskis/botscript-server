@@ -9,6 +9,10 @@
 
 #define MOBILE_UI_URL "http://makielski.net/mobileui"
 
+#ifdef _DEBUG
+#include "./guicon.h"
+#endif
+
 HWND g_hMainWnd = NULL;
 CTrayIcon g_TrayIcon("Makielskis Bot", true,
                      LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(101)));
@@ -85,16 +89,16 @@ bool CreateMainWnd() {
   return true;
 }
 
-#ifndef GUI_DEBUG_MODE
 int CALLBACK WinMain(
   _In_  HINSTANCE hInstance,
   _In_  HINSTANCE hPrevInstance,
   _In_  LPSTR lpCmdLine,
   _In_  int nCmdShow
 ) {
-#else
-int main(void) {
+#ifdef _DEBUG
+  RedirectIOToConsole();
 #endif
+
   if (!CreateMainWnd())
     return -1;
 
