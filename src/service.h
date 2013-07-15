@@ -17,9 +17,9 @@ class service {
 
   /// Starts the server.
   ///
-  /// \param ws_port the web socket port to listen on
-  /// \param http_port the HTTP port to listen on
-  void start(short ws_port);
+  /// \param host the host to listen on (e.g. "localhost" or "0.0.0.0")
+  /// \param service the port to listen on (e.g. "http" or "80")
+  void start(const std::string& host, const std::string& service);
 
   /// Stops the service.
   void stop();

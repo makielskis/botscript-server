@@ -102,7 +102,7 @@ int CALLBACK WinMain(
   if (!CreateMainWnd())
     return -1;
 
-  t = std::thread(([]() { s.start(9003); }));
+  t = std::thread(([]() { s.start("127.0.0.1", "9003"); }));
 
   g_TrayIcon.SetListener(on_action);
   g_TrayIcon.SetVisible(true);
