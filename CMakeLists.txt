@@ -122,15 +122,10 @@ endif()
 # GUI executable
 ################################
 if(MSVC)
-  if(CMAKE_BUILD_TYPE MATCHES DEBUG)
-    add_definitions(/D GUI_DEBUG_MODE)
-  else()
-	set(WIN32_GUI WIN32)
-  endif()
-
   add_executable(botscript-server-gui
-    ${WIN32_GUI}
+    WIN32
     $<TARGET_OBJECTS:botscriptserver_obj_lib>
+    src/win32gui/guicon.cc
     src/win32gui/TrayIcon.cpp
     src/win32gui/main.cc
     src/win32gui/res/Resource.rc
