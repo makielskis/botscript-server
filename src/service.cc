@@ -13,7 +13,7 @@ service::service()
   : io_service_(nullptr) {
 }
 
-void service::start(short ws_port) {
+void service::start(const std::string& host, const std::string& service) {
   try {
     // Instatiate handler and Web Socket server endpoint.
     file_config_store store("./configs");
@@ -23,7 +23,7 @@ void service::start(short ws_port) {
     bsh->io_service(endpoint.io_service());
 
     io_service_ = endpoint.io_service();
-    endpoint.listen(ws_port);
+    endpoint.listen(host, service);
   } catch (std::exception& e) {
     std::cerr << "Exception: " << e.what() << std::endl;
   }

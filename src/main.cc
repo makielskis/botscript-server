@@ -4,6 +4,6 @@ using namespace botscript_server;
 
 int main() {
   service s;
-  s.start(9003);
+  s.start("127.0.0.1", "http");
   return 0;
 }
