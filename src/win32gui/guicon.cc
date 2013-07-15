@@ -1,3 +1,6 @@
+// Source: http://dslweb.nwnexus.com/~ast/dload/guicon.htm
+// Author: Andrew Tucker
+
 #include <windows.h>
 #include <stdio.h>
 #include <fcntl.h>
