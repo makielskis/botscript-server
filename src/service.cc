@@ -2,8 +2,8 @@
 
 #include <boost/asio/io_service.hpp>
 
+#include "./storage/file_config_store.h"
 #include "./botserver_handler.h"
-#include "./file_config_store.h"
 
 namespace botscript_server {
 

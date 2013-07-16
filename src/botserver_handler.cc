@@ -8,8 +8,8 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
-#include "message.h"
-#include "file_config_store.h"
+#include "./message.h"
+#include "./storage/file_config_store.h"
 
 namespace json = rapidjson;
 namespace bs = botscript;

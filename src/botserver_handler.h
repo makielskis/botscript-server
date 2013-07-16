@@ -12,7 +12,7 @@
 #include "websocketpp.hpp"
 
 #include "bot.h"
-#include "config_store.h"
+#include "storage/config_store.h"
 
 namespace botscript_server {
 
