@@ -21,7 +21,7 @@ class config_store {
  public:
   /// Adds a new bot configuration to the store
   ///
-  /// \param configuration the configuration to store
+  /// \param bot the bot to store the configuration for
   virtual void add(const botscript::bot& bot) = 0;
 
   /// Removes the configuration with the given identifier
@@ -31,6 +31,7 @@ class config_store {
 
   /// Get the configuration for the given identifier.
   ///
+  /// \param identifier the identifier of the bot configuration to get
   /// \return the configuration of the bot with the given identifier
   virtual std::string get(const std::string& identifier) = 0;
 
