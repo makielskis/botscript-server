@@ -1,3 +1,7 @@
+// Copyright (c) 2013, makielski.net
+// Licensed under the MIT license
+// https://raw.github.com/makielski/botscript/master/COPYING
+
 #ifndef BOTSCRIPT_SERVER_SERVICE
 #define BOTSCRIPT_SERVER_SERVICE
 

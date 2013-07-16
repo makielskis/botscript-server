@@ -1,3 +1,7 @@
+// Copyright (c) 2013, makielski.net
+// Licensed under the MIT license
+// https://raw.github.com/makielski/botscript/master/COPYING
+
 #include "service.h"
 
 #include <boost/asio/io_service.hpp>
