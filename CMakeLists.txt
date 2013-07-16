@@ -83,10 +83,10 @@ include_directories("/usr/lib/jvm/java-7-openjdk-amd64/include/")
 # Object library
 ################################
 add_library(botscriptserver_obj_lib OBJECT
+  src/storage/file_config_store.cc
   src/botserver_handler.cc
   src/message.cc
   src/service.cc
-  src/file_config_store.cc
 )
 
 
@@ -95,7 +95,7 @@ add_library(botscriptserver_obj_lib OBJECT
 ################################
 add_library(botscript-server SHARED
   $<TARGET_OBJECTS:botscriptserver_obj_lib>
-  src/net_makielski_botscript_BotscriptServer.cpp
+  src/jni/net_makielski_botscript_BotscriptServer.cpp
 )
 if(MSVC)
   target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp kyotocabinet)
