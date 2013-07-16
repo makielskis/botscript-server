@@ -19,26 +19,19 @@ file_config_store::file_config_store(const std::string& path)
   if (!boost::filesystem::is_directory(path)) {
     boost::filesystem::create_directories(path);
   }
+  // TODO: convert boost::filesystem_error to a 'config_store_exception'
 }
 
 void file_config_store::add(const bs::bot& bot) {
-  try {
-    std::ofstream file;
-    file.open(config_dir_ + "/" + bot.identifier() + ".json", std::ios::out);
-    file << bot.configuration(true);
-    file.close();
-  } catch (const std::exception& e) {
-    // TODO: proper errorhandling
-    std::cerr << e.what() << "\n";
-  }
+  std::ofstream file;
+  file.exceptions(std::ios_base::failbit);
+  file.open(config_dir_ + "/" + bot.identifier() + ".json", std::ios::out);
+  file << bot.configuration(true);
+  // TODO: convert ios_base::failure to a 'config_store_exception'
 };
 
 void file_config_store::remove(const std::string& identifier) {
-  const char* filename = (config_dir_ + "/" + identifier + ".json").c_str();
-  int ret_code = std::remove(filename);
-  if (ret_code != 0) {
-    perror(filename);
-  }
+  boost::filesystem::remove(config_dir_ + "/" + identifier + ".json");
 };
 
 std::string file_config_store::get(const std::string& identifier) {
@@ -46,13 +39,16 @@ std::string file_config_store::get(const std::string& identifier) {
   std::stringstream buf;
   buf << ifs.rdbuf();
   return buf.str();
+  // TODO: convert ios_base::failure to a 'config_store_exception'
 };
 
 std::vector<std::string> file_config_store::get_all() {
   std::vector<std::string> configs;
 
+  // Iterate all files from the config directory.
   using boost::filesystem::directory_iterator;
-  for (auto i = directory_iterator(config_dir_); i != directory_iterator(); ++i) {
+  auto i = directory_iterator(config_dir_);
+  for (; i != directory_iterator(); ++i) {
     auto file = i->path();
 
     // Skip non-json files.
@@ -69,9 +65,9 @@ std::vector<std::string> file_config_store::get_all() {
 }
 
 void file_config_store::update_attribute(const bs::bot& bot,
-                              const std::string& module,
-                              const std::string& key,
-                              const std::string& new_value) {
+                                         const std::string& module,
+                                         const std::string& key,
+                                         const std::string& new_value) {
   add(bot);
 };
 
