@@ -9,6 +9,7 @@
 #include <vector>
 #include <functional>
 #include <exception>
+#include <memory>
 
 #include "boost/optional.hpp"
 
@@ -40,7 +41,7 @@ class config_store {
   ///
   /// \param bot  the bot to store the configuration for
   /// \param cb   the callback that will be called on operation finish
-  virtual void add(const botscript::bot& bot, empty_cb cb) = 0;
+  virtual void add(std::shared_ptr<botscript::bot> bot, empty_cb cb) = 0;
 
   /// Removes the configuration with the given identifier
   ///
@@ -63,7 +64,7 @@ class config_store {
   /// \param key which  key of the module to update
   /// \param new_value  the new value for the attribute to update
   /// \param cb         the callback that will be called on operation finish
-  virtual void update_attribute(const botscript::bot& bot,
+  virtual void update_attribute(std::shared_ptr<botscript::bot> bot,
                                 const std::string& module,
                                 const std::string& key,
                                 const std::string& new_value,

@@ -99,7 +99,7 @@ void bot_server_handler::on_message(websocketpp::server::connection_ptr con,
                              std::placeholders::_3);
     b->init(m.config(), [this](std::shared_ptr<bs::bot> b, std::string err){
       if (err.empty()) {
-        config_store_.add(*b, [this, b](config_store::error_indicator e) {
+        config_store_.add(b, [this, b](config_store::error_indicator e) {
           if (!e) {
             bots_[b->identifier()] = b;
             send_bots();
@@ -178,7 +178,7 @@ void bot_server_handler::callback(std::string i, std::string k, std::string v) {
           std::cout << "couldn't update config for " << i << "\n";
         }
       };
-      config_store_.update_attribute(*(it->second), module, option, v, cb);
+      config_store_.update_attribute(it->second, module, option, v, cb);
     }
   }
 
