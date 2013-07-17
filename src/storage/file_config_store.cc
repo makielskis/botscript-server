@@ -28,13 +28,13 @@ void file_config_store::io_service(boost::asio::io_service* io_service) {
   io_service_ = io_service;
 }
 
-void file_config_store::add(const bs::bot& bot, empty_cb cb) {
-  io_service_->post([this, &bot, cb]() {
+void file_config_store::add(std::shared_ptr<bs::bot> bot, empty_cb cb) {
+  io_service_->post([this, bot, cb]() {
     try {
       std::ofstream file;
       file.exceptions(std::ios_base::failbit);
-      file.open(config_dir_ + "/" + bot.identifier() + ".json", std::ios::out);
-      file << bot.configuration(true);
+      file.open(config_dir_ + "/" + bot->identifier() + ".json", std::ios::out);
+      file << bot->configuration(true);
       return cb(error_indicator());
     } catch(const std::ios_base::failure& e) {
       return cb(error_indicator(e));
@@ -68,7 +68,7 @@ void file_config_store::get(const std::string& identifier,
   });
 };
 
-void file_config_store::update_attribute(const bs::bot& bot,
+void file_config_store::update_attribute(std::shared_ptr<bs::bot> bot,
                                          const std::string& module,
                                          const std::string& key,
                                          const std::string& new_value,
