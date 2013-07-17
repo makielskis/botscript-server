@@ -14,27 +14,22 @@ namespace bs = botscript;
 
 namespace botscript_server {
 
-file_config_store::file_config_store(const std::string& path)
-    : config_dir_(path) {
+file_config_store::file_config_store(const std::string& path,
+                                     boost::asio::io_service* io_service)
+    : config_dir_(path),
+      io_service_(io_service) {
   // Create config dir if not available.
   if (!boost::filesystem::is_directory(path)) {
     boost::filesystem::create_directories(path);
   }
-
-  // Start I/O thread.
-  execution_thread_ = std::thread([this]() {
-    boost::asio::io_service::work work(io_service_);
-    io_service_.run();
-  });
 }
 
-file_config_store::~file_config_store() {
-  io_service_.stop();
-  execution_thread_.join();
+void file_config_store::io_service(boost::asio::io_service* io_service) {
+  io_service_ = io_service;
 }
 
 void file_config_store::add(const bs::bot& bot, empty_cb cb) {
-  io_service_.post([this, &bot, cb]() {
+  io_service_->post([this, &bot, cb]() {
     try {
       std::ofstream file;
       file.exceptions(std::ios_base::failbit);
@@ -48,7 +43,7 @@ void file_config_store::add(const bs::bot& bot, empty_cb cb) {
 };
 
 void file_config_store::remove(const std::string& identifier, empty_cb cb) {
-  io_service_.post([this, identifier, cb]() {
+  io_service_->post([this, identifier, cb]() {
     try {
       boost::filesystem::remove(config_dir_ + "/" + identifier + ".json");
       return cb(error_indicator());
@@ -60,7 +55,7 @@ void file_config_store::remove(const std::string& identifier, empty_cb cb) {
 
 void file_config_store::get(const std::string& identifier,
                             cb<std::string>::type cb) {
-  io_service_.post([this, identifier, cb]() {
+  io_service_->post([this, identifier, cb]() {
     try {
       std::ifstream file(config_dir_ + "/" + identifier + ".json");
       file.exceptions(std::ios_base::failbit);
@@ -78,7 +73,7 @@ void file_config_store::update_attribute(const bs::bot& bot,
                                          const std::string& key,
                                          const std::string& new_value,
                                          empty_cb cb) {
-  add(bot, [cb](const error_indicator& e) { return cb(e); });
+  add(bot, [cb](error_indicator e) { return cb(e); });
 };
 
 std::vector<std::string> file_config_store::get_all() {
