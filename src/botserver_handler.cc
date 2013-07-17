@@ -92,9 +92,9 @@ void bot_server_handler::on_message(websocketpp::server::connection_ptr con,
                              std::placeholders::_3);
     b->init(m.config(), [this](std::shared_ptr<bs::bot> b, std::string err){
       if (err.empty()) {
-        bots_[b->identifier()] = b;
         config_store_.add(*b, [this, &b](const config_store::error_indicator& e) {
           if (!e) {
+            bots_[b->identifier()] = b;
             send_bots();
           } else {
             b->shutdown();
