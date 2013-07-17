@@ -16,30 +16,69 @@ namespace botscript_server {
 
 file_config_store::file_config_store(const std::string& path)
     : config_dir_(path) {
+  // Create config dir if not available.
   if (!boost::filesystem::is_directory(path)) {
     boost::filesystem::create_directories(path);
   }
-  // TODO: convert boost::filesystem_error to a 'config_store_exception'
+
+  // Start I/O thread.
+  execution_thread_ = std::thread([this]() {
+    boost::asio::io_service::work work(io_service_);
+    io_service_.run();
+  });
 }
 
-void file_config_store::add(const bs::bot& bot) {
-  std::ofstream file;
-  file.exceptions(std::ios_base::failbit);
-  file.open(config_dir_ + "/" + bot.identifier() + ".json", std::ios::out);
-  file << bot.configuration(true);
-  // TODO: convert ios_base::failure to a 'config_store_exception'
+file_config_store::~file_config_store() {
+  io_service_.stop();
+  execution_thread_.join();
+}
+
+void file_config_store::add(const bs::bot& bot, empty_cb cb) {
+  io_service_.post([this, &bot, cb]() {
+    try {
+      std::ofstream file;
+      file.exceptions(std::ios_base::failbit);
+      file.open(config_dir_ + "/" + bot.identifier() + ".json", std::ios::out);
+      file << bot.configuration(true);
+      return cb(error_indicator());
+    } catch(const std::ios_base::failure& e) {
+      return cb(error_indicator(e));
+    }
+  });
 };
 
-void file_config_store::remove(const std::string& identifier) {
-  boost::filesystem::remove(config_dir_ + "/" + identifier + ".json");
+void file_config_store::remove(const std::string& identifier, empty_cb cb) {
+  io_service_.post([this, identifier, cb]() {
+    try {
+      boost::filesystem::remove(config_dir_ + "/" + identifier + ".json");
+      return cb(error_indicator());
+    } catch(const boost::filesystem::filesystem_error& e) {
+      return cb(error_indicator(e));
+    }
+  });
 };
 
-std::string file_config_store::get(const std::string& identifier) {
-  std::ifstream ifs(config_dir_ + "/" + identifier + ".json");
-  std::stringstream buf;
-  buf << ifs.rdbuf();
-  return buf.str();
-  // TODO: convert ios_base::failure to a 'config_store_exception'
+void file_config_store::get(const std::string& identifier,
+                            cb<std::string>::type cb) {
+  io_service_.post([this, identifier, cb]() {
+    try {
+      std::ifstream file(config_dir_ + "/" + identifier + ".json");
+      file.exceptions(std::ios_base::failbit);
+      std::stringstream buf;
+      buf << file.rdbuf();
+      return cb(buf.str(), error_indicator());
+    } catch (const std::ios_base::failure& e) {
+      return cb("", error_indicator(e));
+    }
+  });
+};
+
+void file_config_store::update_attribute(const bs::bot& bot,
+                                         const std::string& module,
+                                         const std::string& key,
+                                         const std::string& new_value,
+                                         empty_cb cb) {
+  add(bot, [cb](const error_indicator& e) { return cb(e); });
 };
 
 std::vector<std::string> file_config_store::get_all() {
@@ -57,19 +96,15 @@ std::vector<std::string> file_config_store::get_all() {
     }
 
     // Get file content.
-    std::string identifier = file.stem().string();
-    configs.emplace_back(get(identifier));
+    std::ifstream ifs(file.string());
+    ifs.exceptions(std::ios_base::failbit);
+    std::stringstream buf;
+    buf << ifs.rdbuf();
+    configs.emplace_back(buf.str());
   }
 
   return configs;
 }
-
-void file_config_store::update_attribute(const bs::bot& bot,
-                                         const std::string& module,
-                                         const std::string& key,
-                                         const std::string& new_value) {
-  add(bot);
-};
 
 }  // namespace botscript_server
 
