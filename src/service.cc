@@ -20,10 +20,11 @@ service::service()
 void service::start(const std::string& host, const std::string& service) {
   try {
     // Instatiate handler and Web Socket server endpoint.
-    file_config_store store("./configs");
+    file_config_store store("./configs", nullptr);
     bot_server_handler* bsh = new bot_server_handler(store);
     server::handler::ptr handler(bsh);
     server endpoint(handler);
+    store.io_service(endpoint.io_service());
     bsh->io_service(endpoint.io_service());
 
     io_service_ = endpoint.io_service();

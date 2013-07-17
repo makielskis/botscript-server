@@ -20,9 +20,11 @@ class file_config_store : public config_store {
   ///
   /// \throws boost::filesystem_error
   /// \return all configurations in the path in a vector
-  file_config_store(const std::string& path);
+  file_config_store(const std::string& path,
+                    boost::asio::io_service* io_service);
 
-  virtual ~file_config_store();
+  /// \param io_service  the io_service to set
+  void io_service(boost::asio::io_service* io_service);
 
   virtual void add(const botscript::bot& bot, empty_cb cb) override;
   virtual void remove(const std::string& identifier, empty_cb cb) override;
@@ -39,11 +41,8 @@ class file_config_store : public config_store {
   /// Path to the configuration directory.
   const std::string config_dir_;
 
-  /// Thread that executes I/O operations.
-  std::thread execution_thread_;
-
   /// Service managing I/O operations.
-  boost::asio::io_service io_service_;
+  boost::asio::io_service* io_service_;
 };
 
 }  // namespace botscript_server
