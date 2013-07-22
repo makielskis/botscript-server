@@ -41,6 +41,7 @@ find_package(Boost COMPONENTS
   filesystem
   iostreams
   regex
+  random
 REQUIRED)
 if(Boost_FOUND)
 	include_directories(${Boost_INCLUDE_DIR})
@@ -76,13 +77,14 @@ include_directories("external_lib/botscript/src")
 include_directories("external_lib/botscript/external_lib/pugixml-1.0/src")
 include_directories("external_lib/botscript/external_lib/lua-5.2.0/src")
 include_directories("external_lib/kyotocabinet-1.2.76")
-include_directories("/usr/lib/jvm/java-7-openjdk-amd64/include/")
+include_directories("/usr/lib/jvm/java-6-openjdk-amd64/include/")
 
 
 ################################
 # Object library
 ################################
 add_library(botscriptserver_obj_lib OBJECT
+  src/storage/db_user_store.cc
   src/storage/file_config_store.cc
   src/botserver_handler.cc
   src/message.cc
@@ -132,3 +134,19 @@ if(MSVC)
   )
   target_link_libraries(botscript-server-gui bs ${Boost_LIBRARIES} websocketpp kyotocabinet)
 endif()
+
+
+################################
+# Unit Tests
+################################
+add_subdirectory(test/gtest-1.6.0)
+enable_testing()
+include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+
+add_executable(botscript-server-tests
+  $<TARGET_OBJECTS:botscriptserver_obj_lib>
+  test/db_user_store_test.cpp
+)
+
+target_link_libraries(botscript-server-tests gtest gtest_main bs ${Boost_LIBRARIES} websocketpp kyotocabinet rt -pthread)
+add_test(botscript-server-tests botscript-server-tests)
