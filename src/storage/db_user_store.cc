@@ -67,9 +67,9 @@ void db_user_store::remove_user(const std::string& session_id,
             user["email"].remove();
             user["bots"].remove();
 
-            sid_user_.erase(it);
             user_sid_.erase(username);
             sid_expire_.erase(session_id);
+            sid_user_.erase(it);
 
             return cb(error_indicator());
           } else {
@@ -199,10 +199,15 @@ void db_user_store::get_bots(const std::string& session_id,
       if (it != sid_user_.cend()) {
         const std::string& username = it->second;
         std::string bots_string = users_[username]["bots"].val();
-        std::vector<std::string> bots;
-        boost::split(bots, bots_string, boost::is_any_of(","));
 
-        return cb(bots, error_indicator());
+        if (bots_string.empty()) {
+          return cb(std::vector<std::string>(), error_indicator());
+        } else {
+          std::vector<std::string> bots;
+          boost::split(bots, bots_string, boost::is_any_of(","));
+
+          return cb(bots, error_indicator());
+        }
       } else {
         // This should not happen
         return cb(std::vector<std::string>(),
@@ -224,11 +229,19 @@ void db_user_store::add_bot(const std::string& session_id,
         const std::string& username = it->second;
         entry db_bots = users_[username]["bots"];
         std::string bots = users_[username]["bots"].val();
-        std::stringstream ss;
-        ss << bots << "," << bot_identifier;
-        db_bots = ss.str();
 
-        return cb(error_indicator());
+        if (bots.find(bot_identifier) != std::string::npos) {
+          return cb(error_indicator(std::runtime_error("bot already exists")));
+        } else {
+          std::stringstream ss;
+          ss << bots;
+          if (!bots.empty()) {
+            ss << ",";
+          }
+          ss << bot_identifier;
+          db_bots = ss.str();
+          return cb(error_indicator());
+        }
       } else {
         // This should not happen
         return cb(error_indicator(std::runtime_error("user doesn't exist")));
@@ -253,7 +266,8 @@ void db_user_store::remove_bot(const std::string& session_id,
         auto pos = bots.find(identifier);
         if (pos != std::string::npos) {
           if (pos == 0) {
-            bots.erase(0, identifier.length());
+            bool last = identifier.length() == bots.length();
+            bots.erase(0, identifier.length() + (last ? 0 : 1));
           } else {
             bots.erase(pos - 1, identifier.length() + 1);
           }
@@ -323,7 +337,7 @@ bool db_user_store::check_session(const std::string& sid) {
     return false;
   }
 
-  it->second = time(nullptr) + SESSION_DURATION;
+  it->second = now + SESSION_DURATION;
   return true;
 }
 
