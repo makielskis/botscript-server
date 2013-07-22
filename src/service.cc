@@ -24,10 +24,11 @@ void service::start(const std::string& host, const std::string& service) {
     bot_server_handler* bsh = new bot_server_handler(store);
     server::handler::ptr handler(bsh);
     server endpoint(handler);
-    store.io_service(endpoint.io_service());
-    bsh->io_service(endpoint.io_service());
 
     io_service_ = endpoint.io_service();
+    store.io_service(io_service_);
+    bsh->io_service(io_service_);
+
     endpoint.listen(host, service);
   } catch (std::exception& e) {
     std::cerr << "Exception: " << e.what() << std::endl;
