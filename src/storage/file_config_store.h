@@ -5,8 +5,6 @@
 #ifndef FILE_CONFIG_STORE_H
 #define FILE_CONFIG_STORE_H
 
-#include <thread>
-
 #include "boost/asio/io_service.hpp"
 
 #include "config_store.h"
@@ -16,7 +14,7 @@ namespace botscript_server {
 /// File based implementation of the config_store interface.
 class file_config_store : public config_store {
  public:
-  /// Create/Open a file config store in the given path.
+  /// Create/Open a file config stored in the given path.
   ///
   /// \throws boost::filesystem_error
   /// \return all configurations in the path in a vector
