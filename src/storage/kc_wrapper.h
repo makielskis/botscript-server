@@ -50,7 +50,7 @@ class entry {
   }
 
   bool exists() {
-    return db_.check(path_string_);
+    return db_.check(path_string_) != -1;
   }
 
   bool remove() {
@@ -89,6 +89,10 @@ class db {
 
   kc::PolyDB& get_db_handle() {
     return db_;
+  }
+
+  int64_t count() {
+    return db_.count();
   }
 
  private:
