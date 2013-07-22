@@ -2,8 +2,8 @@
 // Licensed under the MIT license
 // https://raw.github.com/makielski/botscript/master/COPYING
 
-#ifndef CONFIG_STORE_H
-#define CONFIG_STORE_H
+#ifndef  CONFIG_STORE_H_
+#define  CONFIG_STORE_H_
 
 #include <string>
 #include <vector>
@@ -15,6 +15,8 @@
 
 #include "bot.h"
 
+#include "./callback.h"
+
 namespace botscript_server {
 
 /// Bot storage adapter interface that can be implemented.
@@ -24,19 +26,6 @@ namespace botscript_server {
 ///   - a file based implementation
 class config_store {
  public:
-  /// Error indicator: contains an exception if the op. was not successful.
-  typedef boost::optional<std::exception> error_indicator;
-
-  /// Callback function for asynchronous operations without return value.
-  typedef std::function<void (error_indicator)> empty_cb;
-
-  /// Callback function for asynchronous operations with return values.
-  template <class ReturnType>
-  struct cb {
-    /// Callback function used to pass returnvalues/errors asynchronously.
-    typedef std::function<void (ReturnType, error_indicator)> type;
-  };
-
   /// Adds a new bot configuration to the store
   ///
   /// \param bot  the bot to store the configuration for
@@ -78,4 +67,4 @@ class config_store {
 
 }  // namespace botscript_server
 
-#endif  // CONFIG_STORE_H
+#endif  //  CONFIG_STORE_H_
