@@ -248,7 +248,7 @@ void db_user_store::remove_bot(const std::string& session_id,
       if (it != sid_user_.cend()) {
         const std::string& username = it->second;
         entry db_bots = users_[username]["bots"];
-        std::string bots = users_[username]["bots"].val();
+        std::string bots = db_bots.val();
 
         auto pos = bots.find(identifier);
         if (pos != std::string::npos) {
@@ -257,6 +257,7 @@ void db_user_store::remove_bot(const std::string& session_id,
           } else {
             bots.erase(pos - 1, identifier.length() + 1);
           }
+          db_bots = bots;
           return cb(error_indicator());
         } else {
           return cb(error_indicator(std::runtime_error("bot isn't in list")));
