@@ -47,7 +47,7 @@ void bot_server_handler::io_service(boost::asio::io_service* io_service) {
         bots_[b->identifier()] = b;
       } else {
         b->shutdown();
-        auto remove_cb = [b](config_store::error_indicator e) {
+        auto remove_cb = [b](error_indicator e) {
           if (e) {
             std::cout << "ERROR: " << b->identifier() << " couldn't be loaded"
                       << " and config could not be removed\n";
@@ -99,7 +99,7 @@ void bot_server_handler::on_message(websocketpp::server::connection_ptr con,
                              std::placeholders::_3);
     b->init(m.config(), [this](std::shared_ptr<bs::bot> b, std::string err){
       if (err.empty()) {
-        config_store_.add(b, [this, b](config_store::error_indicator e) {
+        config_store_.add(b, [this, b](error_indicator e) {
           if (!e) {
             bots_[b->identifier()] = b;
             send_bots();
@@ -135,7 +135,7 @@ void bot_server_handler::on_message(websocketpp::server::connection_ptr con,
     it->second->shutdown();
     bots_.erase(it);
 
-    auto cb = [m] (config_store::error_indicator e) {
+    auto cb = [m] (error_indicator e) {
       if (e) {
         std::cout << "couldn't delete config for " << m.identifier() << "\n";
       }
@@ -173,7 +173,7 @@ void bot_server_handler::callback(std::string i, std::string k, std::string v) {
       const std::string module(k.substr(0, seperator_pos));
       const std::string option(k.substr(seperator_pos + 1, k.length()));
 
-      auto cb = [i] (config_store::error_indicator e) {
+      auto cb = [i] (error_indicator e) {
         if (e) {
           std::cout << "couldn't update config for " << i << "\n";
         }
