@@ -37,7 +37,7 @@ void db_user_store::add_user(const std::string& username,
                              const std::string& email,
                              cb<std::string>::type cb) {
   io_service_->post([=]() {
-    if (users_[username]["password"].exists()) {
+    if (!users_[username]["password"].exists()) {
       std::string sid = make_session(username);
 
       users_[username]["password"] = websocketpp::md5_hash_hex(password);
@@ -60,11 +60,12 @@ void db_user_store::remove_user(const std::string& session_id,
       const auto it = sid_user_.find(session_id);
       if (it != sid_user_.cend()) {
         const std::string& username = it->second;
+        entry user = users_[username];
         if (users_[username]["password"].exists()) {
-          if (websocketpp::md5_hash_hex(password) == password) {
-            users_[username]["password"].remove();
-            users_[username]["email"].remove();
-            users_[username]["bots"].remove();
+          if (websocketpp::md5_hash_hex(password) == user["password"].val()) {
+            user["password"].remove();
+            user["email"].remove();
+            user["bots"].remove();
 
             sid_user_.erase(it);
             user_sid_.erase(username);
@@ -79,7 +80,6 @@ void db_user_store::remove_user(const std::string& session_id,
           return cb(error_indicator(std::runtime_error("user doesn't exist")));
         }
       } else {
-        // This should not happen
         return cb(error_indicator(std::runtime_error("invalid session")));
       }
     }
@@ -318,7 +318,8 @@ bool db_user_store::check_session(const std::string& sid) {
     return false;
   }
 
-  if (it->second > time(nullptr)) {
+  time_t now = time(nullptr);
+  if (it->second < now) {
     return false;
   }
 

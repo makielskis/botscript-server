@@ -2,10 +2,12 @@
 
 #include <ctime>
 
+#include "boost/asio/io_service.hpp"
+#include "boost/filesystem.hpp"
+
 #include "../src/storage/db_user_store.h"
 #include "../src/storage/kc_wrapper.h"
 
-#include "boost/asio/io_service.hpp"
 
 #define USERNAME ("testuser")
 #define PASSWORD ("password")
@@ -17,54 +19,53 @@ using namespace botscript_server;
 
 class UserStoreTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  virtual void SetUp() override {
     addTestUser();
+  }
+
+  virtual void TearDown() override {
+    boost::filesystem::remove("test.kch");
   }
 
   void addTestUser() {
     string actual_sid;
-    bool error = false;
-    string store_sid;
-    time_t store_expire;
-    string store_username;
+
     {
       db_user_store store("test.kch", &io_service_);
 
-      store.add_user(USERNAME, PASSWORD, EMAIL, [&actual_sid, &error](string sid, error_indicator e) {
+      store.add_user(USERNAME, PASSWORD, EMAIL, [&actual_sid, &store](string sid, error_indicator e) {
         actual_sid = sid;
-        error = e;
+        ASSERT_FALSE(e);
+        EXPECT_EQ(store.user_sid().at(USERNAME), sid);
+        EXPECT_EQ(store.sid_user().at(actual_sid), USERNAME);
+        EXPECT_GT(store.sid_expire().at(actual_sid), time(nullptr));
       });
 
       io_service_.run();
-
-      store_sid = store.user_sid().at(USERNAME);
-      store_expire = store.sid_expire().at(actual_sid);
-      store_username = store.sid_user().at(actual_sid);
+      io_service_.reset();
     }
 
     db db("test.kch");
     entry users = db.get_entry("users");
 
-    EXPECT_EQ(store_sid, actual_sid);
-    EXPECT_EQ(store_username, USERNAME);
-    EXPECT_GT(store_expire, time(nullptr));
     EXPECT_EQ(PW_HASH, users[USERNAME]["password"].val());
     EXPECT_EQ("a@b.cd", users[USERNAME]["email"].val());
     EXPECT_EQ(32, actual_sid.length());
-    EXPECT_FALSE(error);
   }
 
   boost::asio::io_service io_service_;
 };
 
 TEST_F(UserStoreTest, AddUserTwiceTest) {
-  db_user_store store("test.kch", &io_service_);
-  store.add_user(USERNAME, "other", EMAIL, [](string sid, error_indicator e) {
-    ASSERT_TRUE(e);
-    EXPECT_EQ("user already exists", e->what());
-  });
+  {
+    db_user_store store("test.kch", &io_service_);
+    store.add_user(USERNAME, "other", EMAIL, [](string sid, error_indicator e) {
+      ASSERT_TRUE(e);
+    });
 
-  io_service_.run();
+    io_service_.run();
+    io_service_.reset();
+  }
 
   db db("test.kch");
   entry users = db.get_entry("users");
@@ -86,6 +87,7 @@ TEST_F(UserStoreTest, SuccessfulLoginTest) {
   });
 
   io_service_.run();
+  io_service_.reset();
 }
 
 TEST_F(UserStoreTest, WrongPasswordLoginTest) {
@@ -95,10 +97,10 @@ TEST_F(UserStoreTest, WrongPasswordLoginTest) {
     EXPECT_TRUE(store.sid_user().empty());
     EXPECT_TRUE(store.sid_expire().empty());
     ASSERT_TRUE(error);
-    EXPECT_EQ("wrong password", error->what());
   });
 
   io_service_.run();
+  io_service_.reset();
 }
 
 TEST_F(UserStoreTest, UserNotExistentLoginTest) {
@@ -108,10 +110,10 @@ TEST_F(UserStoreTest, UserNotExistentLoginTest) {
     EXPECT_TRUE(store.sid_user().empty());
     EXPECT_TRUE(store.sid_expire().empty());
     ASSERT_TRUE(error);
-    EXPECT_EQ("user doesn't exist", error->what());
   });
 
   io_service_.run();
+  io_service_.reset();
 }
 
 TEST_F(UserStoreTest, DoubleLoginNotPossibleTest) {
@@ -136,6 +138,7 @@ TEST_F(UserStoreTest, DoubleLoginNotPossibleTest) {
   });
 
   io_service_.run();
+  io_service_.reset();
 }
 
 TEST_F(UserStoreTest, SuccessfulLogoutTest) {
@@ -157,6 +160,7 @@ TEST_F(UserStoreTest, SuccessfulLogoutTest) {
   });
 
   io_service_.run();
+  io_service_.reset();
 }
 
 TEST_F(UserStoreTest, WrongSessionLogoutTest) {
@@ -167,10 +171,34 @@ TEST_F(UserStoreTest, WrongSessionLogoutTest) {
       EXPECT_EQ(1, store.sid_user().size());
       EXPECT_EQ(1, store.sid_expire().size());
       ASSERT_TRUE(error);
-      EXPECT_EQ("session not in map", error->what());
     });
   });
 
   io_service_.run();
+  io_service_.reset();
 }
 
+TEST_F(UserStoreTest, SuccessfulRemoveUserTest) {
+  {
+    db_user_store store("test.kch", &io_service_);
+    store.login(USERNAME, PASSWORD, [&store](string sid, error_indicator error) {
+      ASSERT_FALSE(error);
+      store.remove_user(sid, PASSWORD, [&store](error_indicator error) {
+        EXPECT_FALSE(error);
+        EXPECT_TRUE(store.user_sid().empty());
+        EXPECT_TRUE(store.sid_user().empty());
+        EXPECT_TRUE(store.sid_expire().empty());
+      });
+    });
+
+    io_service_.run();
+    io_service_.reset();
+  }
+
+  db db("test.kch");
+  entry users = db.get_entry("users");
+  EXPECT_EQ(0, db.count());
+  EXPECT_FALSE(users[USERNAME]["password"].exists());
+  EXPECT_FALSE(users[USERNAME]["email"].exists());
+  EXPECT_FALSE(users[USERNAME]["bots"].exists());
+}
