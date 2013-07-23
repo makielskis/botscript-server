@@ -12,6 +12,11 @@
 # cd ..
 # ./build/botscript
 
+set(CMAKE_USER_MAKE_RULES_OVERRIDE
+   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/c_flag_overrides.cmake)
+set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX
+   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cxx_flag_overrides.cmake)
+
 
 cmake_minimum_required (VERSION 2.8.8)
 project(botscript-server)
@@ -29,8 +34,9 @@ add_subdirectory(external_lib/kyotocabinet-1.2.76)
 # Boost
 ################################
 if(MSVC)
-  set(CMAKE_INCLUDE_PATH "C:/boost_1_52_0")
-  set(CMAKE_LIBRARY_PATH "C:/boost_1_52_0/stage/lib") 
+  set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} "C:/boost_1_52_0")
+  set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} "C:/boost_1_52_0/stage/lib")
+  set(Boost_USE_STATIC_RUNTIME ON)
 endif()
 
 set(Boost_USE_STATIC_LIBS ON)
