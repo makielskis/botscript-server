@@ -95,6 +95,38 @@ class db {
     return db_.count();
   }
 
+  std::vector<std::string> match_prefix(
+      std::initializer_list<const std::string> path) {
+    // Make prefix.
+    const std::string& prefix = make_path(path);
+
+    // Get matching keys.
+    std::vector<std::string> keys;
+    db_.match_prefix(prefix, &keys);
+
+    return keys;
+  }
+
+  void remove_prefix(std::initializer_list<const std::string> path) {
+    // Get matching keys.
+    std::vector<std::string> keys;
+    db_.match_prefix(make_path(path), &keys);
+
+    // Remove all matched entrys.
+    for (const auto key : keys) {
+      db_.remove(key);
+    }
+  }
+
+  static std::string make_path(std::initializer_list<const std::string> input) {
+    std::stringstream path;
+    for (const auto part : input) {
+      path << part << "#";
+    }
+
+    return path.str();
+  }
+
  private:
   std::string location_;
   kc::PolyDB db_;

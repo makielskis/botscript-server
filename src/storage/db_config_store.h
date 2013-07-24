@@ -2,24 +2,25 @@
 // Licensed under the MIT license
 // https://raw.github.com/makielski/botscript/master/COPYING
 
-#ifndef FILE_CONFIG_STORE_H_
-#define FILE_CONFIG_STORE_H_
+#ifndef DB_CONFIG_STORE_H_
+#define DB_CONFIG_STORE_H_
+
+#include "config_store.h"
 
 #include "boost/asio/io_service.hpp"
 
-#include "config_store.h"
+#include "./kc_wrapper.h"
 
 namespace botscript_server {
 
 /// File based implementation of the config_store interface.
-class file_config_store : public config_store {
+class db_config_store : public config_store {
  public:
   /// Create/Open a file config stored in the given path.
   ///
   /// \throws boost::filesystem_error
   /// \return all configurations in the path in a vector
-  file_config_store(const std::string& path,
-                    boost::asio::io_service* io_service);
+  db_config_store(const std::string& path, boost::asio::io_service* io_service);
 
   /// \param io_service  the io_service to set
   void io_service(boost::asio::io_service* io_service);
@@ -33,16 +34,22 @@ class file_config_store : public config_store {
                                 const std::string& module,
                                 const std::string& key,
                                 const std::string& new_value,
-                                empty_cb callback) override;
+                                empty_cb cb) override;
 
  private:
-  /// Path to the configuration directory.
-  const std::string config_dir_;
+  /// Syncronous helper version of get()
+  std::string get_sync(const std::string& identifier);
 
   /// Service managing I/O operations.
   boost::asio::io_service* io_service_;
+
+  /// Kyoto Cabinet wrapper handle.
+  db db_;
+
+  /// DB default entry for bots
+  entry bots_;
 };
 
 }  // namespace botscript_server
 
-#endif  // FILE_CONFIG_STORE_H_
+#endif  // DB_CONFIG_STORE_H_
