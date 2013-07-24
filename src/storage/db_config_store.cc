@@ -16,7 +16,7 @@ namespace bs = botscript;
 namespace botscript_server {
 
 db_config_store::db_config_store(const std::string& path,
-                                     boost::asio::io_service* io_service)
+                                 boost::asio::io_service* io_service)
   : io_service_(io_service),
     db_(path),
     bots_(db_.get_entry(DB_KEY_PREFIX)) {
@@ -37,9 +37,9 @@ void db_config_store::add(std::shared_ptr<botscript::bot> bot, empty_cb cb) {
     bots_[identifier]["server"] = config.server();
 
     const auto module_config = config.module_settings();
-    for (auto module : module_config) {
+    for (const auto module& : module_config) {
       const std::string& module_name = module.first;
-      for (auto settings : module.second) {
+      for (const auto settings& : module.second) {
         const std::string& key = settings.first;
         const std::string& value = settings.second;
         bots_[identifier]["module"][module_name][key] = value;
@@ -58,7 +58,7 @@ void db_config_store::remove(const std::string& identifier, empty_cb cb) {
 };
 
 void db_config_store::get(const std::string& identifier,
-                 cb<std::string>::type cb) {
+                          cb<std::string>::type cb) {
   io_service_->post([=]() {
     return cb(get_sync(identifier), error_indicator());
   });
@@ -78,7 +78,7 @@ std::vector<std::string> db_config_store::get_all() {
 
     // Add each config once.
     if (done_identifiers.find(identifier) == done_identifiers.end()) {
-      configs.push_back(get_sync(identifier));
+      configs.emplace_back(get_sync(identifier));
       done_identifiers.insert(identifier);
     }
   }
@@ -87,10 +87,10 @@ std::vector<std::string> db_config_store::get_all() {
 };
 
 void db_config_store::update_attribute(std::shared_ptr<botscript::bot> bot,
-                              const std::string& module,
-                              const std::string& key,
-                              const std::string& new_value,
-                              empty_cb cb) {
+                                       const std::string& module,
+                                       const std::string& key,
+                                       const std::string& new_value,
+                                       empty_cb cb) {
   io_service_->post([=]() {
     bots_[bot->identifier()]["module"][module][key] = new_value;
     return cb(error_indicator());
@@ -105,7 +105,7 @@ std::string db_config_store::get_sync(const std::string& identifier) {
 
   // Create module settings map.
   std::map<std::string, bs::config::string_map> module_settings;
-  for (const auto key : keys) {
+  for (const auto key& : keys) {
     std::vector<std::string> path_elements;
     boost::split(path_elements, key, boost::is_any_of("#"));
 
@@ -129,4 +129,4 @@ std::string db_config_store::get_sync(const std::string& identifier) {
   return config.to_json(true);
 }
 
-}
+}  // namespace botscript_server

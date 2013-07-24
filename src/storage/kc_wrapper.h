@@ -113,21 +113,22 @@ class db {
     db_.match_prefix(make_path(path), &keys);
 
     // Remove all matched entrys.
-    for (const auto key : keys) {
+    for (const auto key& : keys) {
       db_.remove(key);
     }
   }
 
+
+ private:
   static std::string make_path(std::initializer_list<const std::string> input) {
     std::stringstream path;
-    for (const auto part : input) {
+    for (const auto part& : input) {
       path << part << "#";
     }
 
     return path.str();
   }
 
- private:
   std::string location_;
   kc::PolyDB db_;
 };
