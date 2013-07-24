@@ -6,7 +6,7 @@
 
 #include <boost/asio/io_service.hpp>
 
-#include "./storage/file_config_store.h"
+#include "./storage/db_config_store.h"
 #include "./botserver_handler.h"
 
 namespace botscript_server {
@@ -20,7 +20,7 @@ service::service()
 void service::start(const std::string& host, const std::string& service) {
   try {
     // Instatiate handler and Web Socket server endpoint.
-    file_config_store store("./configs", nullptr);
+    db_config_store store("./configs.kch", nullptr);
     bot_server_handler* bsh = new bot_server_handler(store);
     server::handler::ptr handler(bsh);
     server endpoint(handler);

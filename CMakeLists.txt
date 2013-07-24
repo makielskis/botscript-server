@@ -96,6 +96,7 @@ include_directories("/usr/lib/jvm/java-6-openjdk-amd64/include/")
 add_library(botscriptserver_obj_lib OBJECT
   src/storage/db_user_store.cc
   src/storage/file_config_store.cc
+  src/storage/db_config_store.cc
   src/botserver_handler.cc
   src/message.cc
   src/service.cc
@@ -149,9 +150,11 @@ endif()
 ################################
 # Unit Tests
 ################################
-add_subdirectory(test/gtest-1.6.0)
-enable_testing()
-include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+if (NOT TARGET gtest)
+  add_subdirectory(test/gtest-1.6.0)
+  enable_testing()
+  include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+endif()
 
 add_executable(botscript-server-tests
   $<TARGET_OBJECTS:botscriptserver_obj_lib>
