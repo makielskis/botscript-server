@@ -153,8 +153,9 @@ endif()
 if (NOT TARGET gtest)
   add_subdirectory(test/gtest-1.6.0)
   enable_testing()
-  include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 endif()
+
+include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 add_executable(botscript-server-tests
   $<TARGET_OBJECTS:botscriptserver_obj_lib>
