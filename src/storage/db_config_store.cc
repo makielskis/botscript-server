@@ -37,9 +37,9 @@ void db_config_store::add(std::shared_ptr<botscript::bot> bot, empty_cb cb) {
     bots_[identifier]["server"] = config.server();
 
     const auto module_config = config.module_settings();
-    for (const auto module& : module_config) {
+    for (const auto& module : module_config) {
       const std::string& module_name = module.first;
-      for (const auto settings& : module.second) {
+      for (const auto& settings : module.second) {
         const std::string& key = settings.first;
         const std::string& value = settings.second;
         bots_[identifier]["module"][module_name][key] = value;
@@ -105,7 +105,7 @@ std::string db_config_store::get_sync(const std::string& identifier) {
 
   // Create module settings map.
   std::map<std::string, bs::config::string_map> module_settings;
-  for (const auto key& : keys) {
+  for (const auto& key : keys) {
     std::vector<std::string> path_elements;
     boost::split(path_elements, key, boost::is_any_of("#"));
 

@@ -7,3 +7,6 @@
 [submodule "external_lib/botscript"]
 	path = external_lib/botscript
 	url = git@bitbucket.org:makielski/botscript.git
+[submodule "external_lib/websocketpp"]
+	path = external_lib/websocketpp
+	url = https://github.com/zaphoyd/websocketpp.git
