@@ -22,6 +22,42 @@ class parse_exception : public std::runtime_error {
   }
 };
 
+/// Login login message:
+/// "Authentificate me with with this username+password"
+///
+/// {
+///   'type': 'login',
+///   'arguments': {
+///     'username': [String],
+///     'password': [String]
+///   }
+/// }
+class auth_login_message {
+ public:
+  explicit auth_login_message(const rapidjson::Document& doc);
+
+  /// \return the login username
+  const std::string& username() const {
+    return username_;
+  }
+
+  /// \return the login password
+  const std::string& password() const {
+    return password_;
+  }
+
+  /// Checks whether the message is a auth login message.
+  /// We assume that the general message format was already checked.
+  ///
+  /// \param doc the document to check
+  /// \return whether the documents is an auth login message
+  static bool fits(const rapidjson::Document& doc);
+
+ private:
+  std::string username_;
+  std::string password_;
+};
+
 /// Session login message:
 /// "Authentificate me with this session ID"
 ///
@@ -40,7 +76,7 @@ class sid_login_message {
   explicit sid_login_message(const rapidjson::Document& doc);
 
   /// \return the session id
-  std::string sid() const {
+  const std::string& sid() const {
     return sid_;
   };
 
@@ -55,12 +91,146 @@ class sid_login_message {
   std::string sid_;
 };
 
+/// Abstract account update message:
+/// "Update account setting 'key' (i.e. email or password)"
+///
+/// {
+///   'type': 'account',
+///   'arguments': {
+///     'sid': [String],
+///     'password': [String],
+///     'update': {
+///       'key': [String],
+///        ...
+///     }
+///   }
+/// }
+class update_account_message {
+ public:
+  explicit update_account_message(const rapidjson::Document& doc);
+
+  /// \return the users session id
+  const std::string& sid() const {
+    return sid_;
+  }
+
+  /// \return the current password
+  const std::string& password() const {
+    return password_;
+  }
+
+  /// Checks whether the message is an update message.
+  /// We assume that the general message format was already checked.
+  ///
+  /// \param doc the document to check
+  /// \return whether the documents is a update message
+  static bool fits(const rapidjson::Document& doc);
+
+ private:
+  std::string sid_;
+  std::string password_;
+};
+
+/// Account deletion message:
+/// "Delete my account"
+///
+/// {
+///   'type': 'account',
+///   'arguments': {
+///     'sid': [String],
+///     'password': [String],
+///     'update': {
+///       'key': 'delete'
+///     }
+///   }
+/// }
+class delete_account_message : public update_account_message {
+ public:
+  explicit delete_account_message(const rapidjson::Document& doc);
+
+  /// Checks whether the message is an account deletion message.
+  /// We assume that the general message format was already checked.
+  ///
+  /// \param doc the document to check
+  /// \return whether the documents is an account deletion message
+  static bool fits(const rapidjson::Document& doc);
+};
+
+/// Email address update message:
+/// "Update my email address"
+///
+/// {
+///   'type': 'account',
+///   'arguments': {
+///     'sid': [String],
+///     'password': [String],
+///     'update': {
+///       'key': 'email',
+///       'value': [String]
+///     }
+///   }
+/// }
+class set_email_message : public update_account_message {
+ public:
+  explicit set_email_message(const rapidjson::Document& doc);
+
+  /// \return the new email address to set
+  const std::string& new_email() const {
+    return new_email_;
+  }
+
+  /// Checks whether the message is a mail update message.
+  /// We assume that the general message format was already checked.
+  ///
+  /// \param doc the document to check
+  /// \return whether the documents is an account mail update
+  static bool fits(const rapidjson::Document& doc);
+
+ private:
+  std::string new_email_;
+};
+
+/// Password update message:
+/// "Update my password"
+///
+/// {
+///   'type': 'account',
+///   'arguments': {
+///     'sid': [String],
+///     'password': [String],
+///     'update': {
+///       'key': 'password',
+///       'value': [String]
+///     }
+///   }
+/// }
+class set_password_message : public update_account_message {
+ public:
+  explicit set_password_message(const rapidjson::Document& doc);
+
+  /// \return the new password to set
+  const std::string& new_password() const {
+    return new_password_;
+  }
+
+  /// Checks whether the message is a password update message.
+  /// We assume that the general message format was already checked.
+  ///
+  /// \param doc the document to check
+  /// \return whether the documents is a password update message
+  static bool fits(const rapidjson::Document& doc);
+
+ private:
+  std::string new_password_;
+};
+
 /// Bot creation message:
 /// "Create a bot with the given (valid) configuration!"
 ///
 /// {
 ///   'type': 'bot_management',
 ///   'arguments': {
+///     'sid': [String],
 ///     'type': 'create',
 ///     'config': [String]
 ///   }
@@ -73,8 +243,13 @@ class create_message {
   /// \throws parse_exception on parser errors (invalid message format)
   explicit create_message(const rapidjson::Document& doc);
 
+  /// \return the users session id
+  const std::string& sid() const {
+    return sid_;
+  }
+
   /// \return the bot configuration
-  std::string config() const {
+  const std::string& config() const {
     return config_;
   }
 
@@ -86,6 +261,7 @@ class create_message {
   static bool fits(const rapidjson::Document& doc);
 
  private:
+  std::string sid_;
   std::string config_;
 };
 
@@ -95,6 +271,7 @@ class create_message {
 /// {
 ///   'type': 'bot_management',
 ///   'arguments': {
+///     'sid': [String],
 ///     'type': 'delete',
 ///     'identifier': [String]
 ///   }
@@ -107,7 +284,13 @@ class delete_message {
   /// \throws parse_exception on parser errors (invalid message format)
   explicit delete_message(const rapidjson::Document& doc);
 
-  std::string identifier() const {
+  /// \return the users session id
+  const std::string& sid() const {
+    return sid_;
+  }
+
+  /// \return the identifier of the bot to delete
+  const std::string& identifier() const {
     return identifier_;
   }
 
@@ -119,6 +302,7 @@ class delete_message {
   static bool fits(const rapidjson::Document& doc);
 
  private:
+  std::string sid_;
   std::string identifier_;
 };
 
@@ -128,6 +312,7 @@ class delete_message {
 /// {
 ///   'type': 'bot',
 ///   'arguments':  {
+///     'sid': [String],
 ///     'identifier': [String],
 ///     'execute': {
 ///       'command': [String],
@@ -143,18 +328,23 @@ class execute_message {
   /// \throws parse_exception on parser errors (invalid message format)
   explicit execute_message(const rapidjson::Document& doc);
 
+  /// \return the users session id
+  const std::string& sid() const {
+    return sid_;
+  }
+
   /// \return the identifier of the bot that should execute the command
-  std::string identifier() const {
+  const std::string& identifier() const {
     return identifier_;
   }
 
   /// \return the command that should be executed
-  std::string command() const {
+  const std::string& command() const {
     return command_;
   }
 
   /// \return the argument to execute the command with
-  std::string argument() const {
+  const std::string& argument() const {
     return argument_;
   }
 
@@ -166,6 +356,7 @@ class execute_message {
   static bool fits(const rapidjson::Document& doc);
 
  private:
+  std::string sid_;
   std::string identifier_;
   std::string command_;
   std::string argument_;
