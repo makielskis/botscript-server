@@ -26,7 +26,7 @@ project(botscript-server)
 # Dependencies
 ################################
 add_subdirectory(external_lib/botscript)
-add_subdirectory(external_lib/websocketpp)
+#add_subdirectory(external_lib/websocketpp)
 add_subdirectory(external_lib/kyotocabinet-1.2.76)
 
 
@@ -82,7 +82,7 @@ endif()
 # Include Paths
 ################################
 include_directories("external_lib/rapidjson-r64/include")
-include_directories("external_lib/websocketpp/src")
+include_directories("external_lib/websocketpp")
 include_directories("external_lib/botscript/src")
 include_directories("external_lib/botscript/external_lib/pugixml-1.0/src")
 include_directories("external_lib/botscript/external_lib/lua-5.2.0/src")
@@ -97,9 +97,7 @@ add_library(botscriptserver_obj_lib OBJECT
   src/storage/db_user_store.cc
   src/storage/file_config_store.cc
   src/storage/db_config_store.cc
-  src/botserver_handler.cc
   src/message.cc
-  src/service.cc
 )
 
 
@@ -125,9 +123,9 @@ add_executable(botscript-server-exe
   src/main.cc
 )
 if(MSVC)
-  target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} websocketpp kyotocabinet)
+  target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} kyotocabinet)
 else()
-  target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} websocketpp kyotocabinet rt -pthread)
+  target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} kyotocabinet rt -pthread)
 endif()
 
 
@@ -143,7 +141,7 @@ if(MSVC)
     src/win32gui/main.cc
     src/win32gui/res/Resource.rc
   )
-  target_link_libraries(botscript-server-gui bs ${Boost_LIBRARIES} websocketpp kyotocabinet)
+  target_link_libraries(botscript-server-gui bs ${Boost_LIBRARIES} kyotocabinet)
 endif()
 
 
@@ -162,5 +160,5 @@ add_executable(botscript-server-tests
   test/db_user_store_test.cpp
 )
 
-target_link_libraries(botscript-server-tests gtest gtest_main bs ${Boost_LIBRARIES} websocketpp kyotocabinet rt -pthread)
+target_link_libraries(botscript-server-tests gtest gtest_main bs ${Boost_LIBRARIES} kyotocabinet rt -pthread)
 add_test(botscript-server-tests botscript-server-tests)

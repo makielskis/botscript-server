@@ -13,7 +13,7 @@
 #include "boost/random/uniform_int_distribution.hpp"
 #include "boost/algorithm/string/split.hpp"
 
-#include "md5/md5.hpp"
+#include "websocketpp/common/md5.hpp"
 
 #define SESSION_DURATION 604800
 
@@ -40,7 +40,7 @@ void db_user_store::add_user(const std::string& username,
     if (!users_[username]["password"].exists()) {
       std::string sid = make_session(username);
 
-      users_[username]["password"] = websocketpp::md5_hash_hex(password);
+      users_[username]["password"] = websocketpp::md5::md5_hash_hex(password);
       users_[username]["email"] = email;
 
       return cb(sid, error_indicator());
@@ -62,7 +62,7 @@ void db_user_store::remove_user(const std::string& session_id,
         const std::string& username = it->second;
         entry user = users_[username];
         if (users_[username]["password"].exists()) {
-          if (websocketpp::md5_hash_hex(password) == user["password"].val()) {
+          if (websocketpp::md5::md5_hash_hex(password) == user["password"].val()) {
             user["password"].remove();
             user["email"].remove();
             user["bots"].remove();
@@ -92,7 +92,7 @@ void db_user_store::login(const std::string& username,
   io_service_->post([=]() {
     if (users_[username]["password"].exists()) {
       std::string db_pw = users_[username]["password"].val();
-      if (websocketpp::md5_hash_hex(password) == db_pw) {
+      if (websocketpp::md5::md5_hash_hex(password) == db_pw) {
         std::string sid = make_session(username);
         return cb(sid, error_indicator());
       } else {
@@ -129,8 +129,8 @@ void db_user_store::set_password(const std::string& session_id,
       if (it != sid_user_.cend()) {
         const std::string& username = it->second;
         entry password = users_[username]["password"];
-        if (websocketpp::md5_hash_hex(old_password) == password.val()) {
-          password = websocketpp::md5_hash_hex(new_password);
+        if (websocketpp::md5::md5_hash_hex(old_password) == password.val()) {
+          password = websocketpp::md5::md5_hash_hex(new_password);
           return cb(error_indicator());
         } else {
           return cb(error_indicator(std::runtime_error("wrong password")));
@@ -174,7 +174,7 @@ void db_user_store::set_email(const std::string& session_id,
       if (it != sid_user_.cend()) {
         const std::string& username = it->second;
         std::string db_pw = users_[username]["password"].val();
-        if (websocketpp::md5_hash_hex(password) == db_pw) {
+        if (websocketpp::md5::md5_hash_hex(password) == db_pw) {
           users_[username]["email"] = email;
           return cb(error_indicator());
         } else {
