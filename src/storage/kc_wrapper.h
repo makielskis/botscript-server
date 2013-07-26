@@ -10,6 +10,9 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <exception>
+#include <initializer_list>
+#include <sstream>
 
 #include <kcpolydb.h>
 

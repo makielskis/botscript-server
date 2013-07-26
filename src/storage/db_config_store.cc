@@ -4,7 +4,10 @@
 
 #include "db_config_store.h"
 
-#include <string>
+#include <vector>
+#include <unordered_set>
+
+#include "boost/algorithm/string.hpp"
 
 #include "bot.h"
 #include "config.h"
@@ -125,7 +128,6 @@ std::string db_config_store::get_sync(const std::string& identifier) {
   // Create config object.
   bs::config config(username, password, package, server, module_settings);
 
-  std::cout << config.to_json(true) << "\n";
   return config.to_json(true);
 }
 
