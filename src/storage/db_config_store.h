@@ -7,6 +7,9 @@
 
 #include "config_store.h"
 
+#include <memory>
+#include <string>
+
 #include "boost/asio/io_service.hpp"
 
 #include "./kc_wrapper.h"
