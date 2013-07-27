@@ -160,6 +160,7 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 add_executable(botscript-server-tests
   $<TARGET_OBJECTS:botscriptserver_obj_lib>
   test/db_user_store_test.cpp
+  test/db_config_store_test.cpp
 )
 
 target_link_libraries(botscript-server-tests gtest gtest_main bs ${Boost_LIBRARIES} websocketpp kyotocabinet rt -pthread)
