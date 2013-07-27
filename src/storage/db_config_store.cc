@@ -32,7 +32,7 @@ void db_config_store::io_service(boost::asio::io_service* io_service) {
 void db_config_store::add(std::shared_ptr<botscript::bot> bot, empty_cb cb) {
   io_service_->post([=]() {
     const std::string& identifier = bot->identifier();
-    bs::config config(bot->configuration(true));
+    const bs::config& config = bot->configuration();
 
     bots_[identifier]["username"] = config.username();
     bots_[identifier]["password"] = config.password();
