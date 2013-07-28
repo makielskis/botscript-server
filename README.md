@@ -139,3 +139,7 @@ In `src/net/makielski/botscript`:
 In `src` javac BotscriptServer.java`:  
 
     javah -jni net.makielski.botscript.BotscriptServer
+
+
+# MinGW command to compile boost
+    NO_BZIP2=1 ./b2 --with-system --with-thread --with-regex --with-iostreams --with-filesystem --with-chrono --with-date_time --with-random variant=release link=static threading=multi runtime-link=static --toolset=gcc-mingw64 define=BOOST_USE_WINDOWS_H threadapi=win32 target-os=windows -s ZLIB_SOURCE=[PATH_TO_ZLIB]
