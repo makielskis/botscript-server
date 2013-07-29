@@ -9,6 +9,8 @@
 
 #define TRAY_WINDOW_MESSAGE (WM_USER+100)
 
+using namespace std;
+
 namespace
 {
 	// A map that never holds allocated memory when it is empty. This map will be created with placement new as a static variable,
