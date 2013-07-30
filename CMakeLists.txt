@@ -68,6 +68,10 @@ if(MSVC)
   # VS2012 doesn't support correctly the tuples yet
   add_definitions(/D _VARIADIC_MAX=10)
   add_definitions(/D _WIN32_WINNT=0x0501)
+elseif(MINGW)
+  
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -s")
+  add_definitions("-DBOOST_THREAD_USE_LIB")
 else()
   # GCC -> use c++11 standard.
   add_definitions("-std=c++11 -fPIC")
@@ -112,6 +116,8 @@ add_library(botscript-server SHARED
 )
 if(MSVC)
   target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp kyotocabinet)
+elseif(MINGW)
+  target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp kyotocabinet -Wl,-Bstatic z ws2_32 mswsock -static-libgcc -static-libstdc++)
 else()
   target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp kyotocabinet rt -pthread)
 endif()
@@ -126,6 +132,8 @@ add_executable(botscript-server-exe
 )
 if(MSVC)
   target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} websocketpp kyotocabinet)
+elseif(MINGW)
+  target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} websocketpp kyotocabinet -Wl,-Bstatic z ws2_32 mswsock -static-libgcc -static-libstdc++)
 else()
   target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} websocketpp kyotocabinet rt -pthread)
 endif()
@@ -134,16 +142,20 @@ endif()
 ################################
 # GUI executable
 ################################
-if(MSVC)
+if(MSVC OR MINGW)
   add_executable(botscript-server-gui
     WIN32
     $<TARGET_OBJECTS:botscriptserver_obj_lib>
     src/win32gui/guicon.cc
     src/win32gui/TrayIcon.cpp
     src/win32gui/main.cc
-    src/win32gui/res/Resource.rc
+    src/win32gui/res/bot.rc
   )
-  target_link_libraries(botscript-server-gui bs ${Boost_LIBRARIES} websocketpp kyotocabinet)
+  if(MSVC)
+    target_link_libraries(botscript-server-gui bs ${Boost_LIBRARIES} websocketpp kyotocabinet)
+  elseif(MINGW)
+    target_link_libraries(botscript-server-gui bs ${Boost_LIBRARIES} websocketpp kyotocabinet -Wl,-Bstatic z ws2_32 mswsock -static-libgcc -static-libstdc++)
+  endif()
 endif()
 
 
