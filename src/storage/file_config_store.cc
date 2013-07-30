@@ -2,9 +2,10 @@
 // Licensed under the MIT license
 // https://raw.github.com/makielski/botscript/master/COPYING
 
-#include <cstdio>
+#include <cerrno>
 #include <iostream>
 #include <fstream>
+#include <system_error>
 
 #include <boost/filesystem.hpp>
 
@@ -35,9 +36,9 @@ void file_config_store::add(std::shared_ptr<bs::bot> bot, empty_cb cb) {
       file.exceptions(std::ios_base::failbit);
       file.open(config_dir_ + "/" + bot->identifier() + ".json", std::ios::out);
       file << bot->configuration(true);
-      return cb(error_indicator());
+      return cb(boost::system::error_code());
     } catch(const std::ios_base::failure& e) {
-      return cb(error_indicator(e));
+      return cb(boost::system::error_code(EIO, boost::system::system_category()));
     }
   });
 };
@@ -46,9 +47,9 @@ void file_config_store::remove(const std::string& identifier, empty_cb cb) {
   io_service_->post([this, identifier, cb]() {
     try {
       boost::filesystem::remove(config_dir_ + "/" + identifier + ".json");
-      return cb(error_indicator());
+      return cb(boost::system::error_code());
     } catch(const boost::filesystem::filesystem_error& e) {
-      return cb(error_indicator(e));
+      return cb(boost::system::error_code(EIO, boost::system::system_category()));
     }
   });
 };
@@ -61,9 +62,9 @@ void file_config_store::get(const std::string& identifier,
       file.exceptions(std::ios_base::failbit);
       std::stringstream buf;
       buf << file.rdbuf();
-      return cb(buf.str(), error_indicator());
+      return cb(buf.str(), boost::system::error_code());
     } catch (const std::ios_base::failure& e) {
-      return cb("", error_indicator(e));
+      return cb("", boost::system::error_code(EIO, boost::system::system_category()));
     }
   });
 };
@@ -73,7 +74,7 @@ void file_config_store::update_attribute(std::shared_ptr<bs::bot> bot,
                                          const std::string& key,
                                          const std::string& new_value,
                                          empty_cb cb) {
-  add(bot, [cb](error_indicator e) { return cb(e); });
+  add(bot, [cb](boost::system::error_code e) { return cb(e); });
 };
 
 std::vector<std::string> file_config_store::get_all() {

@@ -5,6 +5,7 @@
 #include "db_config_store.h"
 
 #include <string>
+#include <system_error>
 
 #include "bot.h"
 #include "config.h"
@@ -46,21 +47,21 @@ void db_config_store::add(std::shared_ptr<botscript::bot> bot, empty_cb cb) {
       }
     }
 
-    return cb(error_indicator());
+    return cb(boost::system::error_code());
   });
 };
 
 void db_config_store::remove(const std::string& identifier, empty_cb cb) {
   io_service_->post([=]() {
     db_.remove_prefix({DB_KEY_PREFIX, identifier});
-    return cb(error_indicator());
+    return cb(boost::system::error_code());
   });
 };
 
 void db_config_store::get(const std::string& identifier,
                           cb<std::string>::type cb) {
   io_service_->post([=]() {
-    return cb(get_sync(identifier), error_indicator());
+    return cb(get_sync(identifier), boost::system::error_code());
   });
 };
 
@@ -93,7 +94,7 @@ void db_config_store::update_attribute(std::shared_ptr<botscript::bot> bot,
                                        empty_cb cb) {
   io_service_->post([=]() {
     bots_[bot->identifier()]["module"][module][key] = new_value;
-    return cb(error_indicator());
+    return cb(boost::system::error_code());
   });
 };
 
