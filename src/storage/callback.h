@@ -5,19 +5,18 @@
 #ifndef CALLBACK_H_
 #define CALLBACK_H_
 
+#include "boost/system/error_code.hpp"
+
 namespace botscript_server {
 
-/// Error indicator: contains an exception if the op. was not successful.
-typedef boost::optional<std::exception> error_indicator;
-
 /// Callback function for asynchronous operations without return value.
-typedef std::function<void (error_indicator)> empty_cb;
+typedef std::function<void (boost::system::error_code ec)> empty_cb;
 
 /// Callback function for asynchronous operations with return values.
 template <class ReturnType>
 struct cb {
   /// Callback function used to pass returnvalues/errors asynchronously.
-  typedef std::function<void (ReturnType, error_indicator)> type;
+  typedef std::function<void (ReturnType, boost::system::error_code)> type;
 };
 
 }  // namespace botscript_server
