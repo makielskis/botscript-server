@@ -1,0 +1,18 @@
+// Copyright (c) 2013, makielski.net
+// Licensed under the MIT license
+// https://raw.github.com/makielski/botscript/master/COPYING
+
+#include "./create_bot_msg.h"
+
+namespace botscript_server {
+
+create_bot_msg::create_bot_msg(const rapidjson::Document& doc)
+    : user_msg(doc),
+      config_(doc["arguments"]["config"].GetString()) {
+}
+
+const std::string& create_bot_msg::config() const {
+  return config_;
+}
+
+}  // namespace botscript_server

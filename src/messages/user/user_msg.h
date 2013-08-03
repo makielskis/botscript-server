@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "./rapidjson_with_exception.h"
+#include "../rapidjson_with_exception.h"
 
 namespace botscript_server {
 
@@ -33,9 +33,7 @@ class user_msg {
   explicit user_msg(const rapidjson::Document& doc);
 
   /// \return the session id
-  const std::string& sid() const {
-    return sid_;
-  };
+  const std::string& sid() const;
 
  private:
   std::string sid_;

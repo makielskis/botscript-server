@@ -9,7 +9,7 @@
 
 #include "./user_msg.h"
 
-#include "../rapidjson_with_exception.h"
+#include "../../rapidjson_with_exception.h"
 
 namespace botscript_server {
 
