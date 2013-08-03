@@ -2,8 +2,8 @@
 // Licensed under the MIT license
 // https://raw.github.com/makielski/botscript/master/COPYING
 
-#ifndef BOTSCRIPT_SERVER_MESSAGES_ACCOUNT_LOGIN_PASSWORD_LOGIN_MSG_
-#define BOTSCRIPT_SERVER_MESSAGES_ACCOUNT_LOGIN_PASSWORD_LOGIN_MSG_
+#ifndef BOTSCRIPT_SERVER_MESSAGES_USER_USER_MSG_
+#define BOTSCRIPT_SERVER_MESSAGES_USER_USER_MSG_
 
 namespace botscript_server {
 
@@ -36,3 +36,7 @@ class user_msg {
  private:
   std::string sid_;
 };
+
+}  // namespace botscript_server
+
+#endif   // BOTSCRIPT_SERVER_MESSAGES_USER_USER_MSG_
