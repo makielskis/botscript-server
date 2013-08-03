@@ -5,6 +5,10 @@
 #ifndef BOTSCRIPT_SERVER_MESSAGES_USER_USER_MSG_
 #define BOTSCRIPT_SERVER_MESSAGES_USER_USER_MSG_
 
+#include <string>
+
+#include "./rapidjson_with_exception.h"
+
 namespace botscript_server {
 
 /// This class is used in different cases:
