@@ -13,7 +13,9 @@
 #include "boost/random/uniform_int_distribution.hpp"
 #include "boost/algorithm/string/split.hpp"
 
-#include "md5/md5.hpp"
+#include "websocketpp/common/md5.hpp"
+
+#include "../error.h"
 
 #define SESSION_DURATION 604800
 
@@ -40,12 +42,12 @@ void db_user_store::add_user(const std::string& username,
     if (!users_[username]["password"].exists()) {
       std::string sid = make_session(username);
 
-      users_[username]["password"] = websocketpp::md5_hash_hex(password);
+      users_[username]["password"] = websocketpp::md5::md5_hash_hex(password);
       users_[username]["email"] = email;
 
-      return cb(sid, error_indicator());
+      return cb(sid, boost::system::error_code());
     } else {
-      return cb("", error_indicator(std::runtime_error("user already exists")));
+      return cb("", error::username_already_taken);
     }
   });
 }
@@ -55,14 +57,14 @@ void db_user_store::remove_user(const std::string& session_id,
                                 empty_cb cb) {
   io_service_->post([=]() {
     if (!check_session(session_id)) {
-      return cb(error_indicator(std::runtime_error("user not logged in")));
+      return cb(error::session_id_not_available);
     } else {
       const auto it = sid_user_.find(session_id);
       if (it != sid_user_.cend()) {
         const std::string& username = it->second;
         entry user = users_[username];
         if (users_[username]["password"].exists()) {
-          if (websocketpp::md5_hash_hex(password) == user["password"].val()) {
+          if (websocketpp::md5::md5_hash_hex(password) == user["password"].val()) {
             user["password"].remove();
             user["email"].remove();
             user["bots"].remove();
@@ -71,16 +73,16 @@ void db_user_store::remove_user(const std::string& session_id,
             sid_expire_.erase(session_id);
             sid_user_.erase(it);
 
-            return cb(error_indicator());
+            return cb(boost::system::error_code());
           } else {
-            return cb(error_indicator(std::runtime_error("wrong password")));
+            return cb(error::password_wrong);
           }
         } else {
           // This should not happen
-          return cb(error_indicator(std::runtime_error("user doesn't exist")));
+          return cb(error::user_not_found);
         }
       } else {
-        return cb(error_indicator(std::runtime_error("invalid session")));
+        return cb(error::session_id_not_available);
       }
     }
   });
@@ -92,14 +94,14 @@ void db_user_store::login(const std::string& username,
   io_service_->post([=]() {
     if (users_[username]["password"].exists()) {
       std::string db_pw = users_[username]["password"].val();
-      if (websocketpp::md5_hash_hex(password) == db_pw) {
+      if (websocketpp::md5::md5_hash_hex(password) == db_pw) {
         std::string sid = make_session(username);
-        return cb(sid, error_indicator());
+        return cb(sid, boost::system::error_code());
       } else {
-        return cb("", error_indicator(std::runtime_error("wrong password")));
+        return cb("", error::password_wrong);
       }
     } else {
-      return cb("", error_indicator(std::runtime_error("user doesn't exist")));
+      return cb("", error::user_not_found);
     }
   });
 }
@@ -111,9 +113,9 @@ void db_user_store::logout(const std::string& session_id, empty_cb cb) {
     user_sid_.erase(username);
     sid_expire_.erase(session_id);
     sid_user_.erase(it);
-    return cb(error_indicator());
+    return cb(boost::system::error_code());
   } else {
-    return cb(error_indicator(std::runtime_error("session not in map")));
+    return cb(error::session_id_not_available);
   }
 }
 
@@ -123,21 +125,21 @@ void db_user_store::set_password(const std::string& session_id,
                                  empty_cb cb) {
   io_service_->post([=]() {
     if (!check_session(session_id)) {
-      return cb(error_indicator(std::runtime_error("user not logged in")));
+      return cb(error::session_id_not_available);
     } else {
       const auto it = sid_user_.find(session_id);
       if (it != sid_user_.cend()) {
         const std::string& username = it->second;
         entry password = users_[username]["password"];
-        if (websocketpp::md5_hash_hex(old_password) == password.val()) {
-          password = websocketpp::md5_hash_hex(new_password);
-          return cb(error_indicator());
+        if (websocketpp::md5::md5_hash_hex(old_password) == password.val()) {
+          password = websocketpp::md5::md5_hash_hex(new_password);
+          return cb(boost::system::error_code());
         } else {
-          return cb(error_indicator(std::runtime_error("wrong password")));
+          return cb(error::password_wrong);
         }
       } else {
         // This should not happen
-        return cb(error_indicator(std::runtime_error("user doesn't exist")));
+        return cb(error::user_not_found);
       }
     }
   });
@@ -147,16 +149,15 @@ void db_user_store::get_email(const std::string& session_id,
                               cb<std::string>::type cb) {
   io_service_->post([=]() {
     if (!check_session(session_id)) {
-      return cb("", error_indicator(std::runtime_error("user not logged in")));
+      return cb("", error::session_id_not_available);
     } else {
       const auto it = sid_user_.find(session_id);
       if (it != sid_user_.cend()) {
         const std::string& username = it->second;
-        return cb(users_[username]["email"].val(), error_indicator());
+        return cb(users_[username]["email"].val(), boost::system::error_code());
       } else {
         // This should not happen
-        return cb("",
-                  error_indicator(std::runtime_error("user doesn't exist")));
+        return cb("", error::user_not_found);
       }
     }
   });
@@ -168,21 +169,21 @@ void db_user_store::set_email(const std::string& session_id,
                               empty_cb cb) {
   io_service_->post([=]() {
     if (!check_session(session_id)) {
-      return cb(error_indicator(std::runtime_error("user not logged in")));
+      return cb(error::session_id_not_available);
     } else {
       const auto it = sid_user_.find(session_id);
       if (it != sid_user_.cend()) {
         const std::string& username = it->second;
         std::string db_pw = users_[username]["password"].val();
-        if (websocketpp::md5_hash_hex(password) == db_pw) {
+        if (websocketpp::md5::md5_hash_hex(password) == db_pw) {
           users_[username]["email"] = email;
-          return cb(error_indicator());
+          return cb(boost::system::error_code());
         } else {
-          return cb(error_indicator(std::runtime_error("wrong password")));
+          return cb(error::password_wrong);
         }
       } else {
         // This should not happen
-        return cb(error_indicator(std::runtime_error("user doesn't exist")));
+        return cb(error::user_not_found);
       }
     }
   });
@@ -193,7 +194,7 @@ void db_user_store::get_bots(const std::string& session_id,
   io_service_->post([=]() {
     if (!check_session(session_id)) {
       return cb(std::vector<std::string>(),
-                error_indicator(std::runtime_error("user not logged in")));
+                error::session_id_not_available);
     } else {
       const auto it = sid_user_.find(session_id);
       if (it != sid_user_.cend()) {
@@ -201,17 +202,16 @@ void db_user_store::get_bots(const std::string& session_id,
         std::string bots_string = users_[username]["bots"].val();
 
         if (bots_string.empty()) {
-          return cb(std::vector<std::string>(), error_indicator());
+          return cb(std::vector<std::string>(), boost::system::error_code());
         } else {
           std::vector<std::string> bots;
           boost::split(bots, bots_string, boost::is_any_of(","));
 
-          return cb(bots, error_indicator());
+          return cb(bots, boost::system::error_code());
         }
       } else {
         // This should not happen
-        return cb(std::vector<std::string>(),
-                  error_indicator(std::runtime_error("user doesn't exist")));
+        return cb(std::vector<std::string>(), error::user_not_found);
       }
     }
   });
@@ -222,7 +222,7 @@ void db_user_store::add_bot(const std::string& session_id,
                             empty_cb cb) {
   io_service_->post([=]() {
     if (!check_session(session_id)) {
-      return cb(error_indicator(std::runtime_error("user not logged in")));
+      return cb(error::session_id_not_available);
     } else {
       const auto it = sid_user_.find(session_id);
       if (it != sid_user_.cend()) {
@@ -231,7 +231,7 @@ void db_user_store::add_bot(const std::string& session_id,
         std::string bots = users_[username]["bots"].val();
 
         if (bots.find(bot_identifier) != std::string::npos) {
-          return cb(error_indicator(std::runtime_error("bot already exists")));
+          return cb(error::bot_already_exists);
         } else {
           std::stringstream ss;
           ss << bots;
@@ -240,11 +240,11 @@ void db_user_store::add_bot(const std::string& session_id,
           }
           ss << bot_identifier;
           db_bots = ss.str();
-          return cb(error_indicator());
+          return cb(boost::system::error_code());
         }
       } else {
         // This should not happen
-        return cb(error_indicator(std::runtime_error("user doesn't exist")));
+        return cb(error::user_not_found);
       }
     }
   });
@@ -255,7 +255,7 @@ void db_user_store::remove_bot(const std::string& session_id,
                                empty_cb cb) {
   io_service_->post([=]() {
     if (!check_session(session_id)) {
-      return cb(error_indicator(std::runtime_error("user not logged in")));
+      return cb(error::session_id_not_available);
     } else {
       const auto it = sid_user_.find(session_id);
       if (it != sid_user_.cend()) {
@@ -272,13 +272,13 @@ void db_user_store::remove_bot(const std::string& session_id,
             bots.erase(pos - 1, identifier.length() + 1);
           }
           db_bots = bots;
-          return cb(error_indicator());
+          return cb(boost::system::error_code());
         } else {
-          return cb(error_indicator(std::runtime_error("bot isn't in list")));
+          return cb(error::bot_not_found);
         }
       } else {
         // This should not happen
-        return cb(error_indicator(std::runtime_error("user doesn't exist")));
+        return cb(error::user_not_found);
       }
     }
   });
