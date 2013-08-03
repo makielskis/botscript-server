@@ -101,24 +101,8 @@ add_library(botscriptserver_obj_lib OBJECT
   src/storage/db_user_store.cc
   src/storage/file_config_store.cc
   src/storage/db_config_store.cc
-  src/message.cc
+  src/messages/account/login/password_login_msg.cc
 )
-
-
-################################
-# Shared Library
-################################
-add_library(botscript-server SHARED
-  $<TARGET_OBJECTS:botscriptserver_obj_lib>
-  src/jni/net_makielski_botscript_BotscriptServer.cpp
-)
-if(MSVC)
-  target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp kyotocabinet)
-elseif(MINGW)
-  target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp kyotocabinet -Wl,-Bstatic z ws2_32 mswsock -static-libgcc -static-libstdc++)
-else()
-  target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp kyotocabinet rt -pthread)
-endif()
 
 
 ################################
@@ -172,6 +156,7 @@ add_executable(botscript-server-tests
   test/db_user_store_test.cpp
   test/db_config_store_test.cpp
   test/error_test.cpp
+  test/rapid_json_exception_test.cpp
 )
 
 target_link_libraries(botscript-server-tests gtest gtest_main bs ${Boost_LIBRARIES} kyotocabinet rt -pthread)

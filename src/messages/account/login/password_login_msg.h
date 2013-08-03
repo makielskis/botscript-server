@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "rapidjson/document.h"
+#include "../../rapidjson_with_exception.h"
 
 namespace botscript_server {
 
@@ -15,8 +15,11 @@ namespace botscript_server {
 /// "Authentificate me with with this username+password"
 ///
 /// {
-///   'type': 'login',
-///   'action': 'password_login',
+///   'type': [
+///     'account',
+///     'login',
+///     'password'
+///   ],
 ///   'arguments': {
 ///     'username': [String],
 ///     'password': [String]
@@ -35,13 +38,6 @@ class password_login_msg {
 
   /// \return the login password
   const std::string& password() const;
-
-  /// Checks whether the message is a password login message.
-  /// We assume that the general message format was already checked.
-  ///
-  /// \param doc the document to check
-  /// \return whether the documents is an auth login message
-  static bool fits(const rapidjson::Document& doc);
 
  private:
   std::string username_;

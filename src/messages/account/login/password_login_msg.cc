@@ -2,7 +2,7 @@
 // Licensed under the MIT license
 // https://raw.github.com/makielski/botscript/master/COPYING
 
-#include "./password_login.h"
+#include "./password_login_msg.h"
 
 namespace botscript_server {
 
@@ -15,17 +15,8 @@ const std::string& password_login_msg::username() const {
   return username_;
 }
 
-const std::string& password_login_msg::password() {
+const std::string& password_login_msg::password() const {
   return password_;
-}
-
-bool password_login_msg::fits(const rapidjson::Document& doc) {
-  return std::string(doc["type"].GetString()) == "login"
-         && std::string(doc["action"].GetString()) == "password"
-         && doc["arguments"].HasMember("username")
-         && doc["arguments"]["username"].IsString()
-         && doc["arguments"].HasMember("password")
-         && doc["arguments"]["password"].IsString();
 }
 
 }  // namespace botscript_server
