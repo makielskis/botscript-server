@@ -104,6 +104,9 @@ add_library(botscriptserver_obj_lib OBJECT
   src/messages/user/bot/create_bot_msg.cc
   src/messages/user/bot/delete_bot_msg.cc
   src/messages/user/bot/execute_bot_msg.cc
+  src/messages/user/update/delete_update_msg.cc
+  src/messages/user/update/email_update_msg.cc
+  src/messages/user/update/password_update_msg.cc
 )
 
 

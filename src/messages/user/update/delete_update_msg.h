@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "./user_msg.h"
+#include "../user_msg.h"
 
 #include "../../rapidjson_with_exception.h"
 
@@ -23,14 +23,14 @@ namespace botscript_server {
 ///     'current_pw': [String],
 ///   }
 /// }
-class password_update_msg : public user_msg {
+class delete_update_msg : public user_msg {
  public:
-  explicit password_update_msg(const rapidjson::Document& doc);
+  explicit delete_update_msg(const rapidjson::Document& doc);
 
   const std::string& current_pw() const;
 
  private:
-  std::string current_pw;
+  std::string current_pw_;
 };
 
 
