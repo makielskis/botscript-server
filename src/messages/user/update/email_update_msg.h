@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "./user_msg.h"
+#include "../user_msg.h"
 
 #include "../../rapidjson_with_exception.h"
 
@@ -32,8 +32,8 @@ class email_update_msg : public user_msg {
   const std::string& new_email() const;
 
  private:
-  std::string current_pw;
-  std::string new_email;
+  std::string current_pw_;
+  std::string new_email_;
 };
 
 

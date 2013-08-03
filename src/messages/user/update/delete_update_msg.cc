@@ -8,8 +8,11 @@ namespace botscript_server {
 
 delete_update_msg::delete_update_msg(const rapidjson::Document& doc)
     : user_msg(doc),
-      current_pw(doc["arguments"]["current_pw"].GetString()),
+      current_pw_(doc["arguments"]["current_pw"].GetString()) {
 }
 
+const std::string& delete_update_msg::current_pw() const {
+  return current_pw_;
+}
 
 }  // namespace botscript_server
