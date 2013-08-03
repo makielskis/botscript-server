@@ -2,12 +2,12 @@
 // Licensed under the MIT license
 // https://raw.github.com/makielski/botscript/master/COPYING
 
-#ifndef BOTSCRIPT_SERVER_MESSAGES_ACCOUNT_LOGIN_PASSWORD_LOGIN_MSG_
-#define BOTSCRIPT_SERVER_MESSAGES_ACCOUNT_LOGIN_PASSWORD_LOGIN_MSG_
+#ifndef BOTSCRIPT_SERVER_MESSAGES_LOGIN_MSG_
+#define BOTSCRIPT_SERVER_MESSAGES_LOGIN_MSG_
 
 #include <string>
 
-#include "../../rapidjson_with_exception.h"
+#include "./rapidjson_with_exception.h"
 
 namespace botscript_server {
 
@@ -15,11 +15,7 @@ namespace botscript_server {
 /// "Authentificate me with with this username+password"
 ///
 /// {
-///   'type': [
-///     'account',
-///     'login',
-///     'password'
-///   ],
+///   'type': [ 'login' ],
 ///   'arguments': {
 ///     'username': [String],
 ///     'password': [String]
@@ -29,9 +25,9 @@ namespace botscript_server {
 /// Response:
 /// If login was successful: success message + session + packages + botlist
 /// If login failed: failure message
-class password_login_msg {
+class login_msg {
  public:
-  explicit password_login_msg(const rapidjson::Document& doc);
+  explicit login_msg(const rapidjson::Document& doc);
 
   /// \return the login username
   const std::string& username() const;
@@ -46,4 +42,4 @@ class password_login_msg {
 
 }  // namespace botscript_server
 
-#endif  // BOTSCRIPT_SERVER_MESSAGES_ACCOUNT_LOGIN_PASSWORD_LOGIN_MSG_
+#endif  // BOTSCRIPT_SERVER_MESSAGES_LOGIN_MSG_
