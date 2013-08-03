@@ -26,7 +26,6 @@ project(botscript-server)
 # Dependencies
 ################################
 add_subdirectory(external_lib/botscript)
-#add_subdirectory(external_lib/websocketpp)
 add_subdirectory(external_lib/kyotocabinet-1.2.76)
 
 
@@ -69,7 +68,6 @@ if(MSVC)
   add_definitions(/D _VARIADIC_MAX=10)
   add_definitions(/D _WIN32_WINNT=0x0501)
 elseif(MINGW)
-  
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -s")
   add_definitions("-DBOOST_THREAD_USE_LIB")
 else()
@@ -101,7 +99,7 @@ add_library(botscriptserver_obj_lib OBJECT
   src/storage/db_user_store.cc
   src/storage/file_config_store.cc
   src/storage/db_config_store.cc
-  src/messages/account/login/password_login_msg.cc
+  src/messages/login_msg.cc
 )
 
 
