@@ -5,6 +5,10 @@
 #ifndef BOTSCRIPT_SERVER_MESSAGES_USER_USER_MSG_
 #define BOTSCRIPT_SERVER_MESSAGES_USER_USER_MSG_
 
+#include <string>
+
+#include "../rapidjson_with_exception.h"
+
 namespace botscript_server {
 
 /// This class is used in different cases:
@@ -29,9 +33,7 @@ class user_msg {
   explicit user_msg(const rapidjson::Document& doc);
 
   /// \return the session id
-  const std::string& sid() const {
-    return sid_;
-  };
+  const std::string& sid() const;
 
  private:
   std::string sid_;
