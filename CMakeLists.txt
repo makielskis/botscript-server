@@ -104,6 +104,7 @@ add_library(botscriptserver_obj_lib OBJECT
   src/messages/user/bot/create_bot_msg.cc
   src/messages/user/bot/delete_bot_msg.cc
   src/messages/user/bot/execute_bot_msg.cc
+  src/messages/outgoing/success_msg.cc
 )
 
 
@@ -159,6 +160,7 @@ add_executable(botscript-server-tests
   test/db_config_store_test.cpp
   test/error_test.cpp
   test/rapid_json_exception_test.cpp
+  test/outgoing_messages_test.cpp
 )
 
 target_link_libraries(botscript-server-tests gtest gtest_main bs ${Boost_LIBRARIES} kyotocabinet rt -pthread)
