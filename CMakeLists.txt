@@ -12,6 +12,11 @@
 # cd ..
 # ./build/botscript
 
+set(CMAKE_USER_MAKE_RULES_OVERRIDE
+   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/c_flag_overrides.cmake)
+set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX
+   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cxx_flag_overrides.cmake)
+
 
 cmake_minimum_required (VERSION 2.8.8)
 project(botscript-server)
@@ -28,9 +33,14 @@ add_subdirectory(external_lib/kyotocabinet-1.2.76)
 ################################
 # Boost
 ################################
+
+# Windows compile command:
+# b2 --with-system --with-thread --with-date_time --with-random --with-chrono --with-regex --with-filesystem --with-iostreams runtime-link=static link=static -s ZLIB_SOURCE=C:\zlib-1.2.8
+
 if(MSVC)
-  set(CMAKE_INCLUDE_PATH "C:/boost_1_52_0")
-  set(CMAKE_LIBRARY_PATH "C:/boost_1_52_0/stage/lib") 
+  set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} "C:/boost_1_52_0")
+  set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} "C:/boost_1_52_0/stage/lib")
+  set(Boost_USE_STATIC_RUNTIME ON)
 endif()
 
 set(Boost_USE_STATIC_LIBS ON)
@@ -41,6 +51,7 @@ find_package(Boost COMPONENTS
   filesystem
   iostreams
   regex
+  random
 REQUIRED)
 if(Boost_FOUND)
 	include_directories(${Boost_INCLUDE_DIR})
@@ -57,6 +68,10 @@ if(MSVC)
   # VS2012 doesn't support correctly the tuples yet
   add_definitions(/D _VARIADIC_MAX=10)
   add_definitions(/D _WIN32_WINNT=0x0501)
+elseif(MINGW)
+  
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -s")
+  add_definitions("-DBOOST_THREAD_USE_LIB")
 else()
   # GCC -> use c++11 standard.
   add_definitions("-std=c++11 -fPIC")
@@ -76,14 +91,16 @@ include_directories("external_lib/botscript/src")
 include_directories("external_lib/botscript/external_lib/pugixml-1.0/src")
 include_directories("external_lib/botscript/external_lib/lua-5.2.0/src")
 include_directories("external_lib/kyotocabinet-1.2.76")
-include_directories("/usr/lib/jvm/java-7-openjdk-amd64/include/")
+include_directories("/usr/lib/jvm/java-6-openjdk-amd64/include/")
 
 
 ################################
 # Object library
 ################################
 add_library(botscriptserver_obj_lib OBJECT
+  src/storage/db_user_store.cc
   src/storage/file_config_store.cc
+  src/storage/db_config_store.cc
   src/botserver_handler.cc
   src/message.cc
   src/service.cc
@@ -99,6 +116,8 @@ add_library(botscript-server SHARED
 )
 if(MSVC)
   target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp kyotocabinet)
+elseif(MINGW)
+  target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp kyotocabinet -Wl,-Bstatic z ws2_32 mswsock -static-libgcc -static-libstdc++)
 else()
   target_link_libraries(botscript-server bs ${Boost_LIBRARIES} websocketpp kyotocabinet rt -pthread)
 endif()
@@ -113,6 +132,8 @@ add_executable(botscript-server-exe
 )
 if(MSVC)
   target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} websocketpp kyotocabinet)
+elseif(MINGW)
+  target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} websocketpp kyotocabinet -Wl,-Bstatic z ws2_32 mswsock -static-libgcc -static-libstdc++)
 else()
   target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} websocketpp kyotocabinet rt -pthread)
 endif()
@@ -121,14 +142,38 @@ endif()
 ################################
 # GUI executable
 ################################
-if(MSVC)
+if(MSVC OR MINGW)
   add_executable(botscript-server-gui
     WIN32
     $<TARGET_OBJECTS:botscriptserver_obj_lib>
     src/win32gui/guicon.cc
     src/win32gui/TrayIcon.cpp
     src/win32gui/main.cc
-    src/win32gui/res/Resource.rc
+    src/win32gui/res/bot.rc
   )
-  target_link_libraries(botscript-server-gui bs ${Boost_LIBRARIES} websocketpp kyotocabinet)
+  if(MSVC)
+    target_link_libraries(botscript-server-gui bs ${Boost_LIBRARIES} websocketpp kyotocabinet)
+  elseif(MINGW)
+    target_link_libraries(botscript-server-gui bs ${Boost_LIBRARIES} websocketpp kyotocabinet -Wl,-Bstatic z ws2_32 mswsock -static-libgcc -static-libstdc++)
+  endif()
 endif()
+
+
+################################
+# Unit Tests
+################################
+if (NOT TARGET gtest)
+  add_subdirectory(test/gtest-1.6.0)
+  enable_testing()
+endif()
+
+include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+
+add_executable(botscript-server-tests
+  $<TARGET_OBJECTS:botscriptserver_obj_lib>
+  test/db_user_store_test.cpp
+  test/db_config_store_test.cpp
+)
+
+target_link_libraries(botscript-server-tests gtest gtest_main bs ${Boost_LIBRARIES} websocketpp kyotocabinet rt -pthread)
+add_test(botscript-server-tests botscript-server-tests)

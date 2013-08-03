@@ -3,7 +3,7 @@
 
 #include "TrayIcon.h"
 
-#include <thread>
+#include "boost/thread.hpp"
 
 #include "../service.h"
 
@@ -17,7 +17,7 @@ HWND g_hMainWnd = NULL;
 CTrayIcon g_TrayIcon("Makielskis Bot", true,
                      LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(101)));
 botscript_server::service s;
-std::thread t;
+boost::thread t;
 
 void on_action(CTrayIcon* pTrayIcon, UINT uMsg) {
   if (uMsg != WM_RBUTTONUP) {
@@ -102,7 +102,7 @@ int CALLBACK WinMain(
   if (!CreateMainWnd())
     return -1;
 
-  t = std::thread(([]() { s.start("127.0.0.1", "9003"); }));
+  t = boost::thread(([]() { s.start("127.0.0.1", "9003"); }));
 
   g_TrayIcon.SetListener(on_action);
   g_TrayIcon.SetVisible(true);
