@@ -22,42 +22,6 @@ class parse_exception : public std::runtime_error {
   }
 };
 
-/// Login login message:
-/// "Authentificate me with with this username+password"
-///
-/// {
-///   'type': 'login',
-///   'arguments': {
-///     'username': [String],
-///     'password': [String]
-///   }
-/// }
-class auth_login_message {
- public:
-  explicit auth_login_message(const rapidjson::Document& doc);
-
-  /// \return the login username
-  const std::string& username() const {
-    return username_;
-  }
-
-  /// \return the login password
-  const std::string& password() const {
-    return password_;
-  }
-
-  /// Checks whether the message is a auth login message.
-  /// We assume that the general message format was already checked.
-  ///
-  /// \param doc the document to check
-  /// \return whether the documents is an auth login message
-  static bool fits(const rapidjson::Document& doc);
-
- private:
-  std::string username_;
-  std::string password_;
-};
-
 /// Session login message:
 /// "Authentificate me with this session ID"
 ///
