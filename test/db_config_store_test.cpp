@@ -20,6 +20,7 @@
 using namespace std;
 using namespace botscript;
 using namespace botscript_server;
+using boost::system::error_code;
 
 class DbConfigStoreTest : public testing::Test {
  protected:
@@ -43,11 +44,11 @@ class DbConfigStoreTest : public testing::Test {
 
     testbot_->init(INPUT_CONFIG, [&store](shared_ptr<bot> bot, string init_e){
     ASSERT_EQ("", init_e);
-      store.add(bot, [&store](error_indicator add_e) {
+      store.add(bot, [&store](error_code add_e) {
         ASSERT_FALSE(add_e);
 
         vector<std::string> configs = store.get_all();
-        ASSERT_EQ(1, configs.size());
+        ASSERT_EQ(1u, configs.size());
         EXPECT_EQ(EXPECTED_CONFIG, configs.at(0));
       });
     });
@@ -66,7 +67,7 @@ class DbConfigStoreTest : public testing::Test {
 TEST_F(DbConfigStoreTest, RemoveConfig) {
   db_config_store store(DB_FILE, &io_service_);
 
-  store.remove(IDENTIFIER, [&store](error_indicator e) {
+  store.remove(IDENTIFIER, [&store](error_code e) {
     ASSERT_FALSE(e);
 
     vector<std::string> configs = store.get_all();
@@ -82,7 +83,7 @@ TEST_F(DbConfigStoreTest, RemoveConfig) {
 TEST_F(DbConfigStoreTest, GetSingleConfig) {
   db_config_store store(DB_FILE, &io_service_);
 
-  store.get(IDENTIFIER, [&store](string config, error_indicator e) {
+  store.get(IDENTIFIER, [&store](string config, error_code e) {
     ASSERT_FALSE(e);
 
     EXPECT_EQ(EXPECTED_CONFIG, config);
@@ -97,10 +98,10 @@ TEST_F(DbConfigStoreTest, GetSingleConfig) {
 TEST_F(DbConfigStoreTest, UpdateAttribute) {
   db_config_store store(DB_FILE, &io_service_);
 
-  store.update_attribute(testbot_, "crime", "crime", "testcrime", [&store](error_indicator e) {
+  store.update_attribute(testbot_, "crime", "crime", "testcrime", [&store](error_code e) {
     ASSERT_FALSE(e);
 
-    store.get(IDENTIFIER, [&store](string config, error_indicator e) {
+    store.get(IDENTIFIER, [&store](string config, error_code e) {
       ASSERT_FALSE(e);
       EXPECT_TRUE(config.find("\"crime\":\"testcrime\"") != config.npos);
     });
@@ -115,7 +116,7 @@ TEST_F(DbConfigStoreTest, UpdateAttribute) {
 TEST_F(DbConfigStoreTest, DoubleAdd) {
   db_config_store store(DB_FILE, &io_service_);
 
-  store.add(testbot_, [&store](error_indicator e) {
+  store.add(testbot_, [&store](error_code e) {
     ASSERT_FALSE(e);
 
     vector<std::string> configs = store.get_all();
@@ -132,7 +133,7 @@ TEST_F(DbConfigStoreTest, DoubleAdd) {
 TEST_F(DbConfigStoreTest, RemoveNonexisting) {
   db_config_store store(DB_FILE, &io_service_);
 
-  store.remove("not_in_db", [&store](error_indicator e) {
+  store.remove("not_in_db", [&store](error_code e) {
     ASSERT_FALSE(e);
 
     vector<std::string> configs = store.get_all();
