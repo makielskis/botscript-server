@@ -1,18 +1,3 @@
-# Compile and run release version:
-# mkdir build
-# cd build
-# cmake -DCMAKE_BUILD_TYPE=Release ..
-# cd ..
-# ./build/kyotocabinet
-
-# Compile and run debug version
-# mkdir build
-# cd build
-# cmake -DCMAKE_BUILD_TYPE=Debug ..
-# cd ..
-# ./build/kyotocabinet
-
-
 cmake_minimum_required(VERSION 2.6)
 project(kyotocabinet)
 

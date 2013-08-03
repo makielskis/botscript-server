@@ -2,8 +2,10 @@
 // Licensed under the MIT license
 // https://raw.github.com/makielski/botscript/master/COPYING
 
-#ifndef FILE_CONFIG_STORE_H
-#define FILE_CONFIG_STORE_H
+#ifndef FILE_CONFIG_STORE_H_
+#define FILE_CONFIG_STORE_H_
+
+#include "boost/asio/io_service.hpp"
 
 #include "config_store.h"
 
@@ -12,29 +14,35 @@ namespace botscript_server {
 /// File based implementation of the config_store interface.
 class file_config_store : public config_store {
  public:
-  /// Create/Open a file config store in the given path.
+  /// Create/Open a file config stored in the given path.
   ///
   /// \throws boost::filesystem_error
   /// \return all configurations in the path in a vector
-  file_config_store(const std::string& path);
+  file_config_store(const std::string& path,
+                    boost::asio::io_service* io_service);
 
-  virtual void add(const botscript::bot& bot) override;
+  /// \param io_service  the io_service to set
+  void io_service(boost::asio::io_service* io_service);
 
-  virtual void remove(const std::string& identifier) override;
-
-  virtual std::string get(const std::string& identifier) override;
-
+  virtual void add(std::shared_ptr<botscript::bot> bot, empty_cb cb) override;
+  virtual void remove(const std::string& identifier, empty_cb cb) override;
+  virtual void get(const std::string& identifier,
+                   cb<std::string>::type cb) override;
   virtual std::vector<std::string> get_all() override;
-
-  virtual void update_attribute(const botscript::bot& bot,
+  virtual void update_attribute(std::shared_ptr<botscript::bot> bot,
                                 const std::string& module,
                                 const std::string& key,
-                                const std::string& new_value) override;
+                                const std::string& new_value,
+                                empty_cb callback) override;
 
  private:
+  /// Path to the configuration directory.
   const std::string config_dir_;
+
+  /// Service managing I/O operations.
+  boost::asio::io_service* io_service_;
 };
 
 }  // namespace botscript_server
 
-#endif  // FILE_CONFIG_STORE_H
+#endif  // FILE_CONFIG_STORE_H_

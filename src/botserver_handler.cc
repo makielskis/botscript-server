@@ -47,6 +47,13 @@ void bot_server_handler::io_service(boost::asio::io_service* io_service) {
         bots_[b->identifier()] = b;
       } else {
         b->shutdown();
+        auto remove_cb = [b](error_indicator e) {
+          if (e) {
+            std::cout << "ERROR: " << b->identifier() << " couldn't be loaded"
+                      << " and config could not be removed\n";
+          }
+        };
+        config_store_.remove(b->identifier(), remove_cb);
       }
     });
   }
@@ -92,9 +99,21 @@ void bot_server_handler::on_message(websocketpp::server::connection_ptr con,
                              std::placeholders::_3);
     b->init(m.config(), [this](std::shared_ptr<bs::bot> b, std::string err){
       if (err.empty()) {
-        bots_[b->identifier()] = b;
-        config_store_.add(*b);
-        send_bots();
+        config_store_.add(b, [this, b](error_indicator e) {
+          if (!e) {
+            bots_[b->identifier()] = b;
+            send_bots();
+          } else {
+            b->shutdown();
+            send("{\
+                    \"type\": \"account\",\
+                    \"arguments\": {\
+                      \"key\": \"create_bot\",\
+                      \"success\": \"storage error\"\
+                    }\
+                  }");
+          }
+        });
       } else {
         b->shutdown();
         send("{\
@@ -115,18 +134,25 @@ void bot_server_handler::on_message(websocketpp::server::connection_ptr con,
     }
     it->second->shutdown();
     bots_.erase(it);
-    config_store_.remove(m.identifier());
+
+    auto cb = [m] (error_indicator e) {
+      if (e) {
+        std::cout << "couldn't delete config for " << m.identifier() << "\n";
+      }
+    };
+    config_store_.remove(m.identifier(), cb);
+
     send_bots();
   } else if (execute_message::fits(doc)) {
     execute_message m = execute_message(doc);
     const auto it = bots_.find(m.identifier());
     if (it == bots_.end()) {
-      std::cout << "bot \"" << m.identifier() << "\" not found\n";
+      std::cout << "ERROR: bot \"" << m.identifier() << "\" not found\n";
       return;
     }
     it->second->execute(m.command(), m.argument());
   } else {
-    std::cout << "could not parse message \"" << msg->get_payload() << "\"\n";
+    std::cout << "ERROR: couldn't parse \"" << msg->get_payload() << "\"\n";
     return;
   }
 }
@@ -147,16 +173,23 @@ void bot_server_handler::callback(std::string i, std::string k, std::string v) {
       const std::string module(k.substr(0, seperator_pos));
       const std::string option(k.substr(seperator_pos + 1, k.length()));
 
-      config_store_.update_attribute(*(it->second), module, option, v);
+      auto cb = [i] (error_indicator e) {
+        if (e) {
+          std::cout << "couldn't update config for " << i << "\n";
+        }
+      };
+      config_store_.update_attribute(it->second, module, option, v, cb);
     }
   }
 
+  // Remove trailing new line and send update to the client.
+  v = (k == "log" ? v.substr(0, v.length() - 1) : v);
   send("{\
           \"type\": \"update\",\
           \"arguments\": {\
             \"identifier\": \"" + i + "\",\
             \"key\": \"" + k + "\",\
-            \"value\": \"" + (k == "log" ? v.substr(0, v.length() - 1) : v) + "\"\
+            \"value\": \"" + v + "\"\
           }\
         }");
 }
