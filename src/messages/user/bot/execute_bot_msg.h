@@ -5,9 +5,11 @@
 #ifndef BOTSCRIPT_SERVER_MESSAGES_USER_BOT_EXECUTE_BOT_
 #define BOTSCRIPT_SERVER_MESSAGES_USER_BOT_EXECUTE_BOT_
 
+#include <vector>
 #include <string>
 
-#include "../../rapidjson_with_exception.h"
+#include "rapidjson_with_exception.h"
+
 #include "../user_msg.h"
 
 namespace botscript_server {
@@ -26,13 +28,13 @@ namespace botscript_server {
 ///     }
 ///   }
 /// }
-class execute_message : public user_msg {
+class execute_bot_msg : public user_msg {
  public:
   /// Reads the identifier, command and argument from the given message.
   ///
   /// param msg the execute message
   /// \throws parse_exception on parser errors (invalid message format)
-  explicit execute_message(const rapidjson::Document& doc);
+  explicit execute_bot_msg(const rapidjson::Document& doc);
 
   /// \return the identifier of the bot that should execute the command
   const std::string& identifier() const;
@@ -42,6 +44,8 @@ class execute_message : public user_msg {
 
   /// \return the argument to execute the command with
   const std::string& argument() const;
+
+  virtual std::vector<std::string> type() const override;
 
  private:
   std::string identifier_;

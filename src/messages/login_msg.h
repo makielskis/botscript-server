@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "./incoming_msg.h"
 #include "./rapidjson_with_exception.h"
 
 namespace botscript_server {
@@ -25,7 +26,7 @@ namespace botscript_server {
 /// Response:
 /// If login was successful: success message + session + packages + botlist
 /// If login failed: failure message
-class login_msg {
+class login_msg : public incoming_msg {
  public:
   explicit login_msg(const rapidjson::Document& doc);
 
@@ -34,6 +35,8 @@ class login_msg {
 
   /// \return the login password
   const std::string& password() const;
+
+  virtual std::vector<std::string> type() const override;
 
  private:
   std::string username_;

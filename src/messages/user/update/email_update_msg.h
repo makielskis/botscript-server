@@ -5,11 +5,12 @@
 #ifndef BOTSCRIPT_SERVER_MESSAGES_USER_UPDATE_EMAIL_UPDATE_MSG_
 #define BOTSCRIPT_SERVER_MESSAGES_USER_UPDATE_EMAIL_UPDATE_MSG_
 
+#include <vector>
 #include <string>
 
-#include "../user_msg.h"
+#include "rapidjson_with_exception.h"
 
-#include "../../rapidjson_with_exception.h"
+#include "../user_msg.h"
 
 namespace botscript_server {
 
@@ -30,6 +31,8 @@ class email_update_msg : public user_msg {
 
   const std::string& current_pw() const;
   const std::string& new_email() const;
+
+  virtual std::vector<std::string> type() const override;
 
  private:
   std::string current_pw_;

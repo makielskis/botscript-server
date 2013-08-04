@@ -19,4 +19,8 @@ const std::string& login_msg::password() const {
   return password_;
 }
 
+std::vector<std::string> login_msg::type() const {
+  return { "login" };
+}
+
 }  // namespace botscript_server

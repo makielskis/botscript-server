@@ -5,9 +5,12 @@
 #ifndef BOTSCRIPT_SERVER_MESSAGES_USER_USER_MSG_
 #define BOTSCRIPT_SERVER_MESSAGES_USER_USER_MSG_
 
+#include <vector>
 #include <string>
 
-#include "../rapidjson_with_exception.h"
+#include "rapidjson_with_exception.h"
+
+#include "../incoming_msg.h"
 
 namespace botscript_server {
 
@@ -24,7 +27,7 @@ namespace botscript_server {
 ///     'sid': [String]
 ///   }
 /// }
-class user_msg {
+class user_msg : public incoming_msg {
  public:
   /// Reads the session id from a sid login message.
   ///
@@ -34,6 +37,8 @@ class user_msg {
 
   /// \return the session id
   const std::string& sid() const;
+
+  virtual std::vector<std::string> type() const override;
 
  private:
   std::string sid_;

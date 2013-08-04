@@ -15,4 +15,8 @@ const std::string& delete_bot_msg::identifier() const {
   return identifier_;
 }
 
+std::vector<std::string> delete_bot_msg::type() const {
+  return { "user", "bot", "delete" };
+}
+
 }  // namespace botscript_server

@@ -20,4 +20,8 @@ const std::string& email_update_msg::new_email() const {
   return new_email_;
 }
 
+std::vector<std::string> email_update_msg::type() const {
+  return { "user", "update", "email" };
+}
+
 }  // namespace botscript_server

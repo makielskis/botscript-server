@@ -20,4 +20,8 @@ const std::string& password_update_msg::new_pw() const {
   return new_pw_;
 }
 
+std::vector<std::string> password_update_msg::type() const {
+  return { "user", "update", "password" };
+}
+
 }  // namespace botscript_server

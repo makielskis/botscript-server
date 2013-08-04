@@ -5,9 +5,11 @@
 #ifndef BOTSCRIPT_SERVER_MESSAGES_USER_BOT_CREATE_BOT_
 #define BOTSCRIPT_SERVER_MESSAGES_USER_BOT_CREATE_BOT_
 
+#include <vector>
 #include <string>
 
-#include "../../rapidjson_with_exception.h"
+#include "rapidjson_with_exception.h"
+
 #include "../user_msg.h"
 
 namespace botscript_server {
@@ -32,6 +34,8 @@ class create_bot_msg : public user_msg {
 
   /// \return the bot configuration
   const std::string& config() const;
+
+  virtual std::vector<std::string> type() const override;
 
  private:
   std::string config_;

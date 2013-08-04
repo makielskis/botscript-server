@@ -18,7 +18,7 @@ namespace botscript_server {
 /// {
 ///   'type': 'success',
 ///   'arguments': {
-///     request: [Array of Strings]
+///     request: [Array of Strings],
 ///     request_id: [Integer]
 ///   }
 /// }
@@ -29,7 +29,7 @@ class success_msg : public outgoing_msg {
   success_msg(unsigned int request_id,
               const std::vector<std::string>& request);
 
-  virtual std::string to_json() const;
+  virtual std::string to_json() const override;
 
  private:
   /// the ID of the request that was successful

@@ -2,8 +2,8 @@
 // Licensed under the MIT license
 // https://raw.github.com/makielski/botscript/master/COPYING
 
-#ifndef BOTSCRIPT_SERVER_MESSAGES_OUTGOING_failure_msg_
-#define BOTSCRIPT_SERVER_MESSAGES_OUTGOING_failure_msg_
+#ifndef BOTSCRIPT_SERVER_MESSAGES_OUTGOING_FAILURE_MSG_
+#define BOTSCRIPT_SERVER_MESSAGES_OUTGOING_FAILURE_MSG_
 
 #include <string>
 #include <vector>
@@ -18,7 +18,7 @@ namespace botscript_server {
 /// {
 ///   'type': 'failure',
 ///   'arguments': {
-///     request: [Array of Strings]
+///     request: [Array of Strings],
 ///     request_id: [Integer],
 ///     error_code: [Integer],
 ///     reason: [String]
@@ -35,7 +35,7 @@ class failure_msg : public outgoing_msg {
               unsigned int error_code,
               const std::string& reason);
 
-  virtual std::string to_json() const;
+  virtual std::string to_json() const override;
 
  private:
   /// The ID of the request that was successful
@@ -53,4 +53,4 @@ class failure_msg : public outgoing_msg {
 
 }  // namespace botscript_server
 
-#endif  // BOTSCRIPT_SERVER_MESSAGES_OUTGOING_failure_msg_
+#endif  // BOTSCRIPT_SERVER_MESSAGES_OUTGOING_FAILURE_MSG_
