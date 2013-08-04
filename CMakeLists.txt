@@ -108,6 +108,7 @@ add_library(botscriptserver_obj_lib OBJECT
   src/messages/user/update/email_update_msg.cc
   src/messages/user/update/password_update_msg.cc
   src/messages/outgoing/success_msg.cc
+  src/messages/outgoing/failure_msg.cc
 )
 
 
