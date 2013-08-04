@@ -83,9 +83,9 @@ endif()
 ################################
 # Include Paths
 ################################
-include_directories("external_lib/rapidjson-r64/include")
 include_directories("external_lib/websocketpp")
 include_directories("external_lib/botscript/src")
+include_directories("external_lib/botscript/external_lib/rapidjson-r64/include")
 include_directories("external_lib/botscript/external_lib/pugixml-1.0/src")
 include_directories("external_lib/botscript/external_lib/lua-5.2.0/src")
 include_directories("external_lib/kyotocabinet-1.2.76")
@@ -109,6 +109,12 @@ add_library(botscriptserver_obj_lib OBJECT
   src/messages/user/update/password_update_msg.cc
   src/messages/outgoing/success_msg.cc
   src/messages/outgoing/failure_msg.cc
+  src/messages/outgoing/packages_msg.cc
+  src/messages/outgoing/session_msg.cc
+  src/messages/outgoing/account_msg.cc
+  src/messages/outgoing/bots_msg.cc
+  src/messages/outgoing/update_msg.cc
+  src/bot_manager.cc
 )
 
 

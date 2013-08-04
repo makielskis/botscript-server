@@ -14,4 +14,8 @@ const std::string& user_msg::sid() const {
   return sid_;
 }
 
+std::vector<std::string> user_msg::type() const {
+  return { "user" };
+}
+
 }  // namespace botscript_server

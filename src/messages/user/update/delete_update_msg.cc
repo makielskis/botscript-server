@@ -15,4 +15,8 @@ const std::string& delete_update_msg::current_pw() const {
   return current_pw_;
 }
 
+std::vector<std::string> delete_update_msg::type() const {
+  return { "user", "update", "delete" };
+}
+
 }  // namespace botscript_server

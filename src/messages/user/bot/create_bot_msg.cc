@@ -15,4 +15,8 @@ const std::string& create_bot_msg::config() const {
   return config_;
 }
 
+std::vector<std::string> create_bot_msg::type() const {
+  return { "user", "bot", "create" };
+}
+
 }  // namespace botscript_server
