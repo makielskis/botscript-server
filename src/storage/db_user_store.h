@@ -2,8 +2,8 @@
 // Licensed under the MIT license
 // https://raw.github.com/makielski/botscript/master/COPYING
 
-#ifndef DB_CONFIG_STORE_H_
-#define DB_CONFIG_STORE_H_
+#ifndef DB_USER_STORE_H_
+#define DB_USER_STORE_H_
 
 #include "user_store.h"
 
@@ -107,4 +107,4 @@ class db_user_store : public user_store {
 
 }  // namespace botscript_server
 
-#endif  // DB_CONFIG_STORE_H_
+#endif  // DB_USER_STORE_H_
