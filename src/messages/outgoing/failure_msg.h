@@ -37,6 +37,18 @@ class failure_msg : public outgoing_msg {
 
   virtual std::string to_json() const override;
 
+  /// \return the request id
+  unsigned int request_id() const;
+
+  /// \return the request type
+  const std::vector<std::string>& request() const;
+
+  /// \return the error code
+  unsigned int error_code() const;
+
+  /// \retrun the error reason
+  const std::string& reason() const;
+
  private:
   /// The ID of the request that was successful
   const unsigned int request_id_;

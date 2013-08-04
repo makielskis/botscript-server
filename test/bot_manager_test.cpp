@@ -2,9 +2,11 @@
 
 #include "boost/asio/io_service.hpp"
 
+#include "../src/error.h"
 #include "../src/storage/db_config_store.h"
 #include "../src/storage/db_user_store.h"
 #include "../src/bot_manager.h"
+#include "../src/messages/outgoing_msgs.h"
 
 #define DB_PATH ("*")
 
@@ -37,7 +39,8 @@ class BotManagerTest : public testing::Test {
       ASSERT_FALSE(e);
     });
 
-    io_service_.run_one();
+    io_service_.run();
+    io_service_.reset();
   }
 
   boost::asio::io_service io_service_;
@@ -50,5 +53,30 @@ class BotManagerTest : public testing::Test {
  * ### Login successful ###
  */
 TEST_F(BotManagerTest, SuccessfulLoginTest) {
-  ASSERT_TRUE(true);
+  login_msg m(USER, PW);
+  bot_manager_.handle_login_msg(m, [](std::vector<outgoing_msg_ptr> response) {
+    ASSERT_EQ(1u, response.size());
+    session_msg* sid = dynamic_cast<session_msg*>(response[0].get());
+    ASSERT_NE(nullptr, sid);
+    ASSERT_EQ(32u, sid->sid().length());
+  });
+
+  io_service_.run();
+  io_service_.reset();
+}
+
+/*
+ * ### Login failed ###
+ */
+TEST_F(BotManagerTest, FailedLoginTest) {
+  login_msg m("not_registered", "not_relevant");
+  bot_manager_.handle_login_msg(m, [](std::vector<outgoing_msg_ptr> response) {
+    ASSERT_EQ(1u, response.size());
+    failure_msg* fail = dynamic_cast<failure_msg*>(response[0].get());
+    ASSERT_NE(nullptr, fail);
+    ASSERT_EQ(error::error_code_t::user_not_found, fail->error_code());
+  });
+
+  io_service_.run();
+  io_service_.reset();
 }

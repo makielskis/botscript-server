@@ -30,6 +30,8 @@ class login_msg : public incoming_msg {
  public:
   explicit login_msg(const rapidjson::Document& doc);
 
+  login_msg(const std::string& username, const std::string& password);
+
   /// \return the login username
   const std::string& username() const;
 
