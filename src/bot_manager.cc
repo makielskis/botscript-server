@@ -12,6 +12,11 @@ using boost::system::error_code;
 
 namespace botscript_server {
 
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args) {
+  return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
 bot_manager::bot_manager(config_store& config_store,
                          user_store& user_store,
                          boost::asio::io_service* io_service)
@@ -23,17 +28,14 @@ bot_manager::bot_manager(config_store& config_store,
 void bot_manager::handle_login_msg(
     login_msg m,
     msg_callback cb) {
-  user_store_.login(m.username(), m.password(), [=](std::string, error_code e) {
+  user_store_.login(m.username(), m.password(), [=](std::string sid, error_code e) {
     std::vector<outgoing_msg_ptr> out;
     if (e) {
-      std::vector<outgoing_msg_ptr> response;
-      auto msg_ptr = new failure_msg(0, m.type(), e.value(), e.message());
-      auto msg_smart_ptr = std::unique_ptr<outgoing_msg>(msg_ptr);
-      response.emplace_back(std::move(msg_smart_ptr));
-      return cb(std::move(response));
+      out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
     } else {
-      // TODO(felix) implement success case: send session ID, bots, packages, logs, ...
+      out.emplace_back(make_unique<session_msg>(0, sid));
     }
+    return cb(std::move(out));
   });
 }
 

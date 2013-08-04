@@ -58,4 +58,21 @@ std::string failure_msg::to_json() const {
   return buffer.GetString();
 }
 
+
+unsigned int failure_msg::request_id() const {
+  return request_id_;
+}
+
+const std::vector<std::string>& failure_msg::request() const {
+  return request_;
+}
+
+unsigned int failure_msg::error_code() const {
+  return error_code_;
+}
+
+const std::string& failure_msg::reason() const {
+  return reason_;
+}
+
 }  // namespace botscript_server

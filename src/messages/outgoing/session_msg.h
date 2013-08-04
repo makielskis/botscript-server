@@ -30,6 +30,9 @@ class session_msg : public outgoing_msg {
 
   virtual std::string to_json() const override;
 
+  /// \return the session ID
+  const std::string& sid() const;
+
  private:
   /// Session expiration timestamp
   const time_t expire_;

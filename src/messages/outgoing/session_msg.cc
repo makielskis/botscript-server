@@ -43,4 +43,8 @@ std::string session_msg::to_json() const {
   return buffer.GetString();
 }
 
+const std::string& session_msg::sid() const {
+  return sid_;
+}
+
 }  // namespace botscript_server
