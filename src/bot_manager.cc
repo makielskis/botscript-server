@@ -12,12 +12,12 @@ using boost::system::error_code;
 
 namespace botscript_server {
 
-bot_manager::bot_manager(boost::asio::io_service* io_service,
-                         config_store& config_store,
-                         user_store& user_store)
-    : io_service_(io_service),
-      config_store_(config_store),
-      user_store_(user_store) {
+bot_manager::bot_manager(config_store& config_store,
+                         user_store& user_store,
+                         boost::asio::io_service* io_service)
+    : config_store_(config_store),
+      user_store_(user_store),
+      io_service_(io_service) {
 }
 
 void bot_manager::handle_login_msg(
