@@ -28,9 +28,9 @@ typedef std::function<void (std::vector<outgoing_msg_ptr>)> msg_callback;
 
 class bot_manager {
  public:
-  bot_manager(boost::asio::io_service* io_service,
-              config_store& config_store,
-              user_store& user_store);
+  bot_manager(config_store& config_store,
+              user_store& user_store,
+              boost::asio::io_service* io_service);
 
   void handle_login_msg(login_msg m, msg_callback cb);
   void handle_user_msg(user_msg m, msg_callback cb);
@@ -45,9 +45,9 @@ class bot_manager {
   void handle_password_update_msg(password_update_msg m, msg_callback cb);
 
  private:
-  boost::asio::io_service* io_service_;
   config_store& config_store_;
   user_store& user_store_;
+  boost::asio::io_service* io_service_;
   std::map<std::string, std::shared_ptr<botscript::bot>> bots_;
 };
 

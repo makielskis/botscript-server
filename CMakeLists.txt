@@ -171,6 +171,7 @@ add_executable(botscript-server-tests
   test/error_test.cpp
   test/rapid_json_exception_test.cpp
   test/outgoing_messages_test.cpp
+  test/bot_manager_test.cpp
 )
 
 target_link_libraries(botscript-server-tests gtest gtest_main bs ${Boost_LIBRARIES} kyotocabinet rt -pthread)
