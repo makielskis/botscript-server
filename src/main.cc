@@ -37,12 +37,44 @@ void default_on_msg(server& s, bot_manager& mgr, connection_hdl hdl, server::mes
     return;
   }
 
+  msg_callback cb = create_cb(s, hdl);
   try {
     std::string type = d["type"][rapidjson::SizeType(0)].GetString();
+
     if (type == "register") {
-      mgr.handle_register_msg(register_msg(d), create_cb(s, hdl));
+      mgr.handle_register_msg(register_msg(d), cb);
     } else if (type == "login") {
-      mgr.handle_login_msg(login_msg(d), create_cb(s, hdl));
+      mgr.handle_login_msg(login_msg(d), cb);
+    } else if (type == "user") {
+      if (d["type"].Size() == 1u) {
+        mgr.handle_user_msg(user_msg(d), cb);
+      } else {
+        type = d["type"][1].GetString();
+
+        if (type == "bot") {
+          type = d["type"][2].GetString();
+
+          if (type == "create") {
+            mgr.handle_create_bot_msg(create_bot_msg(d), cb);
+          } else if (type == "delete") {
+            mgr.handle_delete_bot_msg(delete_bot_msg(d), cb);
+          } else if (type == "execute") {
+            mgr.handle_execute_bot_msg(execute_bot_msg(d), cb);
+          } else if (type == "reactivate") {
+            mgr.handle_reactivate_bot_msg(reactivate_bot_msg(d), cb);
+          }
+        } else if (type == "update") {
+          type = d["type"][2].GetString();
+
+          if (std::string(d["type"][2].GetString()) == "delete") {
+            mgr.handle_delete_update_msg(delete_update_msg(d), cb);
+          } else if (type == "email") {
+            mgr.handle_email_update_msg(email_update_msg(d), cb);
+          } else if (type == "password") {
+            mgr.handle_password_update_msg(password_update_msg(d), cb);
+          }
+        }
+      }
     }
   } catch(const rapidjson_exception& e) {
     std::cerr << "could not parse message \"" << msg->get_payload() << "\" "
