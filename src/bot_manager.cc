@@ -45,6 +45,27 @@ void bot_manager::handle_login_msg(
   });
 }
 
+void bot_manager::handle_register_msg(
+    register_msg m,
+    msg_callback cb) {
+  user_store_.add_user(m.username(), m.password(), m.email(), [=](std::string sid, error_code e) {
+    std::vector<outgoing_msg_ptr> out;
+
+    if (e) {
+      // Failure: responde with failure message.
+      out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
+      return cb(std::move(out));
+    }
+
+    // Success: send session ID, packages, bots, and bot logs.
+    out.emplace_back(make_unique<session_msg>(0, sid));
+    out.emplace_back(make_unique<account_msg>(m.email()));
+    out.emplace_back(make_unique<packages_msg>(packages_));
+    out.emplace_back(make_unique<bots_msg>(std::map<std::string, std::string>()));
+    return cb(std::move(out));
+  });
+}
+
 void bot_manager::handle_user_msg(
     user_msg m,
     msg_callback cb) {
