@@ -5,6 +5,7 @@
 #ifndef BOTSCRIPT_SERVER_BOT_MANAGER_H_
 #define BOTSCRIPT_SERVER_BOT_MANAGER_H_
 
+#include <string>
 #include <vector>
 #include <memory>
 #include <functional>
@@ -45,9 +46,20 @@ class bot_manager {
   void handle_password_update_msg(password_update_msg m, msg_callback cb);
 
  private:
+  std::map<std::string, std::string> get_bot_configs(
+      const std::vector<std::string>& bots) const;
+  std::map<std::string, std::string> get_bot_logs(
+      const std::vector<std::string>& bots) const;
+  void on_login(
+      std::string sid,
+      int message_id,
+      std::vector<std::string> message_type,
+      msg_callback cb);
+
   config_store& config_store_;
   user_store& user_store_;
   boost::asio::io_service* io_service_;
+  std::vector<std::string> packages_;
   std::map<std::string, std::shared_ptr<botscript::bot>> bots_;
 };
 

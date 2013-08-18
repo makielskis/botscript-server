@@ -25,6 +25,9 @@ class account_msg : public outgoing_msg {
   /// \param email  email address
   account_msg(const std::string& email);
 
+  /// \return the account email address
+  const std::string& email() const;
+
   virtual std::string to_json() const override;
 
  private:

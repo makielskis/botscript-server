@@ -26,6 +26,9 @@ class packages_msg : public outgoing_msg {
 
   virtual std::string to_json() const override;
 
+  /// \return the packages
+  const std::vector<std::string>& packages() const;
+
  private:
   /// JSON formatted package descriptions
   const std::vector<std::string> packages_;

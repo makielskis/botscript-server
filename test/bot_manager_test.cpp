@@ -29,6 +29,7 @@ class BotManagerTest : public testing::Test {
  protected:
   virtual void SetUp() override {
     addUserTest();
+    successfulLoginTest();
   }
 
   virtual void TearDown() override {
@@ -43,27 +44,65 @@ class BotManagerTest : public testing::Test {
     io_service_.reset();
   }
 
+  void successfulLoginTest() {
+    login_msg m(USER, PW);
+    bot_manager_.handle_login_msg(m, [](std::vector<outgoing_msg_ptr> response) {
+      ASSERT_EQ(4u, response.size());
+
+      // Check session ID.
+      session_msg* sid = dynamic_cast<session_msg*>(response[0].get());
+      ASSERT_NE(nullptr, sid);
+      ASSERT_EQ(32u, sid->sid().length());
+
+      // Check account message containing the email.
+      account_msg* account = dynamic_cast<account_msg*>(response[1].get());
+      ASSERT_EQ(MAIL, account->email());
+
+      // Check packages.
+      packages_msg* packages = dynamic_cast<packages_msg*>(response[2].get());
+      ASSERT_NE(nullptr, packages);
+      ASSERT_EQ(2u, packages->packages().size());
+
+      {
+        rapidjson::Document d;
+        ASSERT_FALSE(d.Parse<0>(packages->packages().at(0).c_str()).HasParseError());
+
+        ASSERT_TRUE(d.IsObject());
+        ASSERT_TRUE(d.HasMember("name"));
+        ASSERT_TRUE(d["name"].IsString());
+        ASSERT_TRUE(d.HasMember("servers"));
+        ASSERT_TRUE(d["servers"].IsArray());
+        ASSERT_TRUE(d.HasMember("base"));
+        ASSERT_TRUE(d["base"].IsObject());
+      }
+      {
+        rapidjson::Document d;
+        ASSERT_FALSE(d.Parse<0>(packages->packages().at(1).c_str()).HasParseError());
+
+        ASSERT_TRUE(d.IsObject());
+        ASSERT_TRUE(d.HasMember("name"));
+        ASSERT_TRUE(d["name"].IsString());
+        ASSERT_TRUE(d.HasMember("servers"));
+        ASSERT_TRUE(d["servers"].IsArray());
+        ASSERT_TRUE(d.HasMember("base"));
+        ASSERT_TRUE(d["base"].IsObject());
+      }
+
+      // Check bots.
+      bots_msg* bots = dynamic_cast<bots_msg*>(response[3].get());
+      ASSERT_NE(nullptr, bots);
+      ASSERT_EQ(0u, bots->bot_configs().size());
+    });
+
+    io_service_.run();
+    io_service_.reset();
+  }
+
   boost::asio::io_service io_service_;
   db_config_store config_store_;
   db_user_store user_store_;
   bot_manager bot_manager_;
 };
-
-/*
- * ### Login successful ###
- */
-TEST_F(BotManagerTest, SuccessfulLoginTest) {
-  login_msg m(USER, PW);
-  bot_manager_.handle_login_msg(m, [](std::vector<outgoing_msg_ptr> response) {
-    ASSERT_EQ(1u, response.size());
-    session_msg* sid = dynamic_cast<session_msg*>(response[0].get());
-    ASSERT_NE(nullptr, sid);
-    ASSERT_EQ(32u, sid->sid().length());
-  });
-
-  io_service_.run();
-  io_service_.reset();
-}
 
 /*
  * ### Login failed ###
