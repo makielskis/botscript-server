@@ -17,6 +17,10 @@ const std::map<std::string, std::string>& bots_msg::bot_configs() const {
 }
 
 std::string bots_msg::to_json() const {
+  if (bot_configs_.empty()) {
+    return "{\"type\":\"bots\",\"arguments\":{}}";
+  }
+
   std::stringstream s;
   for (const auto& config : bot_configs_) {
     s << ",\"" << config.first << "\":" << config.second;

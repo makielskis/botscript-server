@@ -137,6 +137,23 @@ TEST(outgoing_messages_test, account_msg_test) {
   ASSERT_STREQ("a@b.cd", d["arguments"]["email"].GetString());
 }
 
+TEST(outgoing_messages_test, empty_bots_msg_test) {
+  std::map<std::string, std::string> bots;
+
+  bots_msg msg(bots);
+
+  rapidjson::Document d;
+  ASSERT_FALSE(d.Parse<0>(msg.to_json().c_str()).HasParseError());
+
+  ASSERT_TRUE(d.IsObject());
+  ASSERT_TRUE(d.HasMember("type"));
+  ASSERT_TRUE(d["type"].IsString());
+  ASSERT_STREQ("bots", d["type"].GetString());
+
+  ASSERT_TRUE(d.HasMember("arguments"));
+  ASSERT_TRUE(d["arguments"].IsObject());
+}
+
 TEST(outgoing_messages_test, bots_msg_test) {
   std::map<std::string, std::string> bots;
   bots["x"] = "{ \"a\": \"b\" }";
