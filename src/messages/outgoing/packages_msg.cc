@@ -12,6 +12,10 @@ packages_msg::packages_msg(const std::vector<std::string>& packages)
     : packages_(packages) {
 }
 
+const std::vector<std::string>& packages_msg::packages() const {
+  return packages_;
+}
+
 std::string packages_msg::to_json() const {
   std::stringstream s;
   for (const std::string& package : packages_) {

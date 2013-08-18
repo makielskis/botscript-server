@@ -13,6 +13,10 @@ account_msg::account_msg(const std::string& email)
     : email_(email)  {
 }
 
+const std::string& account_msg::email() const {
+  return email_;
+}
+
 std::string account_msg::to_json() const {
   rapidjson::StringBuffer buffer;
   rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);

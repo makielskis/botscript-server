@@ -38,9 +38,7 @@ class DbConfigStoreTest : public testing::Test {
 
     bot::load_packages("../test/packages");
     testbot_ = make_shared<bot>(&io_service_);
-    testbot_->callback_ = [](std::string, std::string k, std::string v) {
-    //  cout << k << " -> " << v << "\n";
-    };
+    testbot_->callback_ = [](std::string, std::string k, std::string v) { };
 
     testbot_->init(INPUT_CONFIG, [&store](shared_ptr<bot> bot, string init_e){
     ASSERT_EQ("", init_e);

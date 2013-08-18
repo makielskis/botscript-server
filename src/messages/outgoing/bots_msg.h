@@ -27,6 +27,9 @@ class bots_msg : public outgoing_msg {
   /// \param  map from bot identifier to the configuration of this bot
   bots_msg(const std::map<std::string, std::string>& bot_configs);
 
+  /// \return the stored bot configurations
+  const std::map<std::string, std::string>& bot_configs() const;
+
   virtual std::string to_json() const override;
 
  private:
