@@ -34,6 +34,7 @@ class bot_manager {
               boost::asio::io_service* io_service);
 
   void handle_login_msg(login_msg m, msg_callback cb);
+  void handle_register_msg(register_msg m, msg_callback cb);
   void handle_user_msg(user_msg m, msg_callback cb);
 
   void handle_create_bot_msg(create_bot_msg m, msg_callback cb);

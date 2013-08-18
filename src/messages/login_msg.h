@@ -5,10 +5,11 @@
 #ifndef BOTSCRIPT_SERVER_MESSAGES_LOGIN_MSG_
 #define BOTSCRIPT_SERVER_MESSAGES_LOGIN_MSG_
 
+#include "rapidjson_with_exception.h"
+
 #include <string>
 
 #include "./incoming_msg.h"
-#include "./rapidjson_with_exception.h"
 
 namespace botscript_server {
 

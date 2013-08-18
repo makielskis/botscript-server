@@ -6,6 +6,7 @@
 #define BOTSCRIPT_SERVER_MESSAGES_INCOMING_MSGS_H_
 
 #include "./login_msg.h"
+#include "./register_msg.h"
 #include "./user/user_msg.h"
 #include "./user/update/delete_update_msg.h"
 #include "./user/update/email_update_msg.h"

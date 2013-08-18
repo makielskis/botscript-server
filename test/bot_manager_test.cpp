@@ -28,16 +28,18 @@ class BotManagerTest : public testing::Test {
 
  protected:
   virtual void SetUp() override {
-    addUserTest();
+    successfulRegistrationTest();
     successfulLoginTest();
   }
 
   virtual void TearDown() override {
   }
 
-  void addUserTest() {
-    user_store_.add_user(USER, PW, MAIL, [=](std::string s, error_code e) {
-      ASSERT_FALSE(e);
+  void successfulRegistrationTest() {
+    register_msg m(USER, PW, MAIL);
+    bot_manager_.handle_register_msg(m, [](std::vector<outgoing_msg_ptr> response) {
+      ASSERT_EQ(4u, response.size());
+      ASSERT_NE(nullptr, dynamic_cast<session_msg*>(response[0].get()));
     });
 
     io_service_.run();
@@ -114,6 +116,22 @@ TEST_F(BotManagerTest, FailedLoginTest) {
     failure_msg* fail = dynamic_cast<failure_msg*>(response[0].get());
     ASSERT_NE(nullptr, fail);
     ASSERT_EQ(error::error_code_t::user_not_found, fail->error_code());
+  });
+
+  io_service_.run();
+  io_service_.reset();
+}
+
+/*
+ * ### Registration failed ###
+ */
+TEST_F(BotManagerTest, FailedRegistration) {
+  register_msg m(USER, PW, MAIL);
+  bot_manager_.handle_register_msg(m, [](std::vector<outgoing_msg_ptr> response) {
+    ASSERT_EQ(1u, response.size());
+    failure_msg* fail = dynamic_cast<failure_msg*>(response[0].get());
+    ASSERT_NE(nullptr, fail);
+    ASSERT_EQ(error::error_code_t::username_already_taken, fail->error_code());
   });
 
   io_service_.run();

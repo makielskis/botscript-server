@@ -100,6 +100,7 @@ add_library(botscriptserver_obj_lib OBJECT
   src/storage/file_config_store.cc
   src/storage/db_config_store.cc
   src/messages/login_msg.cc
+  src/messages/register_msg.cc
   src/messages/user/user_msg.cc
   src/messages/user/bot/create_bot_msg.cc
   src/messages/user/bot/delete_bot_msg.cc
