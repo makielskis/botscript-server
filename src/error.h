@@ -32,7 +32,9 @@ namespace error {
 
     // bot
     bot_already_exists = 8,
-    bot_not_found = 9
+    bot_not_found = 9,
+    invalid_configuration = 10,
+    bot_creation_failed = 11
   };
 
   // error_condition
