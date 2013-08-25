@@ -26,6 +26,10 @@ namespace botscript_server {
 /// }
 class create_bot_msg : public user_msg {
  public:
+  /// \param sid     the session id
+  /// \param config  the configuration
+  create_bot_msg(const std::string& sid, const std::string& config);
+
   /// Reads the configuration from a create message.
   ///
   /// \param the create message
