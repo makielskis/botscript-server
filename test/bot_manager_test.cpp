@@ -14,6 +14,8 @@
 #define PW    ("pw")
 #define MAIL  ("mail")
 
+#define CONFIG "{\"username\":\"login_username\",\"password\":\"login_password\",\"package\":\"ts\",\"server\":\"http://example.com\",\"modules\":{\"base\":{\"wait_time_factor\":\"1.00\",\"proxy\":\"\"}}}"
+
 using namespace std;
 using namespace botscript_server;
 using boost::system::error_code;
@@ -30,9 +32,12 @@ class BotManagerTest : public testing::Test {
   virtual void SetUp() override {
     successfulRegistrationTest();
     successfulLoginTest();
+    successfulBotCreationTest();
   }
 
   virtual void TearDown() override {
+    successfulBotDeletionTest();
+    boost::filesystem::remove(DB_PATH);
   }
 
   void successfulRegistrationTest() {
@@ -48,13 +53,14 @@ class BotManagerTest : public testing::Test {
 
   void successfulLoginTest() {
     login_msg m(USER, PW);
-    bot_manager_.handle_login_msg(m, [](std::vector<outgoing_msg_ptr> response) {
+    bot_manager_.handle_login_msg(m, [=](std::vector<outgoing_msg_ptr> response) {
       ASSERT_EQ(4u, response.size());
 
       // Check session ID.
       session_msg* sid = dynamic_cast<session_msg*>(response[0].get());
       ASSERT_NE(nullptr, sid);
       ASSERT_EQ(32u, sid->sid().length());
+      sid_ = sid->sid();
 
       // Check account message containing the email.
       account_msg* account = dynamic_cast<account_msg*>(response[1].get());
@@ -100,10 +106,44 @@ class BotManagerTest : public testing::Test {
     io_service_.reset();
   }
 
+  void successfulBotCreationTest() {
+    create_bot_msg m(sid_, CONFIG);
+    bot_manager_.handle_create_bot_msg(m, [=](std::vector<outgoing_msg_ptr> response) {
+      ASSERT_EQ(1u, response.size());
+
+      // Check bots.
+      std::cout << response[0]->to_json() << "\n";
+      bots_msg* bots = dynamic_cast<bots_msg*>(response[0].get());
+      ASSERT_NE(nullptr, bots);
+      ASSERT_EQ(1u, bots->bot_configs().size());
+    });
+
+    io_service_.run();
+    io_service_.reset();
+  }
+
+  void successfulBotDeletionTest() {
+    delete_bot_msg m(sid_, "ts_ex_login_username");
+    bot_manager_.handle_delete_bot_msg(m, [=](std::vector<outgoing_msg_ptr> response) {
+      ASSERT_EQ(1u, response.size());
+
+      // Check bots.
+      std::cout << "BOTS DELETED\n"
+                << response[0]->to_json() << "\n";
+      bots_msg* bots = dynamic_cast<bots_msg*>(response[0].get());
+      ASSERT_NE(nullptr, bots);
+      ASSERT_EQ(0u, bots->bot_configs().size());
+    });
+
+    io_service_.run();
+    io_service_.reset();
+  }
+
   boost::asio::io_service io_service_;
   db_config_store config_store_;
   db_user_store user_store_;
   bot_manager bot_manager_;
+  std::string sid_;
 };
 
 /*
@@ -119,7 +159,6 @@ TEST_F(BotManagerTest, FailedLoginTest) {
   });
 
   io_service_.run();
-  io_service_.reset();
 }
 
 /*
@@ -135,5 +174,4 @@ TEST_F(BotManagerTest, FailedRegistration) {
   });
 
   io_service_.run();
-  io_service_.reset();
 }
