@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <utility>
+#include <stdexcept>
 
 #include "bot.h"
 
@@ -33,7 +34,7 @@ bot_manager::bot_manager(config_store& config_store,
 void bot_manager::handle_login_msg(
     login_msg m,
     msg_callback cb) {
-  user_store_.login(m.username(), m.password(), [=](std::string sid, error_code e) {
+  return user_store_.login(m.username(), m.password(), [=](std::string sid, error_code e) {
     if (e) {
       // Failure: responde with failure message.
       std::vector<outgoing_msg_ptr> out;
@@ -48,7 +49,7 @@ void bot_manager::handle_login_msg(
 void bot_manager::handle_register_msg(
     register_msg m,
     msg_callback cb) {
-  user_store_.add_user(m.username(), m.password(), m.email(), [=](std::string sid, error_code e) {
+  return user_store_.add_user(m.username(), m.password(), m.email(), [=](std::string sid, error_code e) {
     std::vector<outgoing_msg_ptr> out;
 
     if (e) {
@@ -75,11 +76,105 @@ void bot_manager::handle_user_msg(
 void bot_manager::handle_create_bot_msg(
     create_bot_msg m,
     msg_callback cb) {
+  // Load configuration.
+  bs::config c;
+  try {
+    c = bs::config(m.config());
+  } catch (const std::runtime_error& e) {
+    std::vector<outgoing_msg_ptr> out;
+    out.emplace_back(make_unique<failure_msg>(0, m.type(), 10, e.what()));
+    return cb(std::move(out));
+  }
+
+  // Create identifier.
+  std::string id = bs::bot::identifier(c.username(), c.package(), c.server());
+  return user_store_.add_bot(m.sid(), id, [=](error_code e) {
+    std::vector<outgoing_msg_ptr> out;
+
+    if (e) {
+      // Failure: responde with failure message.
+      out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
+      return cb(std::move(out));
+    }
+
+    // Create bot and load the configuration.
+    auto b = std::make_shared<bs::bot>(io_service_);
+    b->callback_ = [](std::string id, std::string k, std::string v) {
+      // TODO(felix) remove output, provide bot creation messages to the user
+      //std::cout << id << " " << k << " " << v << "\n";
+    };
+    b->init(m.config(), [=](std::shared_ptr<bs::bot>, std::string err) {
+      std::vector<outgoing_msg_ptr> out;
+
+      if (!err.empty()) {
+        // Bot creation failed (i.e. bad proxy): responde with failure message.
+        out.emplace_back(make_unique<failure_msg>(0, m.type(), 11, err));
+        return cb(std::move(out));
+      }
+
+      // Store bot.
+      bots_[id] = b;
+
+      // Send new bot list to the user ( = success message)
+      user_store_.get_bots(m.sid(), [=](std::vector<std::string> bots, error_code e) {
+        std::vector<outgoing_msg_ptr> out;
+
+        if (e) {
+          // This should not happen (inconsistent database)!
+          out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
+          return cb(std::move(out));
+        }
+
+        out.emplace_back(make_unique<bots_msg>(get_bot_configs(bots)));
+        return cb(std::move(out));
+      });
+    });
+  });
 }
 
 void bot_manager::handle_delete_bot_msg(
     delete_bot_msg m,
     msg_callback cb) {
+  return user_store_.remove_bot(m.sid(), m.identifier(), [=](error_code e) {
+    if (e) {
+      // Failure: respond with failure message.
+      std::vector<outgoing_msg_ptr> out;
+      out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
+      return cb(std::move(out));
+    }
+
+    std::vector<outgoing_msg_ptr> out;
+
+    // Search for bot in bot list.
+    auto it = bots_.find(m.identifier());
+    std::cout << "bots_.size() -> " << bots_.size() << "\n";
+    for (auto b : bots_) {
+      std::cout << b.first << "\n";
+    }
+    std::cout << "---\n";
+    if (it == bots_.end()) {
+      out.emplace_back(make_unique<failure_msg>(0, m.type(), 12, "fatal: bot not found"));
+      return cb(std::move(out));
+    }
+
+    // Remove bot from bot map.
+    it->second->shutdown();
+    bots_.erase(it);
+
+    // Send new bot list to the user ( = success message).
+    return user_store_.get_bots(m.sid(), [=](std::vector<std::string> bots, error_code e) {
+      std::vector<outgoing_msg_ptr> out;
+
+      if (e) {
+        // This should not happen (inconsistent database)!
+        out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
+        return cb(std::move(out));
+      }
+
+      out.emplace_back(make_unique<bots_msg>(get_bot_configs(bots)));
+      return cb(std::move(out));
+    });
+  });
 }
 
 void bot_manager::handle_execute_bot_msg(
