@@ -29,6 +29,9 @@ namespace botscript_server {
 /// }
 class user_msg : public incoming_msg {
  public:
+  /// \param sid the session id
+  explicit user_msg(const std::string& sid);
+
   /// Reads the session id from a sid login message.
   ///
   /// \param the create message

@@ -26,6 +26,10 @@ namespace botscript_server {
 /// }
 class delete_bot_msg : public user_msg {
  public:
+  /// \param sid         the session id
+  /// \param identifier  the id if the bot to delete
+  delete_bot_msg(const std::string& sid, const std::string& identifier);
+
   /// Reads the identifier from a delete message.
   ///
   /// \param msg the delete message

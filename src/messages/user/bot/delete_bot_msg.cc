@@ -6,6 +6,12 @@
 
 namespace botscript_server {
 
+delete_bot_msg::delete_bot_msg(const std::string& sid,
+                               const std::string& identifier)
+    : user_msg(sid),
+      identifier_(identifier) {
+}
+
 delete_bot_msg::delete_bot_msg(const rapidjson::Document& doc)
     : user_msg(doc),
       identifier_(doc["arguments"]["identifier"].GetString()) {

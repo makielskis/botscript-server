@@ -6,6 +6,12 @@
 
 namespace botscript_server {
 
+create_bot_msg::create_bot_msg(const std::string& sid,
+                               const std::string& config)
+    : user_msg(sid),
+      config_(config) {
+}
+
 create_bot_msg::create_bot_msg(const rapidjson::Document& doc)
     : user_msg(doc),
       config_(doc["arguments"]["config"].GetString()) {
