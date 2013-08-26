@@ -112,7 +112,6 @@ class BotManagerTest : public testing::Test {
       ASSERT_EQ(1u, response.size());
 
       // Check bots.
-      std::cout << response[0]->to_json() << "\n";
       bots_msg* bots = dynamic_cast<bots_msg*>(response[0].get());
       ASSERT_NE(nullptr, bots);
       ASSERT_EQ(1u, bots->bot_configs().size());
@@ -128,8 +127,6 @@ class BotManagerTest : public testing::Test {
       ASSERT_EQ(1u, response.size());
 
       // Check bots.
-      std::cout << "BOTS DELETED\n"
-                << response[0]->to_json() << "\n";
       bots_msg* bots = dynamic_cast<bots_msg*>(response[0].get());
       ASSERT_NE(nullptr, bots);
       ASSERT_EQ(0u, bots->bot_configs().size());
@@ -159,6 +156,7 @@ TEST_F(BotManagerTest, FailedLoginTest) {
   });
 
   io_service_.run();
+  io_service_.reset();
 }
 
 /*
@@ -174,4 +172,5 @@ TEST_F(BotManagerTest, FailedRegistration) {
   });
 
   io_service_.run();
+  io_service_.reset();
 }

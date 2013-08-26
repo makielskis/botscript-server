@@ -147,11 +147,6 @@ void bot_manager::handle_delete_bot_msg(
 
     // Search for bot in bot list.
     auto it = bots_.find(m.identifier());
-    std::cout << "bots_.size() -> " << bots_.size() << "\n";
-    for (auto b : bots_) {
-      std::cout << b.first << "\n";
-    }
-    std::cout << "---\n";
     if (it == bots_.end()) {
       out.emplace_back(make_unique<failure_msg>(0, m.type(), 12, "fatal: bot not found"));
       return cb(std::move(out));
