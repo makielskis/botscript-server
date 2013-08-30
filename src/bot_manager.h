@@ -26,11 +26,13 @@ namespace botscript_server {
 
 typedef std::unique_ptr<outgoing_msg> outgoing_msg_ptr;
 typedef std::function<void (std::vector<outgoing_msg_ptr>)> msg_callback;
+typedef std::function<void (std::string, std::vector<outgoing_msg_ptr>)> activity_callback;
 
 class bot_manager {
  public:
   bot_manager(config_store& config_store,
               user_store& user_store,
+              activity_callback activity_cb,
               boost::asio::io_service* io_service);
 
   void handle_login_msg(login_msg m, msg_callback cb);
@@ -61,6 +63,7 @@ class bot_manager {
   user_store& user_store_;
   boost::asio::io_service* io_service_;
   std::vector<std::string> packages_;
+  activity_callback activity_callback_;
   std::map<std::string, std::shared_ptr<botscript::bot>> bots_;
 };
 

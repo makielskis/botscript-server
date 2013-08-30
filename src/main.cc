@@ -19,11 +19,38 @@ using websocketpp::lib::placeholders::_1;
 using websocketpp::lib::placeholders::_2;
 using websocketpp::lib::bind;
 using websocketpp::lib::ref;
+using websocketpp::lib::error_code;
+
+server* server_ptr = nullptr;
+std::map<std::string, connection_hdl> sid_con_map;
+
+void activity_cb(std::string sid, std::vector<outgoing_msg_ptr> msgs) {
+  const auto it = sid_con_map.find(sid);
+  if (it != sid_con_map.cend()) {
+    // Connection active, send messages.
+    for (const auto& msg : msgs) {
+      error_code e;
+      server_ptr->send(it->second, msg->to_json(), websocketpp::frame::opcode::TEXT, e);
+
+      // Check error (break on error).
+      if (e) {
+        std::cerr << "[ERROR] unable to send messages\n";
+        break;
+      }
+    }
+  } else {
+    std::cerr << "[FATAL] message for session " << sid << " not delivered\n";
+  }
+}
 
 msg_callback create_cb(server& s, connection_hdl hdl) {
   return [&s, hdl](std::vector<outgoing_msg_ptr> msgs) {
     for (const auto& msg : msgs) {
-      s.send(hdl, msg->to_json(), websocketpp::frame::opcode::TEXT);
+      error_code err;
+      s.send(hdl, msg->to_json(), websocketpp::frame::opcode::TEXT, err);
+      if (err) {
+        std::cout << "[ERROR] could not deliver message\n";
+      }
     }
   };
 }
@@ -87,9 +114,11 @@ int main() {
 
   db_config_store config_store("./config_store.kch", &io_service);
   db_user_store user_store("./user_store.kch", &io_service);
-  bot_manager manager(config_store, user_store, &io_service);
+  activity_callback cb = std::bind(&activity_cb, std::placeholders::_1, std::placeholders::_2);
+  bot_manager manager(config_store, user_store, std::move(cb), &io_service);
 
   server s;
+  server_ptr = &s;
   s.set_message_handler(bind(&default_on_msg, ref(s), ref(manager), ::_1,::_2));
 
   s.init_asio(&io_service);
