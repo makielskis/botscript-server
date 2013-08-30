@@ -1,3 +1,8 @@
+#include <vector>
+#include <string>
+#include <functional>
+#include <memory>
+
 #include "gtest/gtest.h"
 
 #include "boost/asio/io_service.hpp"
@@ -25,7 +30,13 @@ class BotManagerTest : public testing::Test {
   BotManagerTest()
       : config_store_(DB_PATH, &io_service_),
         user_store_(DB_PATH, &io_service_),
-        bot_manager_(config_store_, user_store_, &io_service_) {
+        bot_manager_(config_store_,
+                     user_store_,
+                     std::bind(&BotManagerTest::activity_callback,
+                               this,
+                               std::placeholders::_1,
+                               std::placeholders::_2),
+                     &io_service_) {
   }
 
  protected:
@@ -38,6 +49,14 @@ class BotManagerTest : public testing::Test {
   virtual void TearDown() override {
     successfulBotDeletionTest();
     boost::filesystem::remove(DB_PATH);
+  }
+
+  void activity_callback(std::string sid, std::vector<outgoing_msg_ptr> msgs) {
+    std::cout << "outgoing messages for " << sid << "\n";
+    for (const auto& msg : msgs) {
+      std::cout << msg->to_json() << "\n";
+    }
+    std::cout << "\n";
   }
 
   void successfulRegistrationTest() {

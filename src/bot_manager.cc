@@ -24,11 +24,13 @@ std::unique_ptr<T> make_unique(Args&&... args) {
 
 bot_manager::bot_manager(config_store& config_store,
                          user_store& user_store,
+                         activity_callback activity_cb,
                          boost::asio::io_service* io_service)
     : config_store_(config_store),
       user_store_(user_store),
       io_service_(io_service),
-      packages_(bs::bot::load_packages("../test/packages")) {
+      packages_(std::move(bs::bot::load_packages("../test/packages"))),
+      activity_callback_(std::move(activity_cb)) {
 }
 
 void bot_manager::handle_login_msg(
@@ -97,13 +99,20 @@ void bot_manager::handle_create_bot_msg(
       return cb(std::move(out));
     }
 
-    // Create bot and load the configuration.
+    // Create bot object.
     auto b = std::make_shared<bs::bot>(io_service_);
-    b->callback_ = [](std::string id, std::string k, std::string v) {
-      // TODO(felix) remove output, provide bot creation messages to the user
-      //std::cout << id << " " << k << " " << v << "\n";
+
+    // Send updates out to the activity callback.
+    std::string sid = m.sid();
+    activity_callback activity = activity_callback_;
+    b->callback_ = [activity, sid](std::string id, std::string k, std::string v) {
+      std::vector<outgoing_msg_ptr> out;
+      out.emplace_back(make_unique<update_msg>(id, k, v));
+      activity(sid, std::move(out));
     };
-    b->init(m.config(), [=](std::shared_ptr<bs::bot>, std::string err) {
+
+    // Load configuration.
+    return b->init(m.config(), [=](std::shared_ptr<bs::bot>, std::string err) {
       std::vector<outgoing_msg_ptr> out;
 
       if (!err.empty()) {
@@ -115,7 +124,7 @@ void bot_manager::handle_create_bot_msg(
       // Store bot.
       bots_[id] = b;
 
-      // Send new bot list to the user ( = success message)
+      // Send new bot list to the user ( = success indicator)
       user_store_.get_bots(m.sid(), [=](std::vector<std::string> bots, error_code e) {
         std::vector<outgoing_msg_ptr> out;
 
