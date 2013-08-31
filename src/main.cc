@@ -23,6 +23,7 @@ using websocketpp::lib::error_code;
 
 server* server_ptr = nullptr;
 std::map<std::string, connection_hdl> sid_con_map;
+std::map<connection_hdl, std::string> con_sid_map;
 
 void activity_cb(std::string sid, std::vector<outgoing_msg_ptr> msgs) {
   const auto it = sid_con_map.find(sid);
@@ -55,7 +56,35 @@ msg_callback create_cb(server& s, connection_hdl hdl) {
   };
 }
 
-void default_on_msg(server& s, bot_manager& mgr, connection_hdl hdl, server::message_ptr msg) {
+sid_callback create_sid_cb(server& s, connection_hdl hdl) {
+  return [&s, hdl](std::string sid, std::vector<outgoing_msg_ptr> msgs) {
+    if (!sid.empty()) {
+      sid_con_map[sid] = hdl;
+    }
+
+    for (const auto& msg : msgs) {
+      error_code err;
+      s.send(hdl, msg->to_json(), websocketpp::frame::opcode::TEXT, err);
+      if (err) {
+        std::cout << "[ERROR] could not deliver message\n";
+      }
+    }
+  };
+}
+
+void on_close(bot_manager& mgr, connection_hdl hdl) {
+  const auto con_sid_it = con_sid_map.find(hdl);
+  if (con_sid_it != con_sid_map.end()) {
+    const auto sid_con_it = sid_con_map.find(con_sid_it->second);
+    if (sid_con_it != sid_con_map.end()) {
+      sid_con_map.erase(sid_con_it);
+    }
+    mgr.handle_connection_close(con_sid_it->second);
+    con_sid_map.erase(con_sid_it);
+  }
+}
+
+void on_msg(server& s, bot_manager& mgr, connection_hdl hdl, server::message_ptr msg) {
   rapidjson::Document d;
   bool failure = d.Parse<0>(msg->get_payload().c_str()).HasParseError();
   if (failure) {
@@ -64,18 +93,18 @@ void default_on_msg(server& s, bot_manager& mgr, connection_hdl hdl, server::mes
     return;
   }
 
-  msg_callback cb = create_cb(s, hdl);
   try {
     std::string type = d["type"][rapidjson::SizeType(0)].GetString();
 
     if (type == "register") {
-      mgr.handle_register_msg(register_msg(d), cb);
+      mgr.handle_register_msg(register_msg(d), create_sid_cb(s, hdl));
     } else if (type == "login") {
-      mgr.handle_login_msg(login_msg(d), cb);
+      mgr.handle_login_msg(login_msg(d), create_sid_cb(s, hdl));
     } else if (type == "user") {
       if (d["type"].Size() == 1u) {
-        mgr.handle_user_msg(user_msg(d), cb);
+        mgr.handle_user_msg(user_msg(d), create_sid_cb(s, hdl));
       } else {
+        msg_callback cb = create_cb(s, hdl);
         type = d["type"][1].GetString();
 
         if (type == "bot") {
@@ -114,12 +143,13 @@ int main() {
 
   db_config_store config_store("./config_store.kch", &io_service);
   db_user_store user_store("./user_store.kch", &io_service);
-  activity_callback cb = std::bind(&activity_cb, std::placeholders::_1, std::placeholders::_2);
+  sid_callback cb = std::bind(&activity_cb, std::placeholders::_1, std::placeholders::_2);
   bot_manager manager(config_store, user_store, std::move(cb), &io_service);
 
   server s;
   server_ptr = &s;
-  s.set_message_handler(bind(&default_on_msg, ref(s), ref(manager), ::_1,::_2));
+  s.set_close_handler(bind(&on_close, ref(manager), ::_1));
+  s.set_message_handler(bind(&on_msg, ref(s), ref(manager), ::_1,::_2));
 
   s.init_asio(&io_service);
   s.listen(9003);
