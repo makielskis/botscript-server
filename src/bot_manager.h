@@ -34,6 +34,7 @@ class bot_manager {
   bot_manager(config_store& config_store,
               user_store& user_store,
               sid_callback activity_cb,
+              std::function<void (std::string)> session_end_cb,
               boost::asio::io_service* io_service);
 
   void handle_connection_close(const std::string& sid);
@@ -71,8 +72,10 @@ class bot_manager {
   boost::asio::io_service* io_service_;
   std::vector<std::string> packages_;
   sid_callback sid_callback_;
+  std::function<void (std::string)> session_end_cb_;
   std::map<std::string, std::shared_ptr<botscript::bot>> bots_;
   std::map<std::string, std::set<std::string>> sid_bot_ids_map_;
+  std::set<std::string> bot_creation_blocklist_;
 };
 
 }  // namespace botscript_server

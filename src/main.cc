@@ -44,6 +44,17 @@ void activity_cb(std::string sid, std::vector<outgoing_msg_ptr> msgs) {
   }
 }
 
+void on_session_end(std::string sid) {
+  const auto sid_con_it = sid_con_map.find(sid);
+  if (sid_con_it != sid_con_map.end()) {
+    const auto con_sid_it = con_sid_map.find(sid_con_it->second);
+    if (con_sid_it != con_sid_map.end()) {
+      con_sid_map.erase(con_sid_it);
+    }
+    sid_con_map.erase(sid_con_it);
+  }
+}
+
 msg_callback create_cb(server& s, connection_hdl hdl) {
   return [&s, hdl](std::vector<outgoing_msg_ptr> msgs) {
     for (const auto& msg : msgs) {
@@ -73,14 +84,9 @@ sid_callback create_sid_cb(server& s, connection_hdl hdl) {
 }
 
 void on_close(bot_manager& mgr, connection_hdl hdl) {
-  const auto con_sid_it = con_sid_map.find(hdl);
-  if (con_sid_it != con_sid_map.end()) {
-    const auto sid_con_it = sid_con_map.find(con_sid_it->second);
-    if (sid_con_it != sid_con_map.end()) {
-      sid_con_map.erase(sid_con_it);
-    }
-    mgr.handle_connection_close(con_sid_it->second);
-    con_sid_map.erase(con_sid_it);
+  const auto it = con_sid_map.find(hdl);
+  if (it != con_sid_map.end()) {
+    mgr.handle_connection_close(it->second);
   }
 }
 
@@ -144,7 +150,8 @@ int main() {
   db_config_store config_store("./config_store.kch", &io_service);
   db_user_store user_store("./user_store.kch", &io_service);
   sid_callback cb = std::bind(&activity_cb, std::placeholders::_1, std::placeholders::_2);
-  bot_manager manager(config_store, user_store, std::move(cb), &io_service);
+  std::function<void (std::string)> session_end_cb = std::bind(&on_session_end, std::placeholders::_1);
+  bot_manager manager(config_store, user_store, std::move(cb), session_end_cb, &io_service);
 
   server s;
   server_ptr = &s;
