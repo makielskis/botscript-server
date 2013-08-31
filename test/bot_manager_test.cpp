@@ -61,7 +61,8 @@ class BotManagerTest : public testing::Test {
 
   void successfulRegistrationTest() {
     register_msg m(USER, PW, MAIL);
-    bot_manager_.handle_register_msg(m, [](std::vector<outgoing_msg_ptr> response) {
+    bot_manager_.handle_register_msg(m, [](std::string sid, std::vector<outgoing_msg_ptr> response) {
+      ASSERT_FALSE(sid.empty());
       ASSERT_EQ(4u, response.size());
       ASSERT_NE(nullptr, dynamic_cast<session_msg*>(response[0].get()));
     });
@@ -72,14 +73,15 @@ class BotManagerTest : public testing::Test {
 
   void successfulLoginTest() {
     login_msg m(USER, PW);
-    bot_manager_.handle_login_msg(m, [=](std::vector<outgoing_msg_ptr> response) {
+    bot_manager_.handle_login_msg(m, [=](std::string sid, std::vector<outgoing_msg_ptr> response) {
       ASSERT_EQ(4u, response.size());
 
       // Check session ID.
-      session_msg* sid = dynamic_cast<session_msg*>(response[0].get());
-      ASSERT_NE(nullptr, sid);
-      ASSERT_EQ(32u, sid->sid().length());
-      sid_ = sid->sid();
+      ASSERT_FALSE(sid.empty());
+      sid_ = sid;
+      session_msg* sid_msg = dynamic_cast<session_msg*>(response[0].get());
+      ASSERT_NE(nullptr, sid_msg);
+      ASSERT_EQ(32u, sid_msg->sid().length());
 
       // Check account message containing the email.
       account_msg* account = dynamic_cast<account_msg*>(response[1].get());
@@ -167,7 +169,7 @@ class BotManagerTest : public testing::Test {
  */
 TEST_F(BotManagerTest, FailedLoginTest) {
   login_msg m("not_registered", "not_relevant");
-  bot_manager_.handle_login_msg(m, [](std::vector<outgoing_msg_ptr> response) {
+  bot_manager_.handle_login_msg(m, [](std::string sid, std::vector<outgoing_msg_ptr> response) {
     ASSERT_EQ(1u, response.size());
     failure_msg* fail = dynamic_cast<failure_msg*>(response[0].get());
     ASSERT_NE(nullptr, fail);
@@ -183,7 +185,7 @@ TEST_F(BotManagerTest, FailedLoginTest) {
  */
 TEST_F(BotManagerTest, FailedRegistration) {
   register_msg m(USER, PW, MAIL);
-  bot_manager_.handle_register_msg(m, [](std::vector<outgoing_msg_ptr> response) {
+  bot_manager_.handle_register_msg(m, [](std::string sid, std::vector<outgoing_msg_ptr> response) {
     ASSERT_EQ(1u, response.size());
     failure_msg* fail = dynamic_cast<failure_msg*>(response[0].get());
     ASSERT_NE(nullptr, fail);
