@@ -37,6 +37,7 @@ class bot_manager {
               std::function<void (std::string)> session_end_cb,
               boost::asio::io_service* io_service);
 
+  void load_bots(std::function<void ()> on_finish);
   void handle_connection_close(const std::string& sid);
 
   void handle_login_msg(login_msg m, sid_callback cb);
