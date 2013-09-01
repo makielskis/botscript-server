@@ -12,6 +12,8 @@
 
 #include "./messages/outgoing_msgs.h"
 
+#define LOAD_SIZE (10)
+
 using boost::system::error_code;
 namespace bs = botscript;
 
@@ -38,7 +40,15 @@ bot_manager::bot_manager(config_store& config_store,
       session_end_cb_(std::move(session_end_cb)) {
 }
 
-void bot_manager::load_bots() {
+void bot_manager::load_bots(std::function<void ()> on_finish) {
+  auto configs = make_shared<std::vector<std::string>>();
+  std::vector<std::string> configs = config_store_.get_all();
+  configs->insert(configs.begin(), configs.end());
+
+  auto it = configs->begin();
+  for (; it != configs->end(); ++it) {
+    
+  }
 }
 
 void bot_manager::handle_connection_close(const std::string& sid) {
