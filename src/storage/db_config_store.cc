@@ -40,6 +40,7 @@ void db_config_store::add(std::shared_ptr<botscript::bot> bot, empty_cb cb) {
     bots_[identifier]["password"] = config.password();
     bots_[identifier]["package"] = config.package();
     bots_[identifier]["server"] = config.server();
+    bots_[identifier]["inactive"] = config.inactive() ? "true" : "false";
 
     const auto& module_config = config.module_settings();
     for (const auto& module : module_config) {
@@ -130,7 +131,33 @@ std::string db_config_store::get_sync(const std::string& identifier) {
   // Create config object.
   bs::config config(username, password, package, server, module_settings);
 
+  // Set inactive flag
+  std::string inactive = bots_[identifier]["inactive"].val();
+  if (!inactive.empty() && (inactive == "true" || inactive == "false")) {
+    config.inactive(inactive == "true");
+  }
+
   return config.to_json(true);
+}
+
+void db_config_store::set_inactive(
+    const std::string& identifier,
+    bool flag,
+    empty_cb cb) {
+  io_service_->post([this, cb, identifier, flag]() {
+    std::string value = flag ? "true" : "false";
+    bots_[identifier]["inactive"] = value;
+    return cb(boost::system::error_code());
+  });
+}
+
+void db_config_store::get_inactive(
+    const std::string& identifier,
+    cb<bool>::type cb) {
+  io_service_->post([this, cb, identifier]() {
+    std::string flag = bots_[identifier]["inactive"].val();
+    return cb(flag == "true", boost::system::error_code());
+  });
 }
 
 }  // namespace botscript_server
