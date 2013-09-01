@@ -13,8 +13,8 @@
 
 
 #define DB_FILE          "./config_test.kch"
-#define INPUT_CONFIG     "{\"username\":\"login_username\",\"password\":\"login_password\",\"package\":\"ts\",\"server\":\"http://example.com\",\"modules\":{\"base\":{\"wait_time_factor\":\"1.00\",\"proxy\":\"\"}}}"
-#define EXPECTED_CONFIG  "{\"username\":\"login_username\",\"password\":\"login_password\",\"package\":\"ts\",\"server\":\"http://example.com\",\"modules\":{\"base\":{\"proxy\":\"\",\"wait_time_factor\":\"1.00\"},\"crime\":{\"active\":\"0\",\"crime\":\"\",\"crime_from\":\"\"}}}"
+#define INPUT_CONFIG     "{\"username\":\"login_username\",\"password\":\"login_password\",\"package\":\"ts\",\"server\":\"http://example.com\",\"inactive\":false,\"modules\":{\"base\":{\"wait_time_factor\":\"1.00\",\"proxy\":\"\"}}}"
+#define EXPECTED_CONFIG  "{\"username\":\"login_username\",\"password\":\"login_password\",\"package\":\"ts\",\"server\":\"http://example.com\",\"inactive\":false,\"modules\":{\"base\":{\"proxy\":\"\",\"wait_time_factor\":\"1.00\"},\"crime\":{\"active\":\"0\",\"crime\":\"\",\"crime_from\":\"\"}}}"
 #define IDENTIFIER       "ts_ex_login_username"
 
 using namespace std;
@@ -136,6 +136,59 @@ TEST_F(DbConfigStoreTest, RemoveNonexisting) {
 
     vector<std::string> configs = store.get_all();
     ASSERT_EQ(1, configs.size());
+  });
+
+  io_service_.run();
+}
+
+/*
+ * ### Inactive flag read ###
+ */
+TEST_F(DbConfigStoreTest, InactiveFlagByDefault) {
+  db_config_store store(DB_FILE, &io_service_);
+
+  store.get_inactive(IDENTIFIER, [&store](bool inactive, error_code e) {
+    ASSERT_FALSE(e);
+    ASSERT_FALSE(inactive);
+  });
+
+  io_service_.run();
+}
+
+/*
+ * ### Inactive flag set ###
+ */
+TEST_F(DbConfigStoreTest, InactiveFlagSetToTrue) {
+  db_config_store store(DB_FILE, &io_service_);
+
+  store.get_inactive(IDENTIFIER, [&store](bool inactive, error_code e) {
+    ASSERT_FALSE(e);
+    ASSERT_FALSE(inactive);
+
+    store.set_inactive(IDENTIFIER, true, [&store](error_code e) {
+      store.get_inactive(IDENTIFIER, [&store](bool inactive, error_code e) {
+        ASSERT_FALSE(e);
+        ASSERT_TRUE(inactive);
+      });
+    });
+  });
+
+  io_service_.run();
+}
+
+TEST_F(DbConfigStoreTest, InactiveFlagSetToFalse) {
+  db_config_store store(DB_FILE, &io_service_);
+
+  store.get_inactive(IDENTIFIER, [&store](bool inactive, error_code e) {
+    ASSERT_FALSE(e);
+    ASSERT_FALSE(inactive);
+
+    store.set_inactive(IDENTIFIER, false, [&store](error_code e) {
+      store.get_inactive(IDENTIFIER, [&store](bool inactive, error_code e) {
+        ASSERT_FALSE(e);
+        ASSERT_FALSE(inactive);
+      });
+    });
   });
 
   io_service_.run();

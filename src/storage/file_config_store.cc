@@ -102,5 +102,60 @@ std::vector<std::string> file_config_store::get_all() {
   return configs;
 }
 
+void file_config_store::set_inactive(
+    const std::string& identifier,
+    bool flag,
+    empty_cb cb) {
+  io_service_->post([this, cb, identifier, flag]() {
+    try {
+      std::stringstream buf;
+
+      {
+        std::ifstream in_file(config_dir_ + "/" + identifier + ".json");
+        in_file.exceptions(std::ios_base::failbit);
+        buf << in_file.rdbuf();
+      }
+
+      bs::config c(buf.str());
+      c.inactive(flag);
+
+      {
+        std::ofstream file;
+        file.exceptions(std::ios_base::failbit);
+        file.open(config_dir_ + "/" + identifier + ".json", std::ios::out);
+        file << c.to_json(true);
+      }
+
+      return cb(boost::system::error_code());
+    } catch (const std::runtime_error& e) {
+      return cb(boost::system::error_code(EIO, boost::system::system_category()));
+    } catch (const std::ios_base::failure& e) {
+      return cb(boost::system::error_code(EIO, boost::system::system_category()));
+    }
+  });
+}
+
+void file_config_store::get_inactive(
+    const std::string& identifier,
+    cb<bool>::type cb) {
+  io_service_->post([this, identifier, cb]() {
+    try {
+      std::ifstream in_file(config_dir_ + "/" + identifier + ".json");
+      in_file.exceptions(std::ios_base::failbit);
+
+      std::stringstream buf;
+      buf << in_file.rdbuf();
+
+      bs::config c(buf.str());
+
+      return cb(c.inactive(), boost::system::error_code());
+    } catch (const std::runtime_error& e) {
+      return cb("", boost::system::error_code(EIO, boost::system::system_category()));
+    } catch (const std::ios_base::failure& e) {
+      return cb("", boost::system::error_code(EIO, boost::system::system_category()));
+    }
+  });
+}
+
 }  // namespace botscript_server
 
