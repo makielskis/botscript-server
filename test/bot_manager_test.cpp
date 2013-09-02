@@ -19,7 +19,7 @@
 #define PW    ("pw")
 #define MAIL  ("mail")
 
-#define CONFIG "{\"username\":\"login_username\",\"password\":\"login_password\",\"package\":\"ts\",\"server\":\"http://example.com\",\"modules\":{\"base\":{\"wait_time_factor\":\"1.00\",\"proxy\":\"\"}}}"
+#define CONFIG "{\"username\":\"login_username\",\"password\":\"login_password\",\"package\":\"ts\",\"server\":\"http://example.com\",\"inactive\":false,\"modules\":{\"base\":{\"wait_time_factor\":\"1.00\",\"proxy\":\"\"}}}"
 
 using namespace std;
 using namespace botscript_server;
@@ -36,6 +36,9 @@ class BotManagerTest : public testing::Test {
                                this,
                                std::placeholders::_1,
                                std::placeholders::_2),
+                     std::bind(&BotManagerTest::session_close_callback,
+                               this,
+                               std::placeholders::_1),
                      &io_service_) {
   }
 
@@ -57,6 +60,10 @@ class BotManagerTest : public testing::Test {
       std::cout << msg->to_json() << "\n";
     }
     std::cout << "\n";
+  }
+
+  void session_close_callback(const std::string& sid) {
+    std::cout << "session " << sid << " closed\n";
   }
 
   void successfulRegistrationTest() {

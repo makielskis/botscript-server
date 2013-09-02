@@ -34,6 +34,10 @@ class file_config_store : public config_store {
                                 const std::string& key,
                                 const std::string& new_value,
                                 empty_cb callback) override;
+  virtual void set_inactive(const std::string& identifier,
+                            bool flag,
+                            empty_cb cb);
+  virtual void get_inactive(const std::string& identifier, cb<bool>::type cb);
 
  private:
   /// Path to the configuration directory.
