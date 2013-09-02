@@ -12,6 +12,8 @@
 
 #include "./messages/outgoing_msgs.h"
 
+#define LOAD_SIZE (10)
+
 using boost::system::error_code;
 namespace bs = botscript;
 
@@ -25,6 +27,7 @@ std::unique_ptr<T> make_unique(Args&&... args) {
 bot_manager::bot_manager(config_store& config_store,
                          user_store& user_store,
                          sid_callback activity_cb,
+                         std::function<void (std::string)> session_end_cb,
                          boost::asio::io_service* io_service)
     : print_bot_cb_([](std::string id, std::string k, std::string v) {
         if (k == "log") { std::cout << v; }
@@ -33,7 +36,19 @@ bot_manager::bot_manager(config_store& config_store,
       user_store_(user_store),
       io_service_(io_service),
       packages_(std::move(bs::bot::load_packages("../test/packages"))),
-      sid_callback_(std::move(activity_cb)) {
+      sid_callback_(std::move(activity_cb)),
+      session_end_cb_(std::move(session_end_cb)) {
+}
+
+void bot_manager::load_bots(std::function<void ()> on_finish) {
+  auto configs = make_shared<std::vector<std::string>>();
+  std::vector<std::string> configs = config_store_.get_all();
+  configs->insert(configs.begin(), configs.end());
+
+  auto it = configs->begin();
+  for (; it != configs->end(); ++it) {
+    
+  }
 }
 
 void bot_manager::handle_connection_close(const std::string& sid) {
@@ -44,6 +59,7 @@ void bot_manager::handle_connection_close(const std::string& sid) {
     }
   }
   sid_bot_ids_map_.erase(it);
+  session_end_cb_(sid);
 }
 
 void bot_manager::handle_login_msg(
@@ -97,12 +113,13 @@ void bot_manager::handle_create_bot_msg(
     c = bs::config(m.config());
   } catch (const std::runtime_error& e) {
     std::vector<outgoing_msg_ptr> out;
-    out.emplace_back(make_unique<failure_msg>(0, m.type(), 10, e.what()));
+    out.emplace_back(make_unique<failure_msg>(0, m.type(), 8, e.what()));
     return cb(std::move(out));
   }
 
   // Create identifier.
   std::string id = bs::bot::identifier(c.username(), c.package(), c.server());
+
   return user_store_.add_bot(m.sid(), id, [=](error_code e) {
     std::vector<outgoing_msg_ptr> out;
 
@@ -118,8 +135,19 @@ void bot_manager::handle_create_bot_msg(
     // Send updates out to the activity callback.
     b->callback_ = create_sid_cb(m.sid());
 
+    // Check blocklist.
+    if (bot_creation_blocklist_.find(id) != bot_creation_blocklist_.end()) {
+      std::vector<outgoing_msg_ptr> out;
+      out.emplace_back(make_unique<failure_msg>(0, m.type(), 10, "Bot already exists"));
+      return cb(std::move(out));
+    }
+    bot_creation_blocklist_.insert(id);
+
     // Load configuration.
     return b->init(m.config(), [=](std::shared_ptr<bs::bot>, std::string err) {
+      // Remove from botlist (independent from init result).
+      bot_creation_blocklist_.erase(id);
+
       std::vector<outgoing_msg_ptr> out;
 
       if (!err.empty()) {
@@ -241,13 +269,14 @@ void bot_manager::handle_delete_update_msg(
       return cb(std::move(out));
     }
 
+    // Remove user from store.
     return user_store_.remove_user(m.sid(), m.current_pw(), [=](error_code e) {
       std::vector<outgoing_msg_ptr> out;
       if (e) {
         // Failure: respond with failure message.
         out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
       } else {
-        // Success: cleanup
+        // Success: cleanup bots and bot maps.
         const auto sid_bots_it = sid_bot_ids_map_.find(m.sid());
         if (sid_bots_it != sid_bot_ids_map_.end()) {
           for (const std::string& bot_id : sid_bots_it->second) {
@@ -259,6 +288,10 @@ void bot_manager::handle_delete_update_msg(
           }
           sid_bot_ids_map_.erase(sid_bots_it);
         }
+
+        // Inform listener.
+        session_end_cb_(m.sid());
+
         out.emplace_back(make_unique<success_msg>(0, m.type()));
       }
       return cb(std::move(out));

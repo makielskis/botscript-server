@@ -59,6 +59,21 @@ class config_store {
                                 const std::string& new_value,
                                 empty_cb callback) = 0;
 
+  /// Sets the inactive flag for the bot with the given identifier.
+  ///
+  /// \param identifier  the identifier of the bot to set inactive
+  /// \param flag        the new state of the inactive flag
+  virtual void set_inactive(const std::string& identifier,
+                            bool flag,
+                            empty_cb cb) = 0;
+
+  /// Returns the inactive flag for this bot.
+  ///
+  /// \param identifier  the identifier of the bot to get the active status for
+  /// \param cb          the callback to call when the status has been retrieved
+  virtual void get_inactive(const std::string& identifier,
+                            cb<bool>::type cb) = 0;
+
   /// Get all configurations in the store.
   ///
   /// \return vector containing all configurations in the store
