@@ -151,7 +151,7 @@ int main() {
   db_user_store user_store("./user_store.kch", &io_service);
   sid_callback cb = std::bind(&activity_cb, std::placeholders::_1, std::placeholders::_2);
   std::function<void (std::string)> session_end_cb = std::bind(&on_session_end, std::placeholders::_1);
-  bot_manager manager(config_store, user_store, std::move(cb), session_end_cb, &io_service);
+  bot_manager manager("./packages", config_store, user_store, std::move(cb), session_end_cb, &io_service);
 
   server s;
   server_ptr = &s;
