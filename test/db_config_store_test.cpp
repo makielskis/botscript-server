@@ -69,7 +69,7 @@ TEST_F(DbConfigStoreTest, RemoveConfig) {
     ASSERT_FALSE(e);
 
     vector<std::string> configs = store.get_all();
-    ASSERT_EQ(0, configs.size());
+    ASSERT_EQ(0u, configs.size());
   });
 
   io_service_.run();
@@ -118,7 +118,7 @@ TEST_F(DbConfigStoreTest, DoubleAdd) {
     ASSERT_FALSE(e);
 
     vector<std::string> configs = store.get_all();
-    ASSERT_EQ(1, configs.size());
+    ASSERT_EQ(1u, configs.size());
     EXPECT_EQ(EXPECTED_CONFIG, configs.at(0));
   });
 
@@ -135,7 +135,7 @@ TEST_F(DbConfigStoreTest, RemoveNonexisting) {
     ASSERT_FALSE(e);
 
     vector<std::string> configs = store.get_all();
-    ASSERT_EQ(1, configs.size());
+    ASSERT_EQ(1u, configs.size());
   });
 
   io_service_.run();
