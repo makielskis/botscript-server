@@ -30,7 +30,8 @@ class BotManagerTest : public testing::Test {
   BotManagerTest()
       : config_store_(DB_PATH, &io_service_),
         user_store_(DB_PATH, &io_service_),
-        bot_manager_(config_store_,
+        bot_manager_("../test/packages",
+                     config_store_,
                      user_store_,
                      std::bind(&BotManagerTest::activity_callback,
                                this,
