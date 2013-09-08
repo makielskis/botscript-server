@@ -70,6 +70,17 @@ void db_config_store::get(const std::string& identifier,
   });
 };
 
+void db_config_store::get(const std::vector<std::string>& identifiers,
+                          cb<std::vector<std::string>>::type cb) {
+  io_service_->post([=]() {
+    std::vector<std::string> configurations;
+    for (const auto& identifier : identifiers) {
+      configurations.emplace_back(get_sync(identifier));
+    }
+    return cb(configurations, boost::system::error_code());
+  });
+}
+
 std::vector<std::string> db_config_store::get_all() {
   // Get all bot db entrys.
   std::vector<std::string> keys = db_.match_prefix({DB_KEY_PREFIX});

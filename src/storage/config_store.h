@@ -45,6 +45,14 @@ class config_store {
   ///                    with the configuration of the bot
   virtual void get(const std::string& identifier, cb<std::string>::type cb) = 0;
 
+  /// Get the configurations for the given identifiers.
+  ///
+  /// \param identifiers the identifiers of the bots to read the configs for
+  /// \param cb          the callback that will be called on operation finish
+  ///                    with the configurations of the bots
+  virtual void get(const std::vector<std::string>& identifiers,
+                   cb<std::vector<std::string>>::type cb) = 0;
+
   /// Updates a single attribute of a bot and sets it to the given value.
   /// Basic configuration values (username, password, ...) cannot be changed.
   ///
