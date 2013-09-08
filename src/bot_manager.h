@@ -58,8 +58,7 @@ class bot_manager {
   void on_bot_load(
       std::shared_ptr<botscript::bot> bot,
       std::string err,
-      std::shared_ptr<std::vector<std::string>> configs_ptr,
-      std::function<void (std::shared_ptr<botscript::bot>, std::string)> load_cb);
+      std::shared_ptr<std::vector<std::string>> configs_ptr);
   std::map<std::string, std::string> get_bot_configs(
       const std::vector<std::string>& bots) const;
   std::map<std::string, std::string> get_bot_logs(
@@ -70,11 +69,13 @@ class bot_manager {
       std::vector<std::string> message_type,
       sid_callback cb);
 
-  typedef std::function<void (std::string, std::string, std::string)> bot_cb;
-  bot_cb create_sid_cb(
+  void sid_cb(
+      const std::string& sid,
       std::weak_ptr<botscript::bot> bot,
-      const std::string& sid);
-  bot_cb create_print_cb(std::weak_ptr<botscript::bot> bot);
+      std::string id, std::string k, std::string v);
+  void print_cb(
+      std::weak_ptr<botscript::bot> bot,
+      std::string id, std::string k, std::string v);
 
   config_store& config_store_;
   user_store& user_store_;

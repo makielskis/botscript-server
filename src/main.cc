@@ -35,12 +35,12 @@ void activity_cb(std::string sid, std::vector<outgoing_msg_ptr> msgs) {
 
       // Check error (break on error).
       if (e) {
-        std::cerr << "[ERROR] unable to send messages\n";
+        std::cerr << "[ERROR] unable to send messages: " << e.message() << "\n";
         break;
       }
     }
   } else {
-    std::cerr << "[FATAL] message for session " << sid << " not delivered\n";
+    std::cerr << "[FATAL] message for unknown session " << sid << " not delivered\n";
   }
 }
 
@@ -53,6 +53,7 @@ void on_session_end(std::string sid) {
     }
     sid_con_map.erase(sid_con_it);
   }
+  std::cout << "Session " << sid << " ended\n";
 }
 
 msg_callback create_cb(server& s, connection_hdl hdl) {
@@ -158,9 +159,13 @@ int main() {
   s.set_close_handler(bind(&on_close, ref(manager), ::_1));
   s.set_message_handler(bind(&on_msg, ref(s), ref(manager), ::_1,::_2));
 
+  manager.load_bots([&]() {
+    std::cout << "Finished loading bots\n";
+  });
+
+
   s.init_asio(&io_service);
   s.listen(9003);
   s.start_accept();
-
   s.run();
 }
