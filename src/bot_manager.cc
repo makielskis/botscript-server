@@ -15,7 +15,7 @@
 #define LOAD_SIZE (10)
 
 using boost::system::error_code;
-namespace ph = std::placeholders;
+namespace p = std::placeholders;
 namespace bs = botscript;
 
 namespace botscript_server {
@@ -42,15 +42,14 @@ bot_manager::bot_manager(const std::string& packages_path,
 void bot_manager::load_bots(std::function<void ()> on_finish) {
   std::vector<std::string> configs = config_store_.get_all();
   auto configs_ptr = std::make_shared<std::vector<std::string>>(configs.begin(), configs.end());
-  auto load_cb = std::bind(&bot_manager::on_bot_load, this, ph::_1, ph::_2, configs_ptr);
+  auto load_cb = std::bind(&bot_manager::on_bot_load, this, p::_1, p::_2, configs_ptr);
 
   int count = 0;
-  while (count < 10 && configs_ptr->size() > 0) {
+  while (count++ < 10 && configs_ptr->size() > 0) {
     std::string config = *configs_ptr->rbegin();
     configs_ptr->resize(configs_ptr->size() - 1);
-    std::cout << "Loading bot configuration: " << config << "\n";
     auto bot = std::make_shared<bs::bot>(io_service_);
-    bot->callback_ = std::bind(&bot_manager::print_cb, this, bot, ph::_1, ph::_2, ph::_3);
+    bot->callback_ = std::bind(&bot_manager::print_cb, this, bot, p::_1, p::_2, p::_3);
     bot->init(config, load_cb);
   }
 }
@@ -63,17 +62,24 @@ void bot_manager::on_bot_load(
     std::cout << "Loaded " << bot->identifier() << "\n";
     bots_[bot->identifier()] = bot;
   } else {
-    std::cout << "Unable to load " << bot->identifier() << " [" << err << "]\n";
+    std::string identifier = bot->identifier();
     bot->shutdown();
+    std::cout << "Unable to load " << identifier << " [" << err << "]\n";
+    config_store_.set_inactive(bot->identifier(), true, [identifier](error_code ec) {
+      if (ec) {
+        std::cout << "[FATAL] Could not deactivate " << identifier << ":"
+                  << ec.message() << "[" << ec.value() << "]\n";
+      }
+    });
   }
 
   if (configs_ptr->size() != 0) {
     std::string config = *configs_ptr->rbegin();
     configs_ptr->resize(configs_ptr->size() - 1);
     std::cout << "Loading bot configuration: " << config << "\n";
-    auto load_cb = std::bind(&bot_manager::on_bot_load, this, ph::_1, ph::_2, configs_ptr);
+    auto load_cb = std::bind(&bot_manager::on_bot_load, this, p::_1, p::_2, configs_ptr);
     auto bot = std::make_shared<bs::bot>(io_service_);
-    bot->callback_ = std::bind(&bot_manager::print_cb, this, bot, ph::_1, ph::_2, ph::_3);
+    bot->callback_ = std::bind(&bot_manager::print_cb, this, bot, p::_1, p::_2, p::_3);
     bot->init(config, load_cb);
   }
 }
@@ -83,7 +89,7 @@ void bot_manager::handle_connection_close(const std::string& sid) {
   if (it != sid_bot_ids_map_.end()) {
     for (const auto& id : it->second) {
       auto& bot = bots_[id];
-      bot->callback_ = std::bind(&bot_manager::print_cb, this, bot, ph::_1, ph::_2, ph::_3);
+      bot->callback_ = std::bind(&bot_manager::print_cb, this, bot, p::_1, p::_2, p::_3);
     }
   }
   sid_bot_ids_map_.erase(it);
@@ -162,7 +168,7 @@ void bot_manager::handle_create_bot_msg(
     auto b = std::make_shared<bs::bot>(io_service_);
 
     // Send updates out to the activity callback.
-    b->callback_ = std::bind(&bot_manager::sid_cb, this, m.sid(), b, ph::_1, ph::_2, ph::_3);
+    b->callback_ = std::bind(&bot_manager::sid_cb, this, m.sid(), b, p::_1, p::_2, p::_3);
 
     // Check blocklist.
     if (bot_creation_blocklist_.find(id) != bot_creation_blocklist_.end()) {
@@ -402,7 +408,7 @@ void bot_manager::on_login(
       // Register bots to send messages to the client.
       for (const auto& bot_id : bots) {
         auto& bot = bots_[bot_id];
-        bot->callback_ = std::bind(&bot_manager::sid_cb, this, sid, bot, ph::_1, ph::_2, ph::_3);
+        bot->callback_ = std::bind(&bot_manager::sid_cb, this, sid, bot, p::_1, p::_2, p::_3);
         sid_bot_ids_map_[sid].insert(bot_id);
       }
 
