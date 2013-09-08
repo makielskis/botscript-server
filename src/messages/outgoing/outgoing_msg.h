@@ -10,6 +10,9 @@ class outgoing_msg {
  public:
   /// \return the message as JSON encoded string
   virtual std::string to_json() const = 0;
+
+  virtual ~outgoing_msg() {
+  }
 };
 
 #endif  // BOTSCRIPT_SERVER_OUTGOING_MSG_
