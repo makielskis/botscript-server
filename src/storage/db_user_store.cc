@@ -206,7 +206,6 @@ void db_user_store::get_bots(const std::string& session_id,
         } else {
           std::vector<std::string> bots;
           boost::split(bots, bots_string, boost::is_any_of(","));
-
           return cb(bots, boost::system::error_code());
         }
       } else {

@@ -15,6 +15,7 @@
 #define LOAD_SIZE (10)
 
 using boost::system::error_code;
+namespace ph = std::placeholders;
 namespace bs = botscript;
 
 namespace botscript_server {
@@ -41,39 +42,39 @@ bot_manager::bot_manager(const std::string& packages_path,
 void bot_manager::load_bots(std::function<void ()> on_finish) {
   std::vector<std::string> configs = config_store_.get_all();
   auto configs_ptr = std::make_shared<std::vector<std::string>>(configs.begin(), configs.end());
-  bs::bot::error_cb load_cb = std::bind(&bot_manager::on_bot_load,
-                                        this,
-                                        std::placeholders::_1,
-                                        std::placeholders::_2,
-                                        configs_ptr,
-                                        load_cb);
+  auto load_cb = std::bind(&bot_manager::on_bot_load, this, ph::_1, ph::_2, configs_ptr);
 
-  int end_load = configs_ptr->size() - 10;
-  for (int i = configs_ptr->size() - 1; i >= 0 && i >= end_load; --i) {
-    std::shared_ptr<bs::bot> bot;
-    bot->callback_ = create_print_cb(bot);
-    bot->init((*configs_ptr)[configs_ptr->size() - 1], load_cb);
+  int count = 0;
+  while (count < 10 && configs_ptr->size() > 0) {
+    std::string config = *configs_ptr->rbegin();
     configs_ptr->resize(configs_ptr->size() - 1);
+    std::cout << "Loading bot configuration: " << config << "\n";
+    auto bot = std::make_shared<bs::bot>(io_service_);
+    bot->callback_ = std::bind(&bot_manager::print_cb, this, bot, ph::_1, ph::_2, ph::_3);
+    bot->init(config, load_cb);
   }
 }
 
 void bot_manager::on_bot_load(
     std::shared_ptr<bs::bot> bot,
     std::string err,
-    std::shared_ptr<std::vector<std::string>> configs_ptr,
-    bs::bot::error_cb load_cb) {
+    std::shared_ptr<std::vector<std::string>> configs_ptr) {
   if (err.empty()) {
+    std::cout << "Loaded " << bot->identifier() << "\n";
     bots_[bot->identifier()] = bot;
   } else {
-    std::cout << "unable to load " << bot->identifier() << " [" << err << "]\n";
+    std::cout << "Unable to load " << bot->identifier() << " [" << err << "]\n";
     bot->shutdown();
   }
 
   if (configs_ptr->size() != 0) {
-    std::shared_ptr<bs::bot> bot;
-    bot->callback_ = create_print_cb(bot);
-    bot->init(*configs_ptr->rbegin(), load_cb);
+    std::string config = *configs_ptr->rbegin();
     configs_ptr->resize(configs_ptr->size() - 1);
+    std::cout << "Loading bot configuration: " << config << "\n";
+    auto load_cb = std::bind(&bot_manager::on_bot_load, this, ph::_1, ph::_2, configs_ptr);
+    auto bot = std::make_shared<bs::bot>(io_service_);
+    bot->callback_ = std::bind(&bot_manager::print_cb, this, bot, ph::_1, ph::_2, ph::_3);
+    bot->init(config, load_cb);
   }
 }
 
@@ -82,7 +83,7 @@ void bot_manager::handle_connection_close(const std::string& sid) {
   if (it != sid_bot_ids_map_.end()) {
     for (const auto& id : it->second) {
       auto& bot = bots_[id];
-      bot->callback_ = create_print_cb(bot);
+      bot->callback_ = std::bind(&bot_manager::print_cb, this, bot, ph::_1, ph::_2, ph::_3);
     }
   }
   sid_bot_ids_map_.erase(it);
@@ -147,6 +148,7 @@ void bot_manager::handle_create_bot_msg(
   // Create identifier.
   std::string id = bs::bot::identifier(c.username(), c.package(), c.server());
 
+  // Add bot to user store.
   return user_store_.add_bot(m.sid(), id, [=](error_code e) {
     std::vector<outgoing_msg_ptr> out;
 
@@ -160,7 +162,7 @@ void bot_manager::handle_create_bot_msg(
     auto b = std::make_shared<bs::bot>(io_service_);
 
     // Send updates out to the activity callback.
-    b->callback_ = create_sid_cb(b, m.sid());
+    b->callback_ = std::bind(&bot_manager::sid_cb, this, m.sid(), b, ph::_1, ph::_2, ph::_3);
 
     // Check blocklist.
     if (bot_creation_blocklist_.find(id) != bot_creation_blocklist_.end()) {
@@ -171,36 +173,52 @@ void bot_manager::handle_create_bot_msg(
     bot_creation_blocklist_.insert(id);
 
     // Load configuration.
-    return b->init(m.config(), [=](std::shared_ptr<bs::bot>, std::string err) {
+    return b->init(m.config(), [=](std::shared_ptr<bs::bot> created_bot, std::string err) {
       // Remove from botlist (independent from init result).
       bot_creation_blocklist_.erase(id);
 
       std::vector<outgoing_msg_ptr> out;
 
       if (!err.empty()) {
-        // Bot creation failed (i.e. bad proxy): responde with failure message.
-        out.emplace_back(make_unique<failure_msg>(0, m.type(), 11, err));
-        return cb(std::move(out));
+        // Add bot to user store.
+        return user_store_.remove_bot(m.sid(), id, [=](error_code e) {
+          // Can't react to error here, need to inform user about creation error.
+          // Bot creation failed (i.e. bad proxy): responde with failure message.
+          std::vector<outgoing_msg_ptr> out;
+          out.emplace_back(make_unique<failure_msg>(0, m.type(), 11, err));
+          return cb(std::move(out));
+        });
       }
 
+
       // Store bot.
-      bots_[id] = b;
+      bots_[id] = created_bot;
 
       // Associate bot identifier with this session.
       sid_bot_ids_map_[m.sid()].insert(id);
 
-      // Send new bot list to the user ( = success indicator)
-      user_store_.get_bots(m.sid(), [=](std::vector<std::string> bots, error_code e) {
-        std::vector<outgoing_msg_ptr> out;
-
+      // Add bot config to config store.
+      config_store_.add(created_bot, [=](error_code e) {
         if (e) {
-          // This should not happen (inconsistent database)!
+          // This should not happen!
+          std::vector<outgoing_msg_ptr> out;
           out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
           return cb(std::move(out));
         }
 
-        out.emplace_back(make_unique<bots_msg>(get_bot_configs(bots)));
-        return cb(std::move(out));
+        // Send new bot list to the user ( = success indicator)
+        user_store_.get_bots(m.sid(), [=](std::vector<std::string> bots, error_code e) {
+          std::vector<outgoing_msg_ptr> out;
+
+          if (e) {
+            // This should not happen (inconsistent database)!
+            out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
+            return cb(std::move(out));
+          }
+
+          out.emplace_back(make_unique<bots_msg>(get_bot_configs(bots)));
+          return cb(std::move(out));
+        });
       });
     });
   });
@@ -384,7 +402,7 @@ void bot_manager::on_login(
       // Register bots to send messages to the client.
       for (const auto& bot_id : bots) {
         auto& bot = bots_[bot_id];
-        bot->callback_ = create_sid_cb(bot, sid);
+        bot->callback_ = std::bind(&bot_manager::sid_cb, this, sid, bot, ph::_1, ph::_2, ph::_3);
         sid_bot_ids_map_[sid].insert(bot_id);
       }
 
@@ -407,6 +425,7 @@ std::map<std::string, std::string> bot_manager::get_bot_configs(
   for (const std::string& bot_id : bots) {
     const auto id_match = bots_.find(bot_id);
     if (id_match != bots_.cend()) {
+      std::cout << "Reading configuration for " << bot_id << std::endl;
       id_config_map[bot_id] = id_match->second->configuration(false);
     } else {
       std::cerr << "[FATAL] DB and in-memory bot map mismatch: " << bot_id << "\n";
@@ -429,48 +448,47 @@ std::map<std::string, std::string> bot_manager::get_bot_logs(
   return id_log_map;
 }
 
-bs::bot::upd_cb bot_manager::create_sid_cb(
+void bot_manager::sid_cb(
+    const std::string& sid,
     std::weak_ptr<bs::bot> bot,
-    const std::string& sid) {
-  return [this, sid, bot](std::string id, std::string k, std::string v) {
-    if (k == "log") {
-      std::cout << v;
-    }
+    std::string id, std::string k, std::string v) {
+  if (k == "log") {
+    std::cout << v;
+  }
 
-    std::vector<outgoing_msg_ptr> out;
-    out.emplace_back(make_unique<update_msg>(id, k, v));
-    sid_callback_(sid, std::move(out));
+  std::vector<outgoing_msg_ptr> out;
+  out.emplace_back(make_unique<update_msg>(id, k, v));
+  sid_callback_(sid, std::move(out));
 
-    std::shared_ptr<bs::bot> locked_bot = bot.lock();
-    if (k != "log") {
-      std::string::size_type underscore_pos = k.find('_');
-      if (underscore_pos != std::string::npos) {
-        std::string module = k.substr(0, underscore_pos);
-        std::string key = k.substr(underscore_pos + 1);
-        config_store_.update_attribute(locked_bot, module, key, v,
-                                       [](error_code e) {});
-      }
+  std::shared_ptr<bs::bot> locked_bot = bot.lock();
+  if (k != "log") {
+    std::string::size_type underscore_pos = k.find('_');
+    if (underscore_pos != std::string::npos) {
+      std::string module = k.substr(0, underscore_pos);
+      std::string key = k.substr(underscore_pos + 1);
+      config_store_.update_attribute(locked_bot, module, key, v,
+                                     [](error_code e) {});
     }
-  };
+  }
 }
 
-bs::bot::upd_cb bot_manager::create_print_cb(std::weak_ptr<bs::bot> bot) {
-  return [this, bot](std::string id, std::string k, std::string v) {
-    if (k == "log") {
-      std::cout << v;
-    }
+void bot_manager::print_cb(
+    std::weak_ptr<bs::bot> bot,
+    std::string id, std::string k, std::string v) {
+  if (k == "log") {
+    std::cout << v;
+  }
 
-    std::shared_ptr<bs::bot> locked_bot = bot.lock();
-    if (k != "log") {
-      std::string::size_type underscore_pos = k.find('_');
-      if (underscore_pos != std::string::npos) {
-        std::string module = k.substr(0, underscore_pos);
-        std::string key = k.substr(underscore_pos + 1);
-        config_store_.update_attribute(locked_bot, module, key, v,
-                                       [](error_code e) {});
-      }
+  std::shared_ptr<bs::bot> locked_bot = bot.lock();
+  if (k != "log") {
+    std::string::size_type underscore_pos = k.find('_');
+    if (underscore_pos != std::string::npos) {
+      std::string module = k.substr(0, underscore_pos);
+      std::string key = k.substr(underscore_pos + 1);
+      config_store_.update_attribute(locked_bot, module, key, v,
+                                     [](error_code e) {});
     }
-  };
+  }
 }
 
 }  // botscript_server
