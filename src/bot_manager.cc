@@ -24,30 +24,56 @@ std::unique_ptr<T> make_unique(Args&&... args) {
   return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
-bot_manager::bot_manager(config_store& config_store,
+bot_manager::bot_manager(const std::string& packages_path,
+                         config_store& config_store,
                          user_store& user_store,
                          sid_callback activity_cb,
                          std::function<void (std::string)> session_end_cb,
                          boost::asio::io_service* io_service)
-    : print_bot_cb_([](std::string id, std::string k, std::string v) {
-        if (k == "log") { std::cout << v; }
-      }),
-      config_store_(config_store),
+    : config_store_(config_store),
       user_store_(user_store),
       io_service_(io_service),
-      packages_(std::move(bs::bot::load_packages("../test/packages"))),
+      packages_(std::move(bs::bot::load_packages(packages_path))),
       sid_callback_(std::move(activity_cb)),
       session_end_cb_(std::move(session_end_cb)) {
 }
 
 void bot_manager::load_bots(std::function<void ()> on_finish) {
-  auto configs = make_shared<std::vector<std::string>>();
   std::vector<std::string> configs = config_store_.get_all();
-  configs->insert(configs.begin(), configs.end());
+  auto configs_ptr = std::make_shared<std::vector<std::string>>(configs.begin(), configs.end());
+  bs::bot::error_cb load_cb = std::bind(&bot_manager::on_bot_load,
+                                        this,
+                                        std::placeholders::_1,
+                                        std::placeholders::_2,
+                                        configs_ptr,
+                                        load_cb);
 
-  auto it = configs->begin();
-  for (; it != configs->end(); ++it) {
-    
+  int end_load = configs_ptr->size() - 10;
+  for (int i = configs_ptr->size() - 1; i >= 0 && i >= end_load; --i) {
+    std::shared_ptr<bs::bot> bot;
+    bot->callback_ = create_print_cb(bot);
+    bot->init((*configs_ptr)[configs_ptr->size() - 1], load_cb);
+    configs_ptr->resize(configs_ptr->size() - 1);
+  }
+}
+
+void bot_manager::on_bot_load(
+    std::shared_ptr<bs::bot> bot,
+    std::string err,
+    std::shared_ptr<std::vector<std::string>> configs_ptr,
+    bs::bot::error_cb load_cb) {
+  if (err.empty()) {
+    bots_[bot->identifier()] = bot;
+  } else {
+    std::cout << "unable to load " << bot->identifier() << " [" << err << "]\n";
+    bot->shutdown();
+  }
+
+  if (configs_ptr->size() != 0) {
+    std::shared_ptr<bs::bot> bot;
+    bot->callback_ = create_print_cb(bot);
+    bot->init(*configs_ptr->rbegin(), load_cb);
+    configs_ptr->resize(configs_ptr->size() - 1);
   }
 }
 
@@ -55,7 +81,8 @@ void bot_manager::handle_connection_close(const std::string& sid) {
   const auto it = sid_bot_ids_map_.find(sid);
   if (it != sid_bot_ids_map_.end()) {
     for (const auto& id : it->second) {
-      bots_[id]->callback_ = print_bot_cb_;
+      auto& bot = bots_[id];
+      bot->callback_ = create_print_cb(bot);
     }
   }
   sid_bot_ids_map_.erase(it);
@@ -133,7 +160,7 @@ void bot_manager::handle_create_bot_msg(
     auto b = std::make_shared<bs::bot>(io_service_);
 
     // Send updates out to the activity callback.
-    b->callback_ = create_sid_cb(m.sid());
+    b->callback_ = create_sid_cb(b, m.sid());
 
     // Check blocklist.
     if (bot_creation_blocklist_.find(id) != bot_creation_blocklist_.end()) {
@@ -356,7 +383,8 @@ void bot_manager::on_login(
 
       // Register bots to send messages to the client.
       for (const auto& bot_id : bots) {
-        bots_[bot_id]->callback_ = create_sid_cb(sid);
+        auto& bot = bots_[bot_id];
+        bot->callback_ = create_sid_cb(bot, sid);
         sid_bot_ids_map_[sid].insert(bot_id);
       }
 
@@ -401,14 +429,47 @@ std::map<std::string, std::string> bot_manager::get_bot_logs(
   return id_log_map;
 }
 
-bs::bot::upd_cb bot_manager::create_sid_cb(const std::string& sid) {
-  return [this, sid](std::string id, std::string k, std::string v) {
+bs::bot::upd_cb bot_manager::create_sid_cb(
+    std::weak_ptr<bs::bot> bot,
+    const std::string& sid) {
+  return [this, sid, bot](std::string id, std::string k, std::string v) {
     if (k == "log") {
       std::cout << v;
     }
+
     std::vector<outgoing_msg_ptr> out;
     out.emplace_back(make_unique<update_msg>(id, k, v));
     sid_callback_(sid, std::move(out));
+
+    std::shared_ptr<bs::bot> locked_bot = bot.lock();
+    if (k != "log") {
+      std::string::size_type underscore_pos = k.find('_');
+      if (underscore_pos != std::string::npos) {
+        std::string module = k.substr(0, underscore_pos);
+        std::string key = k.substr(underscore_pos + 1);
+        config_store_.update_attribute(locked_bot, module, key, v,
+                                       [](error_code e) {});
+      }
+    }
+  };
+}
+
+bs::bot::upd_cb bot_manager::create_print_cb(std::weak_ptr<bs::bot> bot) {
+  return [this, bot](std::string id, std::string k, std::string v) {
+    if (k == "log") {
+      std::cout << v;
+    }
+
+    std::shared_ptr<bs::bot> locked_bot = bot.lock();
+    if (k != "log") {
+      std::string::size_type underscore_pos = k.find('_');
+      if (underscore_pos != std::string::npos) {
+        std::string module = k.substr(0, underscore_pos);
+        std::string key = k.substr(underscore_pos + 1);
+        config_store_.update_attribute(locked_bot, module, key, v,
+                                       [](error_code e) {});
+      }
+    }
   };
 }
 

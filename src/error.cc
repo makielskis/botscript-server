@@ -31,6 +31,9 @@ std::string error_category_impl::message(int ev) const noexcept {
     case error::email_address_not_valid:
       return "Email address not valid";
 
+    case error::user_not_found:
+      return "User not found";
+
     case error::session_id_not_available:
       return "Session invalid";
 
@@ -45,6 +48,12 @@ std::string error_category_impl::message(int ev) const noexcept {
 
     case error::bot_not_found:
       return "Bot not found";
+
+    case error::invalid_configuration:
+      return "Configuration not valid";
+
+    case error::bot_creation_failed:
+      return "Creating bot failed";
 
     default:
       return "Unknown error";

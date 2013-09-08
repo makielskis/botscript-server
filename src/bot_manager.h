@@ -31,7 +31,8 @@ typedef std::function<void (std::string, std::vector<outgoing_msg_ptr>)> sid_cal
 
 class bot_manager {
  public:
-  bot_manager(config_store& config_store,
+  bot_manager(const std::string& packages_path,
+              config_store& config_store,
               user_store& user_store,
               sid_callback activity_cb,
               std::function<void (std::string)> session_end_cb,
@@ -54,6 +55,11 @@ class bot_manager {
   void handle_password_update_msg(password_update_msg m, msg_callback cb);
 
  private:
+  void on_bot_load(
+      std::shared_ptr<botscript::bot> bot,
+      std::string err,
+      std::shared_ptr<std::vector<std::string>> configs_ptr,
+      std::function<void (std::shared_ptr<botscript::bot>, std::string)> load_cb);
   std::map<std::string, std::string> get_bot_configs(
       const std::vector<std::string>& bots) const;
   std::map<std::string, std::string> get_bot_logs(
@@ -65,8 +71,10 @@ class bot_manager {
       sid_callback cb);
 
   typedef std::function<void (std::string, std::string, std::string)> bot_cb;
-  bot_cb create_sid_cb(const std::string& sid);
-  bot_cb print_bot_cb_;
+  bot_cb create_sid_cb(
+      std::weak_ptr<botscript::bot> bot,
+      const std::string& sid);
+  bot_cb create_print_cb(std::weak_ptr<botscript::bot> bot);
 
   config_store& config_store_;
   user_store& user_store_;
