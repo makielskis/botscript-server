@@ -59,13 +59,10 @@ class bot_manager {
       std::shared_ptr<botscript::bot> bot,
       std::string err,
       std::shared_ptr<std::vector<std::string>> configs_ptr);
-  std::map<std::string, std::string> get_bot_configs(
-      const std::vector<std::string>& bots) const;
   std::map<std::string, std::string> get_bot_logs(
       const std::vector<std::string>& bots) const;
   void on_login(
       std::string sid,
-      int message_id,
       std::vector<std::string> message_type,
       sid_callback cb);
 

@@ -70,20 +70,20 @@ void file_config_store::get(const std::string& identifier,
 };
 
 void file_config_store::get(const std::vector<std::string>& identifiers,
-                          cb<std::vector<std::string>>::type cb) {
+                          cb<std::map<std::string, std::string>>::type cb) {
   io_service_->post([=]() {
     try {
-      std::vector<std::string> configurations;
+      std::map<std::string, std::string> configurations;
       for (const auto& identifier : identifiers) {
         std::ifstream file(config_dir_ + "/" + identifier + ".json");
         file.exceptions(std::ios_base::failbit);
         std::stringstream buf;
         buf << file.rdbuf();
-        configurations.emplace_back(buf.str());
+        configurations[identifier] = buf.str();
       }
       return cb(configurations, boost::system::error_code());
     } catch (const std::ios_base::failure& e) {
-      return cb(std::vector<std::string>(),
+      return cb(std::map<std::string, std::string>(),
                 boost::system::error_code(EIO, boost::system::system_category()));
     }
   });
