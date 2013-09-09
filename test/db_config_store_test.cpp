@@ -40,11 +40,11 @@ class DbConfigStoreTest : public testing::Test {
     boost::filesystem::remove(DB_FILE);
   }
 
-  void addTestConfig(const std::string& config, const std::string& expected) {
+  void addTestConfig(const string& config, const string& expected) {
     db_config_store store(DB_FILE, &io_service_);
 
     auto b = make_shared<bot>(&io_service_);
-    b->callback_ = [](std::string, std::string k, std::string v) { };
+    b->callback_ = [](string, string k, string v) { };
     bots_.push_back(b);
 
     b->init(config, [&store, &expected](shared_ptr<bot> bot, string init_e) {
@@ -52,8 +52,8 @@ class DbConfigStoreTest : public testing::Test {
       store.add(bot, [&store, &expected](error_code add_e) {
         ASSERT_FALSE(add_e);
 
-        vector<std::string> configs = store.get_all();
-        ASSERT_NE(std::find(configs.begin(), configs.end(), expected), configs.end());
+        vector<string> configs = store.get_all();
+        ASSERT_NE(find(configs.begin(), configs.end(), expected), configs.end());
       });
     });
 
@@ -71,13 +71,13 @@ class DbConfigStoreTest : public testing::Test {
 TEST_F(DbConfigStoreTest, RemoveConfig) {
   db_config_store store(DB_FILE, &io_service_);
 
-  vector<std::string> configs = store.get_all();
+  vector<string> configs = store.get_all();
   ASSERT_EQ(2u, configs.size());
 
   store.remove(IDENTIFIER, [&store](error_code e) {
     ASSERT_FALSE(e);
 
-    vector<std::string> configs = store.get_all();
+    vector<string> configs = store.get_all();
     ASSERT_EQ(1u, configs.size());
   });
 
@@ -104,16 +104,16 @@ TEST_F(DbConfigStoreTest, GetSingleConfig) {
  */
 TEST_F(DbConfigStoreTest, GetMultipleConfig) {
   db_config_store store(DB_FILE, &io_service_);
-  std::vector<std::string> identifiers;
+  vector<string> identifiers;
 
   identifiers.emplace_back(IDENTIFIER);
   identifiers.emplace_back(IDENTIFIER_1);
-  store.get(identifiers, [&store](vector<string> configs, error_code e) {
+  store.get(identifiers, [&store](map<string, string> configs, error_code e) {
     ASSERT_FALSE(e);
     ASSERT_EQ(2u, configs.size());
 
-    EXPECT_EQ(EXPECTED_CONFIG, configs[0]);
-    EXPECT_EQ(EXPECTED_CONFIG_1, configs[1]);
+    EXPECT_EQ(EXPECTED_CONFIG, configs[IDENTIFIER]);
+    EXPECT_EQ(EXPECTED_CONFIG_1, configs[IDENTIFIER_1]);
   });
 
   io_service_.run();
@@ -146,7 +146,7 @@ TEST_F(DbConfigStoreTest, DoubleAdd) {
   store.add(bots_[0], [&store](error_code e) {
     ASSERT_FALSE(e);
 
-    vector<std::string> configs = store.get_all();
+    vector<string> configs = store.get_all();
     ASSERT_EQ(2u, configs.size());
     EXPECT_EQ(EXPECTED_CONFIG, configs.at(0));
   });
@@ -163,7 +163,7 @@ TEST_F(DbConfigStoreTest, RemoveNonexisting) {
   store.remove("not_in_db", [&store](error_code e) {
     ASSERT_FALSE(e);
 
-    vector<std::string> configs = store.get_all();
+    vector<string> configs = store.get_all();
     ASSERT_EQ(2u, configs.size());
   });
 

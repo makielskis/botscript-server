@@ -71,11 +71,11 @@ void db_config_store::get(const std::string& identifier,
 };
 
 void db_config_store::get(const std::vector<std::string>& identifiers,
-                          cb<std::vector<std::string>>::type cb) {
+                          cb<std::map<std::string, std::string>>::type cb) {
   io_service_->post([=]() {
-    std::vector<std::string> configurations;
+    std::map<std::string, std::string> configurations;
     for (const auto& identifier : identifiers) {
-      configurations.emplace_back(get_sync(identifier));
+      configurations[identifier] = get_sync(identifier);
     }
     return cb(configurations, boost::system::error_code());
   });

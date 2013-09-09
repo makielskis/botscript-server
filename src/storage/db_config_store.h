@@ -33,7 +33,7 @@ class db_config_store : public config_store {
   virtual void get(const std::string& identifier,
                    cb<std::string>::type cb) override;
   virtual void get(const std::vector<std::string>& identifiers,
-                   cb<std::vector<std::string>>::type cb) override;
+                   cb<std::map<std::string, std::string>>::type cb) override;
   virtual std::vector<std::string> get_all() override;
   virtual void update_attribute(std::shared_ptr<botscript::bot> bot,
                                 const std::string& module,
