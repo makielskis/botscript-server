@@ -16,25 +16,25 @@ namespace error {
   // Specific errors
   enum error_code_t {
     // registration errors
-    username_already_taken = 1,
-    password_too_short = 2,
-    email_address_not_valid = 3,
+    username_already_taken = 11,
+    password_too_short = 12,
+    email_address_not_valid = 13,
 
     // user error
-    user_not_found = 4,
+    user_not_found = 21,
 
     // session errors
-    session_id_not_available = 5,
-    session_id_timed_out = 6,
+    session_id_not_available = 31,
+    session_id_timed_out = 32,
 
     // password
-    password_wrong = 7,
+    password_wrong = 41,
 
     // bot
-    bot_already_exists = 8,
-    bot_not_found = 9,
-    invalid_configuration = 10,
-    bot_creation_failed = 11
+    bot_already_exists = 51,
+    bot_not_found = 52,
+    invalid_configuration = 53,
+    bot_creation_failed = 54
   };
 
   // error_condition
