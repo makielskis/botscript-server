@@ -63,7 +63,7 @@ class entry {
   entry& operator=(const std::string& rhs) {
     db_.set(path_string_, rhs);
     return *this;
-  };
+  }
 
  private:
   kc::PolyDB& db_;
