@@ -21,15 +21,12 @@ class file_config_store : public config_store {
   file_config_store(const std::string& path,
                     boost::asio::io_service* io_service);
 
-  /// \param io_service  the io_service to set
-  void io_service(boost::asio::io_service* io_service);
-
   virtual void add(std::shared_ptr<botscript::bot> bot, empty_cb cb) override;
   virtual void remove(const std::string& identifier, empty_cb cb) override;
   virtual void get(const std::string& identifier,
                    cb<std::string>::type cb) override;
   virtual void get(const std::vector<std::string>& identifiers,
-                   cb<std::map<std::string, std::string>>::type cb) = 0;
+                   cb<std::map<std::string, std::string>>::type cb);
   virtual std::vector<std::string> get_all() override;
   virtual void update_attribute(std::shared_ptr<botscript::bot> bot,
                                 const std::string& module,

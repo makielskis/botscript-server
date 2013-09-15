@@ -5,7 +5,7 @@
 
 #include "boost/thread.hpp"
 
-#include "../service.h"
+#include "../ws_server.h"
 
 #define MOBILE_UI_URL "http://makielski.net/mobileui"
 
@@ -16,7 +16,7 @@
 HWND g_hMainWnd = NULL;
 CTrayIcon g_TrayIcon("Makielskis Bot", true,
                      LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(101)));
-botscript_server::service s;
+botscript_server::ws_server s;
 boost::thread t;
 
 void on_action(CTrayIcon* pTrayIcon, UINT uMsg) {

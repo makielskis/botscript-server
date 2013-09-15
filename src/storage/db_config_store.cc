@@ -27,10 +27,6 @@ db_config_store::db_config_store(const std::string& path,
     bots_(db_.get_entry(DB_KEY_PREFIX)) {
 }
 
-void db_config_store::io_service(boost::asio::io_service* io_service) {
-  io_service_ = io_service;
-}
-
 void db_config_store::add(std::shared_ptr<botscript::bot> bot, empty_cb cb) {
   io_service_->post([=]() {
     const std::string& identifier = bot->identifier();

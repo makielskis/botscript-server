@@ -30,10 +30,6 @@ db_user_store::db_user_store(const std::string& path,
     users_(db_.get_entry("users")) {
 }
 
-void db_user_store::io_service(boost::asio::io_service* io_service) {
-  io_service_ = io_service;
-}
-
 void db_user_store::add_user(const std::string& username,
                              const std::string& password,
                              const std::string& email,
@@ -246,7 +242,6 @@ void db_user_store::add_bot(const std::string& session_id,
     // Add bot and write bot list.
     bots.insert(identifier);
     db_bots = to_string(bots);
-    std::cout << "adding " << identifier << "\n";
     return cb(boost::system::error_code());
   });
 }
@@ -344,12 +339,10 @@ std::set<std::string> db_user_store::split(const std::string& s) {
   std::vector<std::string> split_vec;
   boost::split(split_vec, s, boost::is_any_of(","));
 
-  std::cout << s << " ---> ";
   std::set<std::string> ret;
   for (const auto& el : split_vec) {
     if (!el.empty()) {
       ret.insert(el);
-      std::cout << "{" << el << "} ";
     }
   }
   std::cout << std::endl;

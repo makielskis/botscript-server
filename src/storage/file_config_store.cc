@@ -25,10 +25,6 @@ file_config_store::file_config_store(const std::string& path,
   }
 }
 
-void file_config_store::io_service(boost::asio::io_service* io_service) {
-  io_service_ = io_service;
-}
-
 void file_config_store::add(std::shared_ptr<bs::bot> bot, empty_cb cb) {
   io_service_->post([this, bot, cb]() {
     try {
