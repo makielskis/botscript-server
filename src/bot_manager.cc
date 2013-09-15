@@ -10,6 +10,7 @@
 
 #include "bot.h"
 
+#include "./error.h"
 #include "./messages/outgoing_msgs.h"
 
 #define LOAD_SIZE (10)
@@ -61,6 +62,13 @@ void bot_manager::on_bot_load(
   if (err.empty()) {
     std::cout << "Loaded " << bot->identifier() << "\n";
     bots_[bot->identifier()] = bot;
+    std::string identifier = bot->identifier();
+    config_store_.set_inactive(bot->identifier(), false, [identifier](error_code ec) {
+      if (ec) {
+        std::cout << "[FATAL] Could not activate " << identifier << ":"
+                  << ec.message() << "[" << ec.value() << "]\n";
+      }
+    });
   } else {
     std::string identifier = bot->identifier();
     bot->shutdown();
@@ -88,11 +96,14 @@ void bot_manager::handle_connection_close(const std::string& sid) {
   const auto it = sid_bot_ids_map_.find(sid);
   if (it != sid_bot_ids_map_.end()) {
     for (const auto& id : it->second) {
-      auto& bot = bots_[id];
-      bot->callback_ = std::bind(&bot_manager::print_cb, this, bot, p::_1, p::_2, p::_3);
+      const auto bot_it = bots_.find(id);
+      if (bot_it != bots_.end()) {
+        auto& bot = bot_it->second;
+        bot->callback_ = std::bind(&bot_manager::print_cb, this, bot, p::_1, p::_2, p::_3);
+      }
     }
+    sid_bot_ids_map_.erase(it);
   }
-  sid_bot_ids_map_.erase(it);
   session_end_cb_(sid);
 }
 
@@ -173,7 +184,8 @@ void bot_manager::handle_create_bot_msg(
     // Check blocklist.
     if (bot_creation_blocklist_.find(id) != bot_creation_blocklist_.end()) {
       std::vector<outgoing_msg_ptr> out;
-      out.emplace_back(make_unique<failure_msg>(0, m.type(), 10, "Bot already exists"));
+      error_code e = error::bot_already_exists;
+      out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
       return cb(std::move(out));
     }
     bot_creation_blocklist_.insert(id);
@@ -186,16 +198,20 @@ void bot_manager::handle_create_bot_msg(
       std::vector<outgoing_msg_ptr> out;
 
       if (!err.empty()) {
-        // Add bot to user store.
+        // Shut bot down.
+        created_bot->shutdown();
+
+        // Remove bot from user store.
         return user_store_.remove_bot(m.sid(), id, [=](error_code e) {
           // Can't react to error here, need to inform user about creation error.
-          // Bot creation failed (i.e. bad proxy): responde with failure message.
+          // Bot creation failed (i.e. bad proxy): respond with failure message.
           std::vector<outgoing_msg_ptr> out;
-          out.emplace_back(make_unique<failure_msg>(0, m.type(), 11, err));
+          error_code ec = error::bot_creation_failed;
+          std::string message = ec.message() + ": " + err;
+          out.emplace_back(make_unique<failure_msg>(0, m.type(), ec.value(), err));
           return cb(std::move(out));
         });
       }
-
 
       // Store bot.
       bots_[id] = created_bot;
@@ -252,31 +268,25 @@ void bot_manager::handle_delete_bot_msg(
       return cb(std::move(out));
     }
 
-    std::vector<outgoing_msg_ptr> out;
-
     // Search for bot in bot list.
     auto it = bots_.find(m.identifier());
-    if (it == bots_.end()) {
-      out.emplace_back(make_unique<failure_msg>(0, m.type(), 12, "fatal: bot not found"));
-      return cb(std::move(out));
-    }
+    if (it != bots_.end()) {
+      // Remove bot from bot map.
+      it->second->shutdown();
+      bots_.erase(it);
 
-    // Remove bot from bot map.
-    it->second->shutdown();
-    bots_.erase(it);
-
-    // Remove bot from sid -> bot ids list.
-    const auto sid_ids_it = sid_bot_ids_map_.find(m.sid());
-    if (sid_ids_it != sid_bot_ids_map_.end()) {
-      auto& bots = sid_ids_it->second;
-      const auto bot_id_it = bots.find(m.identifier());
-      if (bot_id_it != bots.cend()) {
-        bots.erase(bot_id_it);
+      // Remove bot from sid -> bot ids list.
+      const auto sid_ids_it = sid_bot_ids_map_.find(m.sid());
+      if (sid_ids_it != sid_bot_ids_map_.end()) {
+        auto& bots = sid_ids_it->second;
+        const auto bot_id_it = bots.find(m.identifier());
+        if (bot_id_it != bots.cend()) {
+          bots.erase(bot_id_it);
+        }
       }
     }
-
-    // Success: get bots that are owned by this user.
-    return user_store_.get_bots(m.sid(), [=](std::vector<std::string> bots, error_code e) {
+    // Remove bot from user store.
+    return config_store_.remove(m.identifier(), [=](error_code e) {
       if (e) {
         // This should not happen (inconsistent database)!
         std::vector<outgoing_msg_ptr> out;
@@ -284,19 +294,29 @@ void bot_manager::handle_delete_bot_msg(
         return cb(std::move(out));
       }
 
-      // Get the configurations of the bots to send them to the user
-      // = success indicator for the user that the delete operation worked.
-      return config_store_.get(bots, [=](std::map<std::string, std::string> bot_configs, error_code e) {
-        std::vector<outgoing_msg_ptr> out;
-
+      // Success: get bots that are owned by this user.
+      return user_store_.get_bots(m.sid(), [=](std::vector<std::string> bots, error_code e) {
         if (e) {
           // This should not happen (inconsistent database)!
+          std::vector<outgoing_msg_ptr> out;
           out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
           return cb(std::move(out));
         }
 
-        out.emplace_back(make_unique<bots_msg>(bot_configs));
-        return cb(std::move(out));
+        // Get the configurations of the bots to send them to the user
+        // = success indicator for the user that the delete operation worked.
+        return config_store_.get(bots, [=](std::map<std::string, std::string> bot_configs, error_code e) {
+          std::vector<outgoing_msg_ptr> out;
+
+          if (e) {
+            // This should not happen (inconsistent database)!
+            out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
+            return cb(std::move(out));
+          }
+
+          out.emplace_back(make_unique<bots_msg>(bot_configs));
+          return cb(std::move(out));
+        });
       });
     });
   });
@@ -309,13 +329,15 @@ void bot_manager::handle_execute_bot_msg(
 
   const auto it = sid_bot_ids_map_.find(m.sid());
   if (it == sid_bot_ids_map_.cend()) {
-    out.emplace_back(make_unique<failure_msg>(0, m.type(), 12, "fatal: bot not found"));
+    error_code ec = error::bot_not_found;
+    out.emplace_back(make_unique<failure_msg>(0, m.type(), ec.value(), ec.message()));
     return cb(std::move(out));
   }
 
   const auto bot_id_it = it->second.find(m.identifier());
   if (bot_id_it == it->second.end()) {
-    out.emplace_back(make_unique<failure_msg>(0, m.type(), 12, "fatal: bot not found"));
+    error_code ec = error::bot_not_found;
+    out.emplace_back(make_unique<failure_msg>(0, m.type(), ec.value(), ec.message()));
     return cb(std::move(out));
   }
 
@@ -326,6 +348,128 @@ void bot_manager::handle_execute_bot_msg(
 void bot_manager::handle_reactivate_bot_msg(
     reactivate_bot_msg m,
     msg_callback cb) {
+  return user_store_.get_bots(m.sid(), [=](std::vector<std::string> bots, error_code e) {
+    std::vector<outgoing_msg_ptr> out;
+
+    if (e) {
+      // Failure: respond with failure message.
+      out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
+      return cb(std::move(out));
+    }
+
+    // Check whether the bot is registered for this user.
+    if (std::find(bots.begin(), bots.end(), m.identifier()) == bots.end()) {
+      // Failure: respond with failure message.
+      error_code e = error::bot_not_found;
+      out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
+      return cb(std::move(out));
+    }
+
+    // Check whether bot is inactive.
+    config_store_.get_inactive(m.identifier(), [=](bool inactive, error_code e) {
+      if (e) {
+        // Failure: respond with failure message.
+        std::vector<outgoing_msg_ptr> out;
+        out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
+        return cb(std::move(out));
+      }
+
+      if (!inactive) {
+        // Failure: can't reactivate active bot.
+        std::vector<outgoing_msg_ptr> out;
+        error_code ec = error::bot_not_inactive;
+        out.emplace_back(make_unique<failure_msg>(0, m.type(), ec.value(), ec.message()));
+        return cb(std::move(out));
+      }
+
+      // Get configuration from the config store.
+      config_store_.get(m.identifier(), [=](std::string config, error_code e) {
+        std::vector<outgoing_msg_ptr> out;
+
+        if (e) {
+          // Failure: respond with failure message.
+          out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
+          return cb(std::move(out));
+        }
+
+        // Create bot object.
+        auto b = std::make_shared<bs::bot>(io_service_);
+
+        // Send updates out to the activity callback.
+        b->callback_ = std::bind(&bot_manager::sid_cb, this, m.sid(), b, p::_1, p::_2, p::_3);
+
+        // Check blocklist.
+        std::string id = m.identifier();
+        if (bot_creation_blocklist_.find(id) != bot_creation_blocklist_.end()) {
+          std::vector<outgoing_msg_ptr> out;
+          error_code ec = error::bot_in_blocklist;
+          out.emplace_back(make_unique<failure_msg>(0, m.type(), ec.value(), ec.message()));
+          return cb(std::move(out));
+        }
+        bot_creation_blocklist_.insert(id);
+
+        // Load configuration.
+        return b->init(config, [=](std::shared_ptr<bs::bot> created_bot, std::string err) {
+          // Remove from botlist (independent from init result).
+          bot_creation_blocklist_.erase(id);
+
+          // Check creation error.
+          if (!err.empty()) {
+            // Shut bot down.
+            created_bot->shutdown();
+
+            // Send creation failure message.
+            std::vector<outgoing_msg_ptr> out;
+            error_code ec = error::bot_creation_failed;
+            std::string message = ec.message() + ": " + err;
+            out.emplace_back(make_unique<failure_msg>(0, m.type(), ec.value(), err));
+            return cb(std::move(out));
+          }
+
+          // Store bot.
+          bots_[id] = created_bot;
+
+          // Associate bot identifier with this session.
+          sid_bot_ids_map_[m.sid()].insert(id);
+
+          // Add bot config to config store.
+          config_store_.set_inactive(id, false, [=](error_code e) {
+            if (e) {
+              // This should not happen!
+              std::vector<outgoing_msg_ptr> out;
+              out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
+              return cb(std::move(out));
+            }
+
+            // Success: get bots that are owned by this user.
+            return user_store_.get_bots(m.sid(), [=](std::vector<std::string> bots, error_code e) {
+              if (e) {
+                // This should not happen (inconsistent database)!
+                std::vector<outgoing_msg_ptr> out;
+                out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
+                return cb(std::move(out));
+              }
+
+              // Get the configurations of the bots to send them to the user
+              // = success indicator for the user that the create operation worked.
+              return config_store_.get(bots, [=](std::map<std::string, std::string> bot_configs, error_code e) {
+                std::vector<outgoing_msg_ptr> out;
+
+                if (e) {
+                  // This should not happen (inconsistent database)!
+                  out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
+                  return cb(std::move(out));
+                }
+
+                out.emplace_back(make_unique<bots_msg>(bot_configs));
+                return cb(std::move(out));
+              });
+            });
+          });
+        });
+      });
+    });
+  });
 }
 
 void bot_manager::handle_delete_update_msg(
@@ -467,8 +611,6 @@ std::map<std::string, std::string> bot_manager::get_bot_logs(
     const auto id_match = bots_.find(bot_id);
     if (id_match != bots_.cend()) {
       id_log_map[bot_id] = id_match->second->log_msgs();
-    } else {
-      std::cerr << "[FATAL] DB and in-memory bot map mismatch: " << bot_id << "\n";
     }
   }
   return id_log_map;
