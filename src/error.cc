@@ -56,10 +56,13 @@ std::string error_category_impl::message(int ev) const noexcept {
       return "Creating bot failed";
 
     case error::bot_not_inactive:
-      return "Can't restore bot. It's not inactive.";
+      return "Can't restore bot, it's not inactive";
 
-    case error::bot_in_blocklist :
+    case error::bot_in_blocklist:
       return "Can't create/delete bot while bot creation";
+
+    case error::proxy_required:
+      return "You need to provide a proxy";
 
     default:
       return "Unknown error";

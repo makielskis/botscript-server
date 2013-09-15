@@ -36,7 +36,8 @@ namespace error {
     invalid_configuration = 53,
     bot_creation_failed = 54,
     bot_in_blocklist = 55,
-    bot_not_inactive = 56
+    bot_not_inactive = 56,
+    proxy_required = 57
   };
 
   // error_condition
