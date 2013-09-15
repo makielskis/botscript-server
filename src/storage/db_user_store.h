@@ -8,6 +8,7 @@
 #include "user_store.h"
 
 #include <string>
+#include <set>
 
 #include "boost/asio/io_service.hpp"
 
@@ -59,7 +60,7 @@ class db_user_store : public user_store {
                         cb<std::vector<std::string>>::type cb) override;
 
   virtual void add_bot(const std::string& session_id,
-                       const std::string& bot_identifier,
+                       const std::string& identifier,
                        empty_cb cb) override;
 
   virtual void remove_bot(const std::string& session_id,
@@ -73,6 +74,18 @@ class db_user_store : public user_store {
   const std::unordered_map<std::string, time_t>& sid_expire();
 
  private:
+  /// Splits the botlist at ","
+  ///
+  /// \param  the string to split
+  /// \return the splitted string
+  std::set<std::string> split(const std::string& s);
+
+  /// Creates a comma seperated string from the given string vector
+  ///
+  /// \param  the string vector to turn to a comma seperated string
+  /// \return the comma seperated string
+  std::string to_string(const std::set<std::string>& s);
+
   /// Generate a session id and update the session mappings for the username.
   ///
   /// Postcondition:
