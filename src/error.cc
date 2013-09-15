@@ -55,6 +55,12 @@ std::string error_category_impl::message(int ev) const noexcept {
     case error::bot_creation_failed:
       return "Creating bot failed";
 
+    case error::bot_not_inactive:
+      return "Can't restore bot. It's not inactive.";
+
+    case error::bot_in_blocklist :
+      return "Can't create/delete bot while bot creation";
+
     default:
       return "Unknown error";
   }
