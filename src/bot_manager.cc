@@ -12,6 +12,7 @@
 
 #include "./error.h"
 #include "./messages/outgoing_msgs.h"
+#include "./config.h"
 
 #define LOAD_SIZE (10)
 
@@ -158,9 +159,20 @@ void bot_manager::handle_create_bot_msg(
     c = bs::config(m.config());
   } catch (const std::runtime_error& e) {
     std::vector<outgoing_msg_ptr> out;
-    out.emplace_back(make_unique<failure_msg>(0, m.type(), 8, e.what()));
+    error_code ec = error::invalid_configuration;
+    std::string message = ec.message() + ": " + e.what();
+    out.emplace_back(make_unique<failure_msg>(0, m.type(), ec.value(), message));
     return cb(std::move(out));
   }
+
+#ifdef FORCE_PROXY
+  if (c.module_settings()["base"]["proxy"].empty()) {
+    std::vector<outgoing_msg_ptr> out;
+    error_code e = error::proxy_required;
+    out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
+    return cb(std::move(out));
+  }
+#endif
 
   // Create identifier.
   std::string id = bs::bot::identifier(c.username(), c.package(), c.server());
@@ -285,6 +297,7 @@ void bot_manager::handle_delete_bot_msg(
         }
       }
     }
+
     // Remove bot from user store.
     return config_store_.remove(m.identifier(), [=](error_code e) {
       if (e) {
@@ -348,6 +361,15 @@ void bot_manager::handle_execute_bot_msg(
 void bot_manager::handle_reactivate_bot_msg(
     reactivate_bot_msg m,
     msg_callback cb) {
+#ifdef FORCE_PROXY
+  if (m.proxy().empty()) {
+    std::vector<outgoing_msg_ptr> out;
+    error_code e = error::proxy_required;
+    out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
+    return cb(std::move(out));
+  }
+#endif
+
   return user_store_.get_bots(m.sid(), [=](std::vector<std::string> bots, error_code e) {
     std::vector<outgoing_msg_ptr> out;
 
@@ -407,6 +429,19 @@ void bot_manager::handle_reactivate_bot_msg(
           return cb(std::move(out));
         }
         bot_creation_blocklist_.insert(id);
+
+        // Change proxy.
+        bs::config c;
+        try {
+          c = bs::config(config);
+        } catch (const std::runtime_error& e) {
+          std::vector<outgoing_msg_ptr> out;
+          error_code ec = error::invalid_configuration;
+          std::string message = ec.message() + ": " + e.what();
+          out.emplace_back(make_unique<failure_msg>(0, m.type(), ec.value(), message));
+          return cb(std::move(out));
+        }
+        c.set("base", "proxy", m.proxy());
 
         // Load configuration.
         return b->init(config, [=](std::shared_ptr<bs::bot> created_bot, std::string err) {
