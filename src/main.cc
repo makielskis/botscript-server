@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 
 #include "websocketpp/config/asio_no_tls.hpp"
 #include "websocketpp/server.hpp"
@@ -22,6 +23,7 @@ using websocketpp::lib::ref;
 using websocketpp::lib::error_code;
 
 server* server_ptr = nullptr;
+bot_manager* mgr_ptr = nullptr;
 std::map<std::string, connection_hdl> sid_con_map;
 std::map<connection_hdl, std::string> con_sid_map;
 
@@ -33,9 +35,11 @@ void activity_cb(std::string sid, std::vector<outgoing_msg_ptr> msgs) {
       error_code e;
       server_ptr->send(it->second, msg->to_json(), websocketpp::frame::opcode::TEXT, e);
 
-      // Check error (break on error).
+      // Check error.
       if (e) {
-        std::cerr << "[ERROR] unable to send messages: " << e.message() << "\n";
+        // Inform manager about broken connection
+        // and stop processing further messages.
+        mgr_ptr->handle_connection_close(sid);
         break;
       }
     }
@@ -72,6 +76,7 @@ sid_callback create_sid_cb(server& s, connection_hdl hdl) {
   return [&s, hdl](std::string sid, std::vector<outgoing_msg_ptr> msgs) {
     if (!sid.empty()) {
       sid_con_map[sid] = hdl;
+      con_sid_map[hdl] = sid;
     }
 
     for (const auto& msg : msgs) {
