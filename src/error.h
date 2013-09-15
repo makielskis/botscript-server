@@ -34,7 +34,9 @@ namespace error {
     bot_already_exists = 51,
     bot_not_found = 52,
     invalid_configuration = 53,
-    bot_creation_failed = 54
+    bot_creation_failed = 54,
+    bot_in_blocklist = 55,
+    bot_not_inactive = 56
   };
 
   // error_condition
