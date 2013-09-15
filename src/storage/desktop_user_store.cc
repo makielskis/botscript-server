@@ -15,7 +15,8 @@
 namespace botscript_server {
 
 desktop_user_store::desktop_user_store(const std::string& path)
-  : path_(path) {
+    : path_(path) {
+  read_bots();
 }
 
 void desktop_user_store::add_user(const std::string& username,
@@ -62,12 +63,6 @@ void desktop_user_store::set_email(const std::string& session_id,
 
 void desktop_user_store::get_bots(const std::string& session_id,
                                   cb<std::vector<std::string>>::type cb)  {
-  try {
-    read_bots();
-  } catch(const std::ios_base::failure& e) {
-    return cb(std::vector<std::string>(),
-              boost::system::error_code(EIO, boost::system::system_category()));
-  }
   std::vector<std::string> bots;
   for (const auto& b : bots_) {
     bots.push_back(b);
@@ -79,8 +74,6 @@ void desktop_user_store::add_bot(const std::string& session_id,
                                  const std::string& identifier,
                                  empty_cb cb) {
   try {
-    read_bots();
-
     // Check if bot already present.
     const auto bot_it = bots_.find(identifier);
     if (bot_it != bots_.end()) {
@@ -100,8 +93,7 @@ void desktop_user_store::remove_bot(const std::string& session_id,
                                     const std::string& identifier,
                                     empty_cb cb) {
   try {
-    read_bots();
-
+    // Check if bot exists.
     const auto bot_it = bots_.find(identifier);
     if (bot_it == bots_.end()) {
       return cb(error::bot_not_found);
@@ -117,8 +109,13 @@ void desktop_user_store::remove_bot(const std::string& session_id,
 }
 
 void desktop_user_store::read_bots() {
-  std::ifstream file(path_);
+  std::fstream file;
+  file.open(path_, std::ios_base::in);
+  if (!file.is_open()) {
+    file.open(path_.c_str(), std::ios_base::in | std::ios_base::out | std::ios_base::trunc);
+  }
   file.exceptions(std::ios_base::failbit);
+
   std::stringstream buf;
   buf << file.rdbuf();
   std::string bots = buf.str();
@@ -140,16 +137,18 @@ void desktop_user_store::write_bots() {
   if (bots_.empty()) {
     bots = "";
   } else {
-    std::string bots;
     for (const std::string& el : bots_) {
       bots += el + ",";
     }
     bots = bots.substr(0, bots.length() - 1);
   }
 
-  std::ofstream file;
+  std::fstream file;
+  file.open(path_, std::ios_base::out);
+  if (!file.is_open()) {
+    file.open(path_.c_str(), std::ios_base::in | std::ios_base::out | std::ios_base::trunc);
+  }
   file.exceptions(std::ios_base::failbit);
-  file.open(path_, std::ios::out);
   file << bots;
 }
 
