@@ -55,6 +55,8 @@ void db_user_store::add_user(const std::string& username,
 void db_user_store::remove_user(const std::string& session_id,
                                 const std::string& password,
                                 empty_cb cb) {
+  using websocketpp::md5::md5_hash_hex;
+
   io_service_->post([=]() {
     if (!check_session(session_id)) {
       return cb(error::session_id_not_available);
@@ -64,7 +66,7 @@ void db_user_store::remove_user(const std::string& session_id,
         const std::string& username = it->second;
         entry user = users_[username];
         if (users_[username]["password"].exists()) {
-          if (websocketpp::md5::md5_hash_hex(password) == user["password"].val()) {
+          if (md5_hash_hex(password) == user["password"].val()) {
             user["password"].remove();
             user["email"].remove();
             user["bots"].remove();
@@ -217,35 +219,35 @@ void db_user_store::get_bots(const std::string& session_id,
 }
 
 void db_user_store::add_bot(const std::string& session_id,
-                            const std::string& bot_identifier,
+                            const std::string& identifier,
                             empty_cb cb) {
   io_service_->post([=]() {
+    // Check session id.
     if (!check_session(session_id)) {
       return cb(error::session_id_not_available);
-    } else {
-      const auto it = sid_user_.find(session_id);
-      if (it != sid_user_.cend()) {
-        const std::string& username = it->second;
-        entry db_bots = users_[username]["bots"];
-        std::string bots = users_[username]["bots"].val();
-
-        if (bots.find(bot_identifier) != std::string::npos) {
-          return cb(error::bot_already_exists);
-        } else {
-          std::stringstream ss;
-          ss << bots;
-          if (!bots.empty()) {
-            ss << ",";
-          }
-          ss << bot_identifier;
-          db_bots = ss.str();
-          return cb(boost::system::error_code());
-        }
-      } else {
-        // This should not happen
-        return cb(error::user_not_found);
-      }
     }
+
+    // Get corresponding user.
+    const auto user_it = sid_user_.find(session_id);
+    if (user_it == sid_user_.cend()) {
+      return cb(error::user_not_found);
+    }
+
+    // Get bots from database.
+    entry db_bots = users_[user_it->second]["bots"];
+    std::set<std::string> bots = split(db_bots.val());
+
+    // Check if bot already present.
+    const auto bot_it = std::find(bots.begin(), bots.end(), identifier);
+    if (bot_it != bots.end()) {
+      return cb(error::bot_already_exists);
+    }
+
+    // Add bot and write bot list.
+    bots.insert(identifier);
+    db_bots = to_string(bots);
+    std::cout << "adding " << identifier << "\n";
+    return cb(boost::system::error_code());
   });
 }
 
@@ -253,33 +255,31 @@ void db_user_store::remove_bot(const std::string& session_id,
                                const std::string& identifier,
                                empty_cb cb) {
   io_service_->post([=]() {
+    // Check session id.
     if (!check_session(session_id)) {
       return cb(error::session_id_not_available);
-    } else {
-      const auto it = sid_user_.find(session_id);
-      if (it != sid_user_.cend()) {
-        const std::string& username = it->second;
-        entry db_bots = users_[username]["bots"];
-        std::string bots = db_bots.val();
-
-        auto pos = bots.find(identifier);
-        if (pos != std::string::npos) {
-          if (pos == 0) {
-            bool last = identifier.length() == bots.length();
-            bots.erase(0, identifier.length() + (last ? 0 : 1));
-          } else {
-            bots.erase(pos - 1, identifier.length() + 1);
-          }
-          db_bots = bots;
-          return cb(boost::system::error_code());
-        } else {
-          return cb(error::bot_not_found);
-        }
-      } else {
-        // This should not happen
-        return cb(error::user_not_found);
-      }
     }
+
+    // Get corresponding user.
+    const auto user_it = sid_user_.find(session_id);
+    if (user_it == sid_user_.cend()) {
+      return cb(error::user_not_found);
+    }
+
+    // Get bots from database.
+    entry db_bots = users_[user_it->second]["bots"];
+    std::set<std::string> bots = split(db_bots.val());
+
+    // Remove bot if present.
+    const auto bot_it = bots.find(identifier);
+    if (bot_it == bots.end()) {
+      return cb(error::bot_not_found);
+    }
+    bots.erase(bot_it);
+
+    // Write new bot list.
+    db_bots = to_string(bots);
+    return cb(boost::system::error_code());
   });
 }
 
@@ -338,6 +338,35 @@ bool db_user_store::check_session(const std::string& sid) {
 
   it->second = now + SESSION_DURATION;
   return true;
+}
+
+std::set<std::string> db_user_store::split(const std::string& s) {
+  std::vector<std::string> split_vec;
+  boost::split(split_vec, s, boost::is_any_of(","));
+
+  std::cout << s << " ---> ";
+  std::set<std::string> ret;
+  for (const auto& el : split_vec) {
+    if (!el.empty()) {
+      ret.insert(el);
+      std::cout << "{" << el << "} ";
+    }
+  }
+  std::cout << std::endl;
+
+  return ret;
+}
+
+std::string db_user_store::to_string(const std::set<std::string>& s) {
+  if (s.empty()) {
+    return "";
+  } else {
+    std::string result;
+    for (const std::string& el : s) {
+      result += el + ",";
+    }
+    return result.substr(0, result.length() - 1);
+  }
 }
 
 }  // namespace botscript_server
