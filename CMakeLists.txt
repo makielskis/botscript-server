@@ -96,9 +96,7 @@ include_directories("external_lib/kyotocabinet-1.2.76")
 ################################
 add_library(botscriptserver_obj_lib OBJECT
   src/error.cc
-  src/storage/db_user_store.cc
   src/storage/file_config_store.cc
-  src/storage/db_config_store.cc
   src/messages/login_msg.cc
   src/messages/register_msg.cc
   src/messages/user/user_msg.cc
@@ -117,6 +115,7 @@ add_library(botscriptserver_obj_lib OBJECT
   src/messages/outgoing/bots_msg.cc
   src/messages/outgoing/update_msg.cc
   src/bot_manager.cc
+  src/ws_server.cc
 )
 
 
@@ -125,6 +124,8 @@ add_library(botscriptserver_obj_lib OBJECT
 ################################
 add_executable(botscript-server-exe
   $<TARGET_OBJECTS:botscriptserver_obj_lib>
+  src/storage/db_user_store.cc
+  src/storage/db_config_store.cc
   src/main.cc
 )
 if(MSVC)
@@ -140,18 +141,20 @@ endif()
 # GUI executable
 ################################
 if(MSVC OR MINGW)
+  add_definitions(-DDESKTOP)
   add_executable(botscript-server-gui
     WIN32
     $<TARGET_OBJECTS:botscriptserver_obj_lib>
+    src/storage/desktop_user_store.cc
     src/win32gui/guicon.cc
     src/win32gui/TrayIcon.cpp
     src/win32gui/main.cc
     src/win32gui/res/bot.rc
   )
   if(MSVC)
-    target_link_libraries(botscript-server-gui bs ${Boost_LIBRARIES} kyotocabinet)
+    target_link_libraries(botscript-server-gui bs ${Boost_LIBRARIES})
   elseif(MINGW)
-    target_link_libraries(botscript-server-gui bs ${Boost_LIBRARIES} kyotocabinet -Wl,-Bstatic z ws2_32 mswsock -static-libgcc -static-libstdc++)
+    target_link_libraries(botscript-server-gui bs ${Boost_LIBRARIES} -Wl,-Bstatic z ws2_32 mswsock -static-libgcc -static-libstdc++)
   endif()
 endif()
 

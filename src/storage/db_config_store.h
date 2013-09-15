@@ -25,9 +25,6 @@ class db_config_store : public config_store {
   /// \return all configurations in the path in a vector
   db_config_store(const std::string& path, boost::asio::io_service* io_service);
 
-  /// \param io_service  the io_service to set
-  void io_service(boost::asio::io_service* io_service);
-
   virtual void add(std::shared_ptr<botscript::bot> bot, empty_cb cb) override;
   virtual void remove(const std::string& identifier, empty_cb cb) override;
   virtual void get(const std::string& identifier,
