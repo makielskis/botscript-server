@@ -6,6 +6,8 @@
 
 #include <sstream>
 
+#include <boost/algorithm/string/replace.hpp>
+
 namespace botscript_server {
 
 bots_msg::bots_msg(const std::map<std::string, std::string>& bot_configs)
@@ -23,7 +25,9 @@ std::string bots_msg::to_json() const {
 
   std::stringstream s;
   for (const auto& config : bot_configs_) {
-    s << ",\"" << config.first << "\":" << config.second;
+    std::string bot_name = config.first;
+    boost::replace_all(bot_name, "\"", "\\\"");
+    s << ",\"" << bot_name << "\":" << config.second;
   }
   return "{\"type\":\"bots\",\"arguments\":{" + s.str().substr(1) + "}}";
 }
