@@ -1,133 +1,53 @@
-# Aufbau
+# How to cross compile botscript-server
 
-`{ 'type': [String], 'arguments':  [Object] }`
+We use  MXE (M cross environment) as our cross compiling toolchain. It is available at http://mxe.cc.
 
-# Anfragen (Client -> Server)
+### Install the requirements
 
-## Bot Befehl
+#### Debian/Ubuntu:
 
-    {
-      'type': 'bot',
-      'arguments':  {
-        [[ 'sid': [String], ]]
-        'identifier': [String],
-        'execute': {
-          'command': [String],
-          'argument': [String]
-        }
-      }
-    }
+    apt-get install autoconf automake bash bison bzip2 \
+                    cmake flex gettext git g++ intltool \
+                    libffi-dev libtool libltdl-dev libssl-dev \
+                    libxml-parser-perl make openssl patch perl \
+                    pkg-config scons sed unzip wget xz-utils
 
+#### Fedora:
 
-## Bot Verwaltung
+    yum install autoconf automake bash bison bzip2 cmake \
+                flex gcc-c++ gettext git intltool make sed \
+                libffi-devel libtool openssl-devel patch perl pkgconfig \
+                scons unzip wget xz
 
-### Bot Anlegen
+### Download MXE
 
-    {
-      'type': 'bot_management',
-      'arguments': {
-        [[ 'sid': [String], ]]
-        'type': 'create',
-        'config': [String]
-      }
-    }
+    cd ~/
+    git clone -b stable https://github.com/mxe/mxe.git
 
-### Bot löschen
+### Install/compile compiler and libraries
 
-    {
-      'type': 'bot_management',
-      'arguments': {
-        [[ 'sid': [String], ]]
-        'type': 'delete',
-        'identifier': [String]
-      }
-    }
+    make -j4 boost libgnurx
 
+### Setup system
 
-# Update (Server -> Client)
+Add the following to your ~/.bashrc :
 
-## Bots Update
+    export MXE_ROOT=~/mxe
+    alias mxe-cmake='cmake -DCMAKE_TOOLCHAIN_FILE=$MXE_ROOT/usr/i686-pc-mingw32/share/cmake/mxe-conf.cmake -DBoost_THREADAPI=win32'
 
-    {
-      'type': 'bots',
-      'arguments': {
-        [String]: [Object],
-        ...
-      }
-    }
+### Compile botscript-server
 
-Sendet Map { $(identifier): $(configuration), ... }
+    cd [botscript-server-directory]
+    mkdir build_win
+    cd build_win
+    mxe-cmake ..
+    make botscript-server-exe botscript-server-gui
 
+### You're done.
 
-## Update
+# MinGW command to compile boost on Windows
 
-    {
-      'type': 'update',
-      'arguments': {
-        'identifier': [String],
-        'key': [String],
-        'value': [String]
-      }
-    }
-
-**Beispiel:**
-
-    {
-      'identifier': $(identifier),
-      'key': $(modul)_$(config_key),
-      'value': $(new_value)
-    }
-
-
-## Event
-
-    {
-      'type': 'event',
-      'arguments': {
-        'identifier': [String],
-        'key': [String],
-        'value': [String]
-      }
-    }
-
-
-**Beispiel**
-
-    {
-      'identifier': $(identifier),
-      'key': $(event_name),
-      'value': $(event_value)
-    }
-
-## Account/Bot Antwort
-
-    {
-      'type': 'account',
-      'arguments': {
-        'key': [String],
-        'success': [Boolean] or [String]
-      }
-    }
-
-**Beispiel**
-
-    {
-      'type': 'account',
-      'arguments': {
-        'key': "login",
-        'success': false
-      }
-    }
-
-**Beispiel**
-
-    {
-      'type': 'account',
-      'arguments': {
-        'key': "create_bot",
-        'success': "error message"
-      }
-    }
+    NO_BZIP2=1 ./b2 --with-system --with-thread --with-regex --with-iostreams --with-filesystem --with-chrono --with-date_time --with-random variant=release link=static threading=multi runtime-link=static --toolset=gcc-mingw64 define=BOOST_USE_WINDOWS_H threadapi=win32 target-os=windows -s ZLIB_SOURCE=[PATH_TO_ZLIB]
 
 # Generating the JNI header
 
@@ -140,6 +60,3 @@ In `src` javac BotscriptServer.java`:
 
     javah -jni net.makielski.botscript.BotscriptServer
 
-
-# MinGW command to compile boost
-    NO_BZIP2=1 ./b2 --with-system --with-thread --with-regex --with-iostreams --with-filesystem --with-chrono --with-date_time --with-random variant=release link=static threading=multi runtime-link=static --toolset=gcc-mingw64 define=BOOST_USE_WINDOWS_H threadapi=win32 target-os=windows -s ZLIB_SOURCE=[PATH_TO_ZLIB]
