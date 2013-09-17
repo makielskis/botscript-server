@@ -69,7 +69,7 @@ if(MSVC)
   add_definitions(/D _WIN32_WINNT=0x0501)
 elseif(MINGW)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -s")
-  add_definitions("-DBOOST_THREAD_USE_LIB")
+  add_definitions(-DBOOST_THREAD_USE_LIB -D_WIN32_WINNT=0x0501 -DWINVER=0x0501 -D_WIN32_IE=0x0501)
 else()
   # GCC -> use c++11 standard.
   add_definitions("-std=c++11 -fPIC")
@@ -115,7 +115,6 @@ add_library(botscriptserver_obj_lib OBJECT
   src/messages/outgoing/bots_msg.cc
   src/messages/outgoing/update_msg.cc
   src/bot_manager.cc
-  src/ws_server.cc
 )
 
 
@@ -124,6 +123,7 @@ add_library(botscriptserver_obj_lib OBJECT
 ################################
 add_executable(botscript-server-exe
   $<TARGET_OBJECTS:botscriptserver_obj_lib>
+  src/ws_server.cc
   src/storage/db_user_store.cc
   src/storage/db_config_store.cc
   src/main.cc
@@ -141,16 +141,16 @@ endif()
 # GUI executable
 ################################
 if(MSVC OR MINGW)
-  add_definitions(-DDESKTOP)
   add_executable(botscript-server-gui
     WIN32
     $<TARGET_OBJECTS:botscriptserver_obj_lib>
+    src/ws_server.cc
     src/storage/desktop_user_store.cc
-    src/win32gui/guicon.cc
     src/win32gui/TrayIcon.cpp
     src/win32gui/main.cc
     src/win32gui/res/bot.rc
   )
+  set_target_properties(botscript-server-gui PROPERTIES COMPILE_FLAGS "-DDESKTOP")
   if(MSVC)
     target_link_libraries(botscript-server-gui bs ${Boost_LIBRARIES})
   elseif(MINGW)
