@@ -114,7 +114,6 @@ add_library(botscriptserver_obj_lib OBJECT
   src/messages/outgoing/account_msg.cc
   src/messages/outgoing/bots_msg.cc
   src/messages/outgoing/update_msg.cc
-  src/bot_manager.cc
 )
 
 
@@ -124,6 +123,7 @@ add_library(botscriptserver_obj_lib OBJECT
 add_executable(botscript-server-exe
   $<TARGET_OBJECTS:botscriptserver_obj_lib>
   src/ws_server.cc
+  src/bot_manager.cc
   src/storage/db_user_store.cc
   src/storage/db_config_store.cc
   src/main.cc
@@ -145,6 +145,7 @@ if(MSVC OR MINGW)
     WIN32
     $<TARGET_OBJECTS:botscriptserver_obj_lib>
     src/ws_server.cc
+    src/bot_manager.cc
     src/storage/desktop_user_store.cc
     src/win32gui/TrayIcon.cpp
     src/win32gui/main.cc
