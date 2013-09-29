@@ -9,6 +9,7 @@
 #include <functional>
 
 #include "boost/asio/io_service.hpp"
+#include "boost/asio.hpp"
 
 #include "websocketpp/config/asio_no_tls.hpp"
 #include "websocketpp/server.hpp"
@@ -75,6 +76,8 @@ class ws_server {
   void on_msg(websocketpp::connection_hdl hdl, server::message_ptr msg);
 
   boost::asio::io_service io_service_;
+
+  boost::asio::signal_set signals_;
 
   std::unique_ptr<config_store> config_store_;
   std::unique_ptr<user_store> user_store_;

@@ -26,6 +26,10 @@ namespace botscript_server {
 ///   - a file based implementation
 class config_store {
  public:
+  /// Virtual destructor for inheriting classes.
+  virtual ~config_store() {
+  }
+
   /// Adds a new bot configuration to the store
   ///
   /// \param bot  the bot to store the configuration for

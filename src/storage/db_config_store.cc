@@ -29,7 +29,7 @@ db_config_store::db_config_store(const std::string& path,
 
 void db_config_store::add(std::shared_ptr<botscript::bot> bot, empty_cb cb) {
   io_service_->post([=]() {
-    const std::string& identifier = bot->identifier();
+    const std::string& identifier = bot->configuration().identifier();
     const bs::config& config = bot->configuration();
 
     bots_[identifier]["username"] = config.username();
@@ -105,7 +105,8 @@ void db_config_store::update_attribute(std::shared_ptr<botscript::bot> bot,
                                        const std::string& new_value,
                                        empty_cb cb) {
   io_service_->post([=]() {
-    bots_[bot->identifier()]["module"][module][key] = new_value;
+    std::string identifier = bot->configuration().identifier();
+    bots_[identifier]["module"][module][key] = new_value;
     return cb(boost::system::error_code());
   });
 };
@@ -136,7 +137,8 @@ std::string db_config_store::get_sync(const std::string& identifier) {
   const std::string& server = bots_[identifier]["server"].val();
 
   // Create config object.
-  bs::config config(username, password, package, server, module_settings);
+  bs::config config(identifier, username, password,
+                    package, server, module_settings);
 
   // Set inactive flag
   std::string inactive = bots_[identifier]["inactive"].val();

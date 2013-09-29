@@ -4,6 +4,7 @@
 
 #include "./ws_server.h"
 
+#include <signal.h>
 #include <iostream>
 #include <functional>
 
@@ -18,7 +19,8 @@ using websocketpp::lib::error_code;
 namespace botscript_server {
 
 ws_server::ws_server()
-    : config_store_(new CONFIG_STORE(io_service_)),
+    : signals_(io_service_),
+      config_store_(new CONFIG_STORE(io_service_)),
       user_store_(new USER_STORE(io_service_)),
       mgr_("./packages",
            *config_store_.get(),
@@ -29,11 +31,19 @@ ws_server::ws_server()
            std::bind(&ws_server::on_session_end, this,
                      std::placeholders::_1),
            &io_service_) {
+  websocket_server_.set_access_channels(websocketpp::log::alevel::none);
   websocket_server_.set_close_handler(bind(&ws_server::on_close, this,
                                            websocketpp::lib::placeholders::_1));
   websocket_server_.set_message_handler(bind(&ws_server::on_msg, this,
                                              websocketpp::lib::placeholders::_1,
                                              websocketpp::lib::placeholders::_2));
+
+  signals_.add(SIGINT);
+  signals_.async_wait([this](boost::system::error_code /*ec*/, int /*signo*/) {
+    std::cout << "Caught SIGINT, shutting down ..." << std::endl;
+    mgr_.stop();
+    websocket_server_.stop();
+  });
 }
 
 void ws_server::start(const std::string& host, const std::string& port) {
