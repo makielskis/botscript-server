@@ -41,6 +41,13 @@ bot_manager::bot_manager(const std::string& packages_path,
       session_end_cb_(std::move(session_end_cb)) {
 }
 
+void bot_manager::stop() {
+  for (auto& bot : bots_) {
+    bot.second->shutdown();
+  }
+  bots_.clear();
+}
+
 void bot_manager::load_bots(std::function<void ()> on_finish) {
   std::vector<std::string> configs = config_store_.get_all();
   auto configs_ptr = std::make_shared<std::vector<std::string>>(configs.begin(), configs.end());
@@ -50,9 +57,10 @@ void bot_manager::load_bots(std::function<void ()> on_finish) {
   while (count++ < 10 && configs_ptr->size() > 0) {
     std::string config = *configs_ptr->rbegin();
     configs_ptr->resize(configs_ptr->size() - 1);
+
     auto bot = std::make_shared<bs::bot>(io_service_);
-    bot->callback_ = std::bind(&bot_manager::print_cb, this, bot, p::_1, p::_2, p::_3);
-    bot->init(config, load_cb);
+    bot->update_callback_ = std::bind(&bot_manager::print_cb, this, bot, p::_1, p::_2, p::_3);
+    bot->init(std::make_shared<bs::config>(config), load_cb);
   }
 }
 
@@ -60,21 +68,20 @@ void bot_manager::on_bot_load(
     std::shared_ptr<bs::bot> bot,
     std::string err,
     std::shared_ptr<std::vector<std::string>> configs_ptr) {
+  std::string identifier = bot->configuration().identifier();
   if (err.empty()) {
-    std::cout << "Loaded " << bot->identifier() << "\n";
-    bots_[bot->identifier()] = bot;
-    std::string identifier = bot->identifier();
-    config_store_.set_inactive(bot->identifier(), false, [identifier](error_code ec) {
+    std::cout << "Loaded " << identifier << "\n";
+    bots_[identifier] = bot;
+    config_store_.set_inactive(identifier, false, [identifier](error_code ec) {
       if (ec) {
         std::cout << "[FATAL] Could not activate " << identifier << ":"
                   << ec.message() << "[" << ec.value() << "]\n";
       }
     });
   } else {
-    std::string identifier = bot->identifier();
     bot->shutdown();
     std::cout << "Unable to load " << identifier << " [" << err << "]\n";
-    config_store_.set_inactive(bot->identifier(), true, [identifier](error_code ec) {
+    config_store_.set_inactive(identifier, true, [identifier](error_code ec) {
       if (ec) {
         std::cout << "[FATAL] Could not deactivate " << identifier << ":"
                   << ec.message() << "[" << ec.value() << "]\n";
@@ -85,11 +92,10 @@ void bot_manager::on_bot_load(
   if (configs_ptr->size() != 0) {
     std::string config = *configs_ptr->rbegin();
     configs_ptr->resize(configs_ptr->size() - 1);
-    std::cout << "Loading bot configuration: " << config << "\n";
     auto load_cb = std::bind(&bot_manager::on_bot_load, this, p::_1, p::_2, configs_ptr);
     auto bot = std::make_shared<bs::bot>(io_service_);
-    bot->callback_ = std::bind(&bot_manager::print_cb, this, bot, p::_1, p::_2, p::_3);
-    bot->init(config, load_cb);
+    bot->update_callback_ = std::bind(&bot_manager::print_cb, this, bot, p::_1, p::_2, p::_3);
+    bot->init(std::make_shared<bs::config>(config), load_cb);
   }
 }
 
@@ -100,7 +106,7 @@ void bot_manager::handle_connection_close(const std::string& sid) {
       const auto bot_it = bots_.find(id);
       if (bot_it != bots_.end()) {
         auto& bot = bot_it->second;
-        bot->callback_ = std::bind(&bot_manager::print_cb, this, bot, p::_1, p::_2, p::_3);
+        bot->update_callback_ = std::bind(&bot_manager::print_cb, this, bot, p::_1, p::_2, p::_3);
       }
     }
     sid_bot_ids_map_.erase(it);
@@ -154,9 +160,9 @@ void bot_manager::handle_create_bot_msg(
     create_bot_msg m,
     msg_callback cb) {
   // Load configuration.
-  bs::config c;
+  std::shared_ptr<bs::config> c;
   try {
-    c = bs::config(m.config());
+    c = std::make_shared<bs::config>(m.config());
   } catch (const std::runtime_error& e) {
     std::vector<outgoing_msg_ptr> out;
     error_code ec = error::invalid_configuration;
@@ -166,7 +172,7 @@ void bot_manager::handle_create_bot_msg(
   }
 
 #ifdef FORCE_PROXY
-  if (c.module_settings()["base"]["proxy"].empty()) {
+  if (c->module_settings()["base"]["proxy"].empty()) {
     std::vector<outgoing_msg_ptr> out;
     error_code e = error::proxy_required;
     out.emplace_back(make_unique<failure_msg>(0, m.type(), e.value(), e.message()));
@@ -175,7 +181,7 @@ void bot_manager::handle_create_bot_msg(
 #endif
 
   // Create identifier.
-  std::string id = bs::bot::identifier(c.username(), c.package(), c.server());
+  std::string id = bs::bot::identifier(c->username(), c->package(), c->server());
 
   // Add bot to user store.
   return user_store_.add_bot(m.sid(), id, [=](error_code e) {
@@ -189,9 +195,8 @@ void bot_manager::handle_create_bot_msg(
 
     // Create bot object.
     auto b = std::make_shared<bs::bot>(io_service_);
-
-    // Send updates out to the activity callback.
-    b->callback_ = std::bind(&bot_manager::sid_cb, this, m.sid(), b, p::_1, p::_2, p::_3);
+    b->update_callback_ =
+        std::bind(&bot_manager::sid_cb, this, m.sid(), b, p::_1, p::_2, p::_3);
 
     // Check blocklist.
     if (bot_creation_blocklist_.find(id) != bot_creation_blocklist_.end()) {
@@ -203,7 +208,8 @@ void bot_manager::handle_create_bot_msg(
     bot_creation_blocklist_.insert(id);
 
     // Load configuration.
-    return b->init(m.config(), [=](std::shared_ptr<bs::bot> created_bot, std::string err) {
+    return b->init(c,
+                   [=](std::shared_ptr<bs::bot> created_bot, std::string err) {
       // Remove from botlist (independent from init result).
       bot_creation_blocklist_.erase(id);
 
@@ -414,11 +420,25 @@ void bot_manager::handle_reactivate_bot_msg(
           return cb(std::move(out));
         }
 
+        // Create configuration object.
+        std::shared_ptr<bs::config> c;
+        try {
+          c = std::make_shared<bs::config>(config);
+        } catch (const std::runtime_error& e) {
+          std::vector<outgoing_msg_ptr> out;
+          error_code ec = error::invalid_configuration;
+          std::string message = ec.message() + ": " + e.what();
+          out.emplace_back(make_unique<failure_msg>(0, m.type(), ec.value(), message));
+          return cb(std::move(out));
+        }
+
+        // Change proxy.
+        c->set("base", "proxy", m.proxy());
+
         // Create bot object.
         auto b = std::make_shared<bs::bot>(io_service_);
-
-        // Send updates out to the activity callback.
-        b->callback_ = std::bind(&bot_manager::sid_cb, this, m.sid(), b, p::_1, p::_2, p::_3);
+        b->update_callback_ =
+            std::bind(&bot_manager::sid_cb, this, m.sid(), b, p::_1, p::_2, p::_3);
 
         // Check blocklist.
         std::string id = m.identifier();
@@ -430,21 +450,9 @@ void bot_manager::handle_reactivate_bot_msg(
         }
         bot_creation_blocklist_.insert(id);
 
-        // Change proxy.
-        bs::config c;
-        try {
-          c = bs::config(config);
-        } catch (const std::runtime_error& e) {
-          std::vector<outgoing_msg_ptr> out;
-          error_code ec = error::invalid_configuration;
-          std::string message = ec.message() + ": " + e.what();
-          out.emplace_back(make_unique<failure_msg>(0, m.type(), ec.value(), message));
-          return cb(std::move(out));
-        }
-        c.set("base", "proxy", m.proxy());
-
         // Load configuration.
-        return b->init(config, [=](std::shared_ptr<bs::bot> created_bot, std::string err) {
+        return b->init(c,
+                       [=](std::shared_ptr<bs::bot> created_bot, std::string err) {
           // Remove from botlist (independent from init result).
           bot_creation_blocklist_.erase(id);
 
@@ -620,7 +628,7 @@ void bot_manager::on_login(
           auto i = bots_.find(bot_id);
           if (i != bots_.end()) {
             auto& bot = i->second;
-            bot->callback_ = std::bind(&bot_manager::sid_cb, this, sid, bot, p::_1, p::_2, p::_3);
+            bot->update_callback_ = std::bind(&bot_manager::sid_cb, this, sid, bot, p::_1, p::_2, p::_3);
             sid_bot_ids_map_[sid].insert(bot_id);
           }
         }

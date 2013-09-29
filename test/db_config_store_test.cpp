@@ -40,14 +40,15 @@ class DbConfigStoreTest : public testing::Test {
     boost::filesystem::remove(DB_FILE);
   }
 
-  void addTestConfig(const string& config, const string& expected) {
+  void addTestConfig(const string& config_str, const string& expected) {
     db_config_store store(DB_FILE, &io_service_);
 
+    auto c = std::make_shared<config>(config_str);
     auto b = make_shared<bot>(&io_service_);
-    b->callback_ = [](string, string k, string v) { };
+    b->update_callback_ = [](string, string, string) { };
     bots_.push_back(b);
 
-    b->init(config, [&store, &expected](shared_ptr<bot> bot, string init_e) {
+    b->init(c, [&store, &expected](shared_ptr<bot> bot, string init_e) {
       ASSERT_EQ("", init_e);
       store.add(bot, [&store, &expected](error_code add_e) {
         ASSERT_FALSE(add_e);

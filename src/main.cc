@@ -7,4 +7,5 @@
 int main() {
   botscript_server::ws_server s;
   s.start("0.0.0.0", "9003");
+  std::cout << "... exit\n";
 }

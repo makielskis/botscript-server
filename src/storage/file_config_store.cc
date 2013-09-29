@@ -30,8 +30,8 @@ void file_config_store::add(std::shared_ptr<bs::bot> bot, empty_cb cb) {
     try {
       std::ofstream file;
       file.exceptions(std::ios_base::failbit);
-      file.open(config_dir_ + "/" + bot->identifier() + ".json", std::ios::out);
-      file << bot->configuration(true);
+      file.open(config_dir_ + "/" + bot->configuration().identifier() + ".json", std::ios::out);
+      file << bot->configuration().to_json(true);
       return cb(boost::system::error_code());
     } catch(const std::ios_base::failure& e) {
       return cb(boost::system::error_code(EIO, boost::system::system_category()));

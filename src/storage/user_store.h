@@ -32,6 +32,10 @@ namespace botscript_server {
 /// When implementing: use salted hashs to store the passwords!
 class user_store {
  public:
+  /// Virtual destructor for inheriting classes.
+  virtual ~user_store() {
+  }
+
   /// Adds a user with the specified properties to the database.
   ///
   /// Precondition:
