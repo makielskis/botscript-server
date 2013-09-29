@@ -26,6 +26,7 @@ else()
   add_definitions(-D__EXTENSIONS__)
   add_definitions(-D_MYZLIB)
   add_definitions(-D_MYGCCATOMIC)
+  add_definitions(-D_WIN32_WINNT=0x0501)
 
   # Show all warnings.
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
