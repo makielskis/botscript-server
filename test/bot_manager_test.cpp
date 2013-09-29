@@ -19,7 +19,7 @@
 #define PW    ("pw")
 #define MAIL  ("mail")
 
-#define CONFIG "{\"username\":\"login_username\",\"password\":\"login_password\",\"package\":\"ts\",\"server\":\"http://example.com\",\"inactive\":false,\"modules\":{\"base\":{\"wait_time_factor\":\"1.00\",\"proxy\":\"\"}}}"
+#define CONFIG "{\"username\":\"login_username\",\"password\":\"login_password\",\"package\":\"ts\",\"server\":\"http://example.com\",\"inactive\":false,\"modules\":{\"base\":{\"wait_time_factor\":\"1.00\",\"proxy\":\"8.8.8.8:53\"}}}"
 
 using namespace std;
 using namespace botscript_server;

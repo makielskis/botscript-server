@@ -174,6 +174,7 @@ add_executable(botscript-server-tests
   $<TARGET_OBJECTS:botscriptserver_obj_lib>
   src/storage/db_user_store.cc
   src/storage/db_config_store.cc
+  src/bot_manager.cc
   test/db_user_store_test.cpp
   test/db_config_store_test.cpp
   test/error_test.cpp
