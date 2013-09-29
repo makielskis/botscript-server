@@ -345,7 +345,6 @@ std::set<std::string> db_user_store::split(const std::string& s) {
       ret.insert(el);
     }
   }
-  std::cout << std::endl;
 
   return ret;
 }
