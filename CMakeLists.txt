@@ -85,7 +85,7 @@ endif()
 ################################
 include_directories("external_lib/websocketpp")
 include_directories("external_lib/botscript/src")
-include_directories("external_lib/botscript/external_lib/rapidjson-r64/include")
+include_directories("external_lib/botscript/external_lib/rapidjson/include")
 include_directories("external_lib/botscript/external_lib/pugixml-1.0/src")
 include_directories("external_lib/botscript/external_lib/lua-5.2.0/src")
 include_directories("external_lib/kyotocabinet-1.2.76")
@@ -94,7 +94,7 @@ include_directories("external_lib/kyotocabinet-1.2.76")
 ################################
 # Object library
 ################################
-add_library(botscriptserver_obj_lib OBJECT
+add_library(botscriptserver_lib STATIC
   src/error.cc
   src/storage/file_config_store.cc
   src/messages/login_msg.cc
@@ -121,7 +121,6 @@ add_library(botscriptserver_obj_lib OBJECT
 # Main executable
 ################################
 add_executable(botscript-server-exe
-  $<TARGET_OBJECTS:botscriptserver_obj_lib>
   src/ws_server.cc
   src/bot_manager.cc
   src/storage/db_user_store.cc
@@ -129,11 +128,11 @@ add_executable(botscript-server-exe
   src/main.cc
 )
 if(MSVC)
-  target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} kyotocabinet)
+  target_link_libraries(botscript-server-exe botscriptserver_lib bs ${Boost_LIBRARIES} kyotocabinet)
 elseif(MINGW)
-  target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} kyotocabinet -Wl,-Bstatic z ws2_32 mswsock -static-libgcc -static-libstdc++)
+  target_link_libraries(botscript-server-exe botscriptserver_lib bs ${Boost_LIBRARIES} kyotocabinet -Wl,-Bstatic z ws2_32 mswsock -static-libgcc -static-libstdc++)
 else()
-  target_link_libraries(botscript-server-exe bs ${Boost_LIBRARIES} kyotocabinet rt -pthread)
+  target_link_libraries(botscript-server-exe botscriptserver_lib bs ${Boost_LIBRARIES} kyotocabinet rt -pthread)
 endif()
 
 
@@ -143,7 +142,6 @@ endif()
 if(MSVC OR MINGW)
   add_executable(botscript-server-gui
     WIN32
-    $<TARGET_OBJECTS:botscriptserver_obj_lib>
     src/ws_server.cc
     src/bot_manager.cc
     src/storage/desktop_user_store.cc
@@ -153,9 +151,9 @@ if(MSVC OR MINGW)
   )
   set_target_properties(botscript-server-gui PROPERTIES COMPILE_FLAGS "-DDESKTOP")
   if(MSVC)
-    target_link_libraries(botscript-server-gui bs ${Boost_LIBRARIES})
+    target_link_libraries(botscript-server-gui botscriptserver_lib bs ${Boost_LIBRARIES})
   elseif(MINGW)
-    target_link_libraries(botscript-server-gui bs ${Boost_LIBRARIES} -Wl,-Bstatic z ws2_32 mswsock -static-libgcc -static-libstdc++)
+    target_link_libraries(botscript-server-gui botscriptserver_lib bs ${Boost_LIBRARIES} -Wl,-Bstatic z ws2_32 mswsock -static-libgcc -static-libstdc++)
   endif()
 endif()
 
@@ -171,7 +169,6 @@ endif()
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 add_executable(botscript-server-tests
-  $<TARGET_OBJECTS:botscriptserver_obj_lib>
   src/storage/db_user_store.cc
   src/storage/db_config_store.cc
   src/bot_manager.cc
@@ -183,5 +180,5 @@ add_executable(botscript-server-tests
   test/bot_manager_test.cpp
 )
 
-target_link_libraries(botscript-server-tests gtest gtest_main bs ${Boost_LIBRARIES} kyotocabinet rt -pthread)
+target_link_libraries(botscript-server-tests botscriptserver_lib gtest gtest_main bs ${Boost_LIBRARIES} kyotocabinet rt -pthread)
 add_test(botscript-server-tests botscript-server-tests)
