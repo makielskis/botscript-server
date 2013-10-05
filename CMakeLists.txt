@@ -18,7 +18,7 @@ set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX
    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cxx_flag_overrides.cmake)
 
 
-cmake_minimum_required (VERSION 2.8.8)
+cmake_minimum_required(VERSION 2.6)
 project(botscript-server)
 
 
