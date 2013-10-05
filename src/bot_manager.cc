@@ -58,9 +58,13 @@ void bot_manager::load_bots(std::function<void ()> on_finish) {
     std::string config = *configs_ptr->rbegin();
     configs_ptr->resize(configs_ptr->size() - 1);
 
-    auto bot = std::make_shared<bs::bot>(io_service_);
-    bot->update_callback_ = std::bind(&bot_manager::print_cb, this, bot, p::_1, p::_2, p::_3);
-    bot->init(std::make_shared<bs::config>(config), load_cb);
+    try {
+      auto bot = std::make_shared<bs::bot>(io_service_);
+      bot->update_callback_ = std::bind(&bot_manager::print_cb, this, bot, p::_1, p::_2, p::_3);
+      bot->init(std::make_shared<bs::config>(config), load_cb);
+    } catch(const std::runtime_error&) {
+      std::cerr << "[FATAL] Invalid configuration " << config << "\n";
+    }
   }
 }
 
@@ -92,10 +96,15 @@ void bot_manager::on_bot_load(
   if (configs_ptr->size() != 0) {
     std::string config = *configs_ptr->rbegin();
     configs_ptr->resize(configs_ptr->size() - 1);
-    auto load_cb = std::bind(&bot_manager::on_bot_load, this, p::_1, p::_2, configs_ptr);
-    auto bot = std::make_shared<bs::bot>(io_service_);
-    bot->update_callback_ = std::bind(&bot_manager::print_cb, this, bot, p::_1, p::_2, p::_3);
-    bot->init(std::make_shared<bs::config>(config), load_cb);
+
+    try {
+      auto load_cb = std::bind(&bot_manager::on_bot_load, this, p::_1, p::_2, configs_ptr);
+      auto bot = std::make_shared<bs::bot>(io_service_);
+      bot->update_callback_ = std::bind(&bot_manager::print_cb, this, bot, p::_1, p::_2, p::_3);
+      bot->init(std::make_shared<bs::config>(config), load_cb);
+    } catch(const std::runtime_error&) {
+      std::cerr << "[FATAL] Invalid configuration " << config << "\n";
+    }
   }
 }
 
