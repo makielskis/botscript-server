@@ -14,6 +14,8 @@
 #include "websocketpp/config/asio_no_tls.hpp"
 #include "websocketpp/server.hpp"
 
+#include "rapidjson_with_exception.h"
+
 #include "./bs_server.h"
 #include "./messages/message.h"
 
@@ -26,8 +28,10 @@ namespace botscript_server {
 /// Websocket server that uses the bs_server class to respond to requests.
 class ws_server {
  public:
+  /// \param store     the key value store to use for users and configurations
   /// \param packages  the packages to work with
-  ws_server(std::vector<std::string> packages);
+  ws_server(std::unique_ptr<dust::key_value_store> store,
+            std::vector<std::string> packages);
 
   /// Starts listening for connections.
   void start(const std::string& host, const std::string& port);
@@ -54,10 +58,6 @@ class ws_server {
   /// \param sid  the session id of the session that ended
   void on_session_end(std::string sid);
 
-  /// \param hdl  the connection handle to send the message response to
-  /// \return a message callback for a general message
-  op_callback create_cb(websocketpp::connection_hdl hdl);
-
   /// Creates a session callback. This is for messages that could open a new
   /// session (register message, login message, user message).
   /// If the session ID is not empty, it will register the session
@@ -79,6 +79,12 @@ class ws_server {
   /// \param hdl  the connection that sends the message
   /// \param msg  the actual message
   void on_msg(websocketpp::connection_hdl hdl, server::message_ptr msg);
+
+  /// Creates the correct operation object from the incoming JSON.
+  ///
+  /// \param d  the parsed JSON document
+  /// \return the operation
+  std::unique_ptr<operation> create_op(const rapidjson::Document& d);
 
   boost::asio::io_service io_service_;
 

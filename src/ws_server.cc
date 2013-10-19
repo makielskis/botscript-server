@@ -12,7 +12,10 @@
 
 #include "./config.h"
 #include "./messages/message.h"
+#include "./messages/failure_msg.h"
 #include "./operations/all_ops.h"
+#include "./make_unique.h"
+#include "./error.h"
 
 using websocketpp::connection_hdl;
 using websocketpp::lib::bind;
@@ -20,11 +23,11 @@ using websocketpp::lib::error_code;
 
 namespace botscript_server {
 
-ws_server::ws_server(std::vector<std::string> packages)
+ws_server::ws_server(std::unique_ptr<dust::key_value_store> store,
+                     std::vector<std::string> packages)
     : signals_(io_service_),
-      store_(new KEY_VALUE_STORE()),
       mgr_(&io_service_,
-           *store_.get(),
+           std::move(store),
            std::move(packages),
            std::bind(&ws_server::on_activity, this,
                      std::placeholders::_1,
@@ -97,20 +100,6 @@ void ws_server::on_session_end(std::string sid) {
   }
 }
 
-sid_callback ws_server::create_cb(connection_hdl hdl) {
-  return [=](std::string /* sid */, std::vector<msg_ptr> msgs) {
-    // Send out messages.
-    for (const auto& msg : msgs) {
-      error_code err;
-      websocket_server_.send(hdl, msg->to_json(), websocketpp::frame::opcode::TEXT, err);
-      if (err) {
-        std::cout << "[ERROR] could not deliver message\n";
-        break;
-      }
-    }
-  };
-}
-
 sid_callback ws_server::create_sid_cb(connection_hdl hdl) {
   return [=](std::string sid, std::vector<msg_ptr> msgs) {
     // Send out messages.
@@ -164,51 +153,69 @@ void ws_server::on_msg(connection_hdl hdl, server::message_ptr msg) {
     return;
   }
 
-  // Process message:
-  // Create message class and hand it over to the bs_server.
+  // Create operation.
+  std::unique_ptr<operation> op;
   try {
-    std::string type = d["type"][rapidjson::SizeType(0)].GetString();
-
-    if (type == "register") {
-      register_op(d).execute(mgr_, create_sid_cb(hdl));
-    } else if (type == "login") {
-      login_op(d).execute(mgr_, create_sid_cb(hdl));
-    } else if (type == "user") {
-      if (d["type"].Size() == 1u) {
-        user_op(d).execute(mgr_, create_sid_cb(hdl));
-      } else {
-        sid_callback cb = create_cb(hdl);
-        type = d["type"][1].GetString();
-
-        if (type == "bot") {
-          type = d["type"][2].GetString();
-
-          if (type == "create") {
-            create_bot_op(d).execute(mgr_, cb);
-          } else if (type == "delete") {
-            delete_bot_op(d).execute(mgr_, cb);
-          } else if (type == "execute") {
-            execute_bot_op(d).execute(mgr_, cb);
-          } else if (type == "reactivate") {
-            reactivate_bot_op(d).execute(mgr_, cb);
-          }
-        } else if (type == "update") {
-          type = d["type"][2].GetString();
-
-          if (std::string(d["type"][2].GetString()) == "delete") {
-            delete_update_op(d).execute(mgr_, cb);
-          } else if (type == "email") {
-            email_update_op(d).execute(mgr_, cb);
-          } else if (type == "password") {
-            password_update_op(d).execute(mgr_, cb);
-          }
-        }
-      }
-    }
+    op = create_op(d);
   } catch(const rapidjson_exception& e) {
     std::cerr << "could not parse message \"" << msg->get_payload() << "\" "
               << "(expected attributes missing)\n";
+  } catch(const boost::system::system_error& e) {
+    std::cerr << "could not parse message \"" << msg->get_payload() << "\" "
+              << "(unknown type)\n";
   }
+
+  // Execute operation.
+  try {
+    op->execute(mgr_, create_sid_cb(hdl));
+  } catch(const boost::system::system_error& e) {
+    failure_msg m(0, op->type(), e.code().value(), e.code().message());
+    error_code send_ec;
+    websocket_server_.send(hdl, m.to_json(),
+                           websocketpp::frame::opcode::TEXT, send_ec);
+  }
+}
+
+std::unique_ptr<operation> ws_server::create_op(const rapidjson::Document& d) {
+  std::string type = d["type"][rapidjson::SizeType(0)].GetString();
+
+  if (type == "register") {
+    return make_unique<register_op>(d);
+  } else if (type == "login") {
+    return make_unique<login_op>(d);
+  } else if (type == "user") {
+    if (d["type"].Size() == 1u) {
+      return make_unique<user_op>(d);
+    } else {
+      type = d["type"][1].GetString();
+
+      if (type == "bot") {
+        type = d["type"][2].GetString();
+
+        if (type == "create") {
+          return make_unique<create_bot_op>(d);
+        } else if (type == "delete") {
+          return make_unique<delete_bot_op>(d);
+        } else if (type == "execute") {
+          return make_unique<execute_bot_op>(d);
+        } else if (type == "reactivate") {
+          return make_unique<reactivate_bot_op>(d);
+        }
+      } else if (type == "update") {
+        type = d["type"][2].GetString();
+
+        if (std::string(d["type"][2].GetString()) == "delete") {
+          return make_unique<delete_update_op>(d);
+        } else if (type == "email") {
+          return make_unique<email_update_op>(d);
+        } else if (type == "password") {
+          return make_unique<password_update_op>(d);
+        }
+      }
+    }
+  }
+
+  throw boost::system::system_error(botscript_server::error::invalid_message);
 }
 
 }  // namespace botscript_server

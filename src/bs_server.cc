@@ -11,12 +11,12 @@ namespace bs = botscript;
 namespace botscript_server {
 
 bs_server::bs_server(boost::asio::io_service* io_service,
-                     dust::key_value_store& store,
+                     std::unique_ptr<dust::key_value_store> store,
                      std::vector<std::string> packages,
                      sid_callback activity_cb,
                      session_end_cb session_end_callback)
     : io_service_(io_service),
-      store_(store),
+      store_(std::move(store)),
       packages_(std::move(packages)),
       activity_cb_(std::move(activity_cb)),
       session_end_cb_(std::move(session_end_callback)) {

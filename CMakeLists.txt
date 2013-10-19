@@ -32,16 +32,6 @@ add_subdirectory(external_lib/dust)
 ################################
 # Boost
 ################################
-
-# Windows compile command:
-# b2 --with-system --with-thread --with-date_time --with-random --with-chrono --with-regex --with-filesystem --with-iostreams runtime-link=static link=static -s ZLIB_SOURCE=C:\zlib-1.2.8
-
-if(MSVC)
-  set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} "C:/boost_1_52_0")
-  set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} "C:/boost_1_52_0/stage/lib")
-  set(Boost_USE_STATIC_RUNTIME ON)
-endif()
-
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost COMPONENTS
   system
@@ -103,27 +93,20 @@ add_library(botscriptserver_lib STATIC ${botscriptserver_lib_files})
 
 
 ################################
-# Main executable
+# JNI shared library
 ################################
-add_executable(botscript-server-exe
-  src/main.cc
-)
-if(MSVC)
-  target_link_libraries(botscript-server-exe botscriptserver_lib bs ${Boost_LIBRARIES} dust)
-elseif(MINGW)
-  target_link_libraries(botscript-server-exe botscriptserver_lib bs ${Boost_LIBRARIES} dust -Wl,-Bstatic z ws2_32 mswsock -static-libgcc -static-libstdc++)
-else()
-  target_link_libraries(botscript-server-exe botscriptserver_lib bs ${Boost_LIBRARIES} dust rt -pthread)
-endif()
+add_library(libbs EXCLUDE_FROM_ALL)
+#include_directories(/usr/lib/jvm/java/include/)
+set_target_properties(libbs PROPERTIES COMPILE_FLAGS "-DDESKTOP")
+target_link_libraries(libbs botscriptserver_lib bs ${Boost_LIBRARIES})
 
 
+if(MSVC OR MINGW)
 ################################
 # GUI executable
 ################################
-if(MSVC OR MINGW)
   add_executable(botscript-server-gui
     WIN32
-    src/ws_server.cc
     src/win32gui/TrayIcon.cpp
     src/win32gui/main.cc
     src/win32gui/res/bot.rc
@@ -134,6 +117,12 @@ if(MSVC OR MINGW)
   elseif(MINGW)
     target_link_libraries(botscript-server-gui botscriptserver_lib bs ${Boost_LIBRARIES} -Wl,-Bstatic z ws2_32 mswsock -static-libgcc -static-libstdc++)
   endif()
+else()
+################################
+# Server executable
+################################
+  add_executable(botscript-server-exe src/main.cc)
+  target_link_libraries(botscript-server-exe botscriptserver_lib bs ${Boost_LIBRARIES} dust rt -pthread)
 endif()
 
 
@@ -141,13 +130,13 @@ endif()
 # Unit Tests
 ################################
 if (NOT TARGET gtest)
-  add_subdirectory(test/gtest-1.6.0)
+  add_subdirectory(test/gtest-1.6.0 EXCLUDE_FROM_ALL)
   enable_testing()
 endif()
 
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
-add_executable(botscript-server-tests
+add_executable(botscript-server-tests EXCLUDE_FROM_ALL
   test/error_test.cpp
 #  test/rapid_json_exception_test.cpp
 #  test/outgoing_messages_test.cpp
