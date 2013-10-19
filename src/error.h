@@ -15,6 +15,9 @@ namespace botscript_server {
 namespace error {
   // Specific errors
   enum error_code_t {
+    // incoming message invalid
+    invalid_message = 1,
+
     // registration errors
     username_already_taken = 11,
     password_too_short = 12,

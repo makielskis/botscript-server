@@ -22,6 +22,9 @@ const char* error_category_impl::name() const noexcept {
 
 std::string error_category_impl::message(int ev) const noexcept {
   switch (ev) {
+    case error::invalid_message:
+      return "Invalid message.";
+
     case error::username_already_taken:
       return "Username already in use.";
 

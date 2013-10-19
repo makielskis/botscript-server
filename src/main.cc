@@ -4,15 +4,20 @@
 
 #include <iostream>
 
+#include "dust/storage/mem_store.h"
+
 #include "bot.h"
 
+#include "./make_unique.h"
 #include "./ws_server.h"
 
 using namespace botscript_server;
-namespace bs = botscript;
+using namespace dust;
+using namespace botscript;
 
 int main() {
-  ws_server s(bs::bot::load_packages("./packages"));
+  auto store = make_unique<mem_store>();
+  ws_server s(std::move(store), bot::load_packages("./packages"));
   s.start("0.0.0.0", "9003");
   std::cout << "... exit\n";
 }

@@ -39,7 +39,7 @@ class bs_server {
   /// \param activity_cb           callback for bot activity (log, status upd.)
   /// \param session_end_callback  callback to inform about session end
   bs_server(boost::asio::io_service* io_service,
-            dust::key_value_store& store,
+            std::unique_ptr<dust::key_value_store> store,
             std::vector<std::string> packages,
             sid_callback activity_cb,
             session_end_cb session_end_callback);
@@ -72,7 +72,7 @@ class bs_server {
   boost::asio::io_service* io_service_;
 
   /// Storage for bot configurations and user accounts.
-  dust::key_value_store& store_;
+  std::unique_ptr<dust::key_value_store> store_;
 
   /// Bot package list.
   std::vector<std::string> packages_;
