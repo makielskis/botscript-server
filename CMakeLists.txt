@@ -17,7 +17,6 @@ set(CMAKE_USER_MAKE_RULES_OVERRIDE
 set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX
    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cxx_flag_overrides.cmake)
 
-
 cmake_minimum_required(VERSION 2.6)
 project(botscript-server)
 
@@ -60,6 +59,9 @@ if(MSVC)
 elseif(MINGW)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -s")
   add_definitions(-DBOOST_THREAD_USE_LIB -D_WIN32_WINNT=0x0501 -DWINVER=0x0501 -D_WIN32_IE=0x0501)
+elseif(ANDROID)
+  add_definitions(-DANDROID)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_DEBUG} -std=c++11")
 else()
   # GCC -> use c++11 standard.
   add_definitions("-std=c++11 -fPIC")
@@ -68,7 +70,6 @@ else()
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
 endif()
-
 
 ################################
 # Include Paths
@@ -95,7 +96,7 @@ add_library(botscriptserver_lib STATIC ${botscriptserver_lib_files})
 ################################
 # JNI shared library
 ################################
-add_library(libbs EXCLUDE_FROM_ALL)
+add_library(libbs SHARED EXCLUDE_FROM_ALL)
 #include_directories(/usr/lib/jvm/java/include/)
 set_target_properties(libbs PROPERTIES COMPILE_FLAGS "-DDESKTOP")
 target_link_libraries(libbs botscriptserver_lib bs ${Boost_LIBRARIES})
