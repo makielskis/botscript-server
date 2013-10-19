@@ -88,32 +88,18 @@ include_directories("external_lib/botscript/src")
 include_directories("external_lib/botscript/external_lib/rapidjson/include")
 include_directories("external_lib/botscript/external_lib/pugixml-1.0/src")
 include_directories("external_lib/botscript/external_lib/lua-5.2.0/src")
-include_directories("external_lib/dust/src")
+include_directories("external_lib/dust/include")
 
 
 ################################
 # Object library
 ################################
-add_library(botscriptserver_lib STATIC
-  src/error.cc
-  src/messages/login_msg.cc
-  src/messages/register_msg.cc
-  src/messages/user/user_msg.cc
-  src/messages/user/bot/create_bot_msg.cc
-  src/messages/user/bot/delete_bot_msg.cc
-  src/messages/user/bot/execute_bot_msg.cc
-  src/messages/user/bot/reactivate_bot_msg.cc
-  src/messages/user/update/delete_update_msg.cc
-  src/messages/user/update/email_update_msg.cc
-  src/messages/user/update/password_update_msg.cc
-  src/messages/outgoing/success_msg.cc
-  src/messages/outgoing/failure_msg.cc
-  src/messages/outgoing/packages_msg.cc
-  src/messages/outgoing/session_msg.cc
-  src/messages/outgoing/account_msg.cc
-  src/messages/outgoing/bots_msg.cc
-  src/messages/outgoing/update_msg.cc
-)
+file(GLOB gui_files "src/win32gui/*.cc")
+file(GLOB exe_files "src/main.cc")
+file(GLOB_RECURSE botscriptserver_lib_files "src/*.cc")
+list(REMOVE_ITEM  botscriptserver_lib_files ${gui_files})
+list(REMOVE_ITEM  botscriptserver_lib_files ${exe_files})
+add_library(botscriptserver_lib STATIC ${botscriptserver_lib_files})
 
 
 ################################
@@ -163,8 +149,8 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 add_executable(botscript-server-tests
   test/error_test.cpp
-  test/rapid_json_exception_test.cpp
-  test/outgoing_messages_test.cpp
+#  test/rapid_json_exception_test.cpp
+#  test/outgoing_messages_test.cpp
 )
 
 target_link_libraries(botscript-server-tests botscriptserver_lib gtest gtest_main bs ${Boost_LIBRARIES} dust rt -pthread)

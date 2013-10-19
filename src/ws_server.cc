@@ -11,6 +11,8 @@
 #include "rapidjson_with_exception.h"
 
 #include "./config.h"
+#include "./messages/message.h"
+#include "./operations/all_ops.h"
 
 using websocketpp::connection_hdl;
 using websocketpp::lib::bind;
@@ -18,19 +20,17 @@ using websocketpp::lib::error_code;
 
 namespace botscript_server {
 
-ws_server::ws_server()
+ws_server::ws_server(std::vector<std::string> packages)
     : signals_(io_service_),
-      config_store_(new CONFIG_STORE(io_service_)),
-      user_store_(new USER_STORE(io_service_)),
-      mgr_("./packages",
-           *config_store_.get(),
-           *user_store_.get(),
+      store_(new KEY_VALUE_STORE()),
+      mgr_(&io_service_,
+           *store_.get(),
+           std::move(packages),
            std::bind(&ws_server::on_activity, this,
                      std::placeholders::_1,
                      std::placeholders::_2),
            std::bind(&ws_server::on_session_end, this,
-                     std::placeholders::_1),
-           &io_service_) {
+                     std::placeholders::_1)) {
   websocket_server_.set_access_channels(websocketpp::log::alevel::none);
   websocket_server_.set_close_handler(bind(&ws_server::on_close, this,
                                            websocketpp::lib::placeholders::_1));
@@ -62,7 +62,7 @@ void ws_server::stop() {
 }
 
 void ws_server::on_activity(std::string sid,
-                            std::vector<outgoing_msg_ptr> msgs) {
+                            std::vector<msg_ptr> msgs) {
   const auto it = sid_con_map_.find(sid);
   if (it != sid_con_map_.cend()) {
     // Connection active, send messagewebsocket_server_.
@@ -73,7 +73,7 @@ void ws_server::on_activity(std::string sid,
 
       // Check error.
       if (e) {
-        // Inform manager about broken connection
+        // Inform bs_server about broken connection
         // and stop processing further messagewebsocket_server_.
         mgr_.handle_connection_close(sid);
         break;
@@ -97,8 +97,8 @@ void ws_server::on_session_end(std::string sid) {
   }
 }
 
-msg_callback ws_server::create_cb(connection_hdl hdl) {
-  return [=](std::vector<outgoing_msg_ptr> msgs) {
+sid_callback ws_server::create_cb(connection_hdl hdl) {
+  return [=](std::string /* sid */, std::vector<msg_ptr> msgs) {
     // Send out messages.
     for (const auto& msg : msgs) {
       error_code err;
@@ -112,7 +112,7 @@ msg_callback ws_server::create_cb(connection_hdl hdl) {
 }
 
 sid_callback ws_server::create_sid_cb(connection_hdl hdl) {
-  return [=](std::string sid, std::vector<outgoing_msg_ptr> msgs) {
+  return [=](std::string sid, std::vector<msg_ptr> msgs) {
     // Send out messages.
     bool failure = false;
     for (const auto& msg : msgs) {
@@ -127,7 +127,7 @@ sid_callback ws_server::create_sid_cb(connection_hdl hdl) {
     }
 
     // If the message could not be sent to the user:
-    // Deregister session in manager.
+    // Deregister session in bs_server.
     if (failure && !sid.empty()) {
       mgr_.handle_connection_close(sid);
       return;
@@ -145,7 +145,7 @@ void ws_server::on_close(connection_hdl hdl) {
   // Find corresponding session id.
   const auto it = con_sid_map_.find(hdl);
 
-  // Inform manager if it was a registered session.
+  // Inform bs_server if it was a registered session.
   if (it != con_sid_map_.end()) {
     mgr_.handle_connection_close(it->second);
   }
@@ -165,42 +165,42 @@ void ws_server::on_msg(connection_hdl hdl, server::message_ptr msg) {
   }
 
   // Process message:
-  // Create message class and hand it over to the manager.
+  // Create message class and hand it over to the bs_server.
   try {
     std::string type = d["type"][rapidjson::SizeType(0)].GetString();
 
     if (type == "register") {
-      mgr_.handle_register_msg(register_msg(d), create_sid_cb(hdl));
+      register_op(d).execute(mgr_, create_sid_cb(hdl));
     } else if (type == "login") {
-      mgr_.handle_login_msg(login_msg(d), create_sid_cb(hdl));
+      login_op(d).execute(mgr_, create_sid_cb(hdl));
     } else if (type == "user") {
       if (d["type"].Size() == 1u) {
-        mgr_.handle_user_msg(user_msg(d), create_sid_cb(hdl));
+        user_op(d).execute(mgr_, create_sid_cb(hdl));
       } else {
-        msg_callback cb = create_cb(hdl);
+        sid_callback cb = create_cb(hdl);
         type = d["type"][1].GetString();
 
         if (type == "bot") {
           type = d["type"][2].GetString();
 
           if (type == "create") {
-            mgr_.handle_create_bot_msg(create_bot_msg(d), cb);
+            create_bot_op(d).execute(mgr_, cb);
           } else if (type == "delete") {
-            mgr_.handle_delete_bot_msg(delete_bot_msg(d), cb);
+            delete_bot_op(d).execute(mgr_, cb);
           } else if (type == "execute") {
-            mgr_.handle_execute_bot_msg(execute_bot_msg(d), cb);
+            execute_bot_op(d).execute(mgr_, cb);
           } else if (type == "reactivate") {
-            mgr_.handle_reactivate_bot_msg(reactivate_bot_msg(d), cb);
+            reactivate_bot_op(d).execute(mgr_, cb);
           }
         } else if (type == "update") {
           type = d["type"][2].GetString();
 
           if (std::string(d["type"][2].GetString()) == "delete") {
-            mgr_.handle_delete_update_msg(delete_update_msg(d), cb);
+            delete_update_op(d).execute(mgr_, cb);
           } else if (type == "email") {
-            mgr_.handle_email_update_msg(email_update_msg(d), cb);
+            email_update_op(d).execute(mgr_, cb);
           } else if (type == "password") {
-            mgr_.handle_password_update_msg(password_update_msg(d), cb);
+            password_update_op(d).execute(mgr_, cb);
           }
         }
       }
