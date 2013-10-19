@@ -29,6 +29,9 @@ namespace botscript_server {
 /// }
 class user_op : public operation {
  public:
+  virtual ~user_op() {
+  }
+
   /// \param sid the session id
   explicit user_op(const std::string& sid);
 
