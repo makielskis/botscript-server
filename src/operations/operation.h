@@ -20,6 +20,9 @@ typedef std::function<void (std::string, std::vector<msg_ptr>)> op_callback;
 /// Interface for classes repesenting outgoing messages.
 class operation {
  public:
+  virtual ~operation() {
+  }
+
   /// \return the message type array
   virtual std::vector<std::string> type() const = 0;
 
