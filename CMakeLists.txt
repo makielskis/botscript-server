@@ -1,22 +1,3 @@
-# Compile and run release version:
-# mkdir build
-# cd build
-# cmake -DCMAKE_BUILD_TYPE=Release ..
-# cd ..
-# ./build/botscript
-
-# Compile and run debug version
-# mkdir build
-# cd build
-# cmake -DCMAKE_BUILD_TYPE=Debug ..
-# cd ..
-# ./build/botscript
-
-set(CMAKE_USER_MAKE_RULES_OVERRIDE
-   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/c_flag_overrides.cmake)
-set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX
-   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cxx_flag_overrides.cmake)
-
 cmake_minimum_required(VERSION 2.6)
 project(botscript-server)
 
@@ -52,23 +33,14 @@ link_directories(${CMAKE_LIBRARY_PATH})
 ################################
 # Compile flags
 ################################
-if(MSVC)
-  # VS2012 doesn't support correctly the tuples yet
-  add_definitions(/D _VARIADIC_MAX=10)
-  add_definitions(/D _WIN32_WINNT=0x0501)
-elseif(MINGW)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -s")
+if(MINGW)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -s")
   add_definitions(-DBOOST_THREAD_USE_LIB -D_WIN32_WINNT=0x0501 -DWINVER=0x0501 -D_WIN32_IE=0x0501)
 elseif(ANDROID)
   add_definitions(-DANDROID)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_DEBUG} -std=c++11")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_DEBUG} -Wall -std=c++11")
 else()
-  # GCC -> use c++11 standard.
-  add_definitions("-std=c++11 -fPIC")
-
-  # Show all warnings.
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -fPIC")
 endif()
 
 ################################
@@ -83,20 +55,22 @@ include_directories("external_lib/dust/include")
 
 
 ################################
-# Object library
+# Static library
 ################################
 file(GLOB gui_files "src/win32gui/*.cc")
 file(GLOB exe_files "src/main.cc")
+file(GLOB jni_files "src/jni/*.cc")
 file(GLOB_RECURSE botscriptserver_lib_files "src/*.cc")
 list(REMOVE_ITEM  botscriptserver_lib_files ${gui_files})
 list(REMOVE_ITEM  botscriptserver_lib_files ${exe_files})
+list(REMOVE_ITEM  botscriptserver_lib_files ${jni_files})
 add_library(botscriptserver_lib STATIC ${botscriptserver_lib_files})
 
 
 ################################
 # JNI shared library
 ################################
-add_library(botscript-server SHARED EXCLUDE_FROM_ALL)
+add_library(botscript-server SHARED EXCLUDE_FROM_ALL ${jni_files})
 #include_directories(/usr/lib/jvm/java/include/)
 set_target_properties(libbs PROPERTIES COMPILE_FLAGS "-DDESKTOP")
 target_link_libraries(libbs botscriptserver_lib bs ${Boost_LIBRARIES})
@@ -108,8 +82,7 @@ if(MSVC OR MINGW)
 ################################
   add_executable(botscript-server-gui
     WIN32
-    src/win32gui/TrayIcon.cpp
-    src/win32gui/main.cc
+    ${gui_files}
     src/win32gui/res/bot.rc
   )
   set_target_properties(botscript-server-gui PROPERTIES COMPILE_FLAGS "-DDESKTOP")

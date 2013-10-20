@@ -5,34 +5,32 @@ package net.makielski.botscript;
  * botscript-server C++ library using the Java Native Interface (JNI).
  */
 public class BotscriptServer {
-	
-	static {
-        System.loadLibrary("botscript-server");
-        System.out.println("botscript-server loaded");
-	}
-	
-    /** Service handle. Don't touch! */
-	public long service = 0;
-    
-	/** Constructor. Initiates the native handle. */
-	public BotscriptServer() {
-		service = createService();
-		System.err.println("service created at " + service);
-	}
-	
-	/** Start the service (blocking) */
-	public native void start();
-	
-	/**
-	 * Stop the service (stops blocking start() call).
-	 * 
-	 * !WARNING!
-	 * The service handle will be destroyed after a call to stop()!
-	 * You'll have to create a new BotscriptServer object.
-	 * The BotscriptServer is NOT reusable!
-	 */
-	public native void stop();
 
-	/** Instanticate */
-	public static native long createService();
+  static {
+    System.loadLibrary("botscript-server");
+  }
+
+  /** Service handle. Don't touch! */
+  public long service = 0;
+
+  /** Constructor. Initiates the native handle. */
+  public BotscriptServer() {
+    service = createService();
+  }
+
+  /** Start the service (blocking) */
+  public native void start();
+
+  /**
+   * Stop the service (stops blocking start() call).
+   *
+   * !WARNING!
+   * The service handle will be destroyed after a call to stop()!
+   * You'll have to create a new BotscriptServer object.
+   * The BotscriptServer is NOT reusable!
+   */
+  public native void stop();
+
+  /** Instanticate */
+  public static native long createService();
 }
