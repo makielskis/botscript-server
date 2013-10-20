@@ -24,8 +24,8 @@ project(botscript-server)
 ################################
 # Dependencies
 ################################
-add_subdirectory(external_lib/botscript)
-add_subdirectory(external_lib/dust)
+add_subdirectory(external_lib/botscript EXCLUDE_FROM_ALL)
+add_subdirectory(external_lib/dust EXCLUDE_FROM_ALL)
 
 
 ################################
@@ -96,7 +96,7 @@ add_library(botscriptserver_lib STATIC ${botscriptserver_lib_files})
 ################################
 # JNI shared library
 ################################
-add_library(libbs SHARED EXCLUDE_FROM_ALL)
+add_library(botscript-server SHARED EXCLUDE_FROM_ALL)
 #include_directories(/usr/lib/jvm/java/include/)
 set_target_properties(libbs PROPERTIES COMPILE_FLAGS "-DDESKTOP")
 target_link_libraries(libbs botscriptserver_lib bs ${Boost_LIBRARIES})
