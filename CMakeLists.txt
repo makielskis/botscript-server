@@ -59,7 +59,7 @@ include_directories("external_lib/dust/include")
 ################################
 file(GLOB gui_files "src/win32gui/*.cc")
 file(GLOB exe_files "src/main.cc")
-file(GLOB jni_files "src/jni/*.cc")
+file(GLOB jni_files "src/jni/*.cpp")
 file(GLOB_RECURSE botscriptserver_lib_files "src/*.cc")
 list(REMOVE_ITEM  botscriptserver_lib_files ${gui_files})
 list(REMOVE_ITEM  botscriptserver_lib_files ${exe_files})
@@ -72,8 +72,8 @@ add_library(botscriptserver_lib STATIC ${botscriptserver_lib_files})
 ################################
 add_library(botscript-server SHARED EXCLUDE_FROM_ALL ${jni_files})
 #include_directories(/usr/lib/jvm/java/include/)
-set_target_properties(libbs PROPERTIES COMPILE_FLAGS "-DDESKTOP")
-target_link_libraries(libbs botscriptserver_lib bs ${Boost_LIBRARIES})
+set_target_properties(botscript-server PROPERTIES COMPILE_FLAGS "-DDESKTOP")
+target_link_libraries(botscript-server botscriptserver_lib bs ${Boost_LIBRARIES})
 
 
 if(MSVC OR MINGW)
