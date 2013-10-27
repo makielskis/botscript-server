@@ -26,10 +26,10 @@ JNIEXPORT void JNICALL Java_net_makielski_botscript_BotscriptServer_stop
 /*
  * Class:     net_makielski_botscript_BotscriptServer
  * Method:    createService
- * Signature: ()J
+ * Signature: (Ljava/lang/String;)J
  */
 JNIEXPORT jlong JNICALL Java_net_makielski_botscript_BotscriptServer_createService
-  (JNIEnv *, jobject);
+  (JNIEnv *, jclass, jstring);
 
 #ifdef __cplusplus
 }

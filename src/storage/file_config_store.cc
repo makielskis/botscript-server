@@ -15,10 +15,8 @@ namespace bs = botscript;
 
 namespace botscript_server {
 
-file_config_store::file_config_store(const std::string& path,
-                                     boost::asio::io_service* io_service)
-    : config_dir_(path),
-      io_service_(io_service) {
+file_config_store::file_config_store(const std::string& path)
+    : config_dir_(path) {
   // Create config dir if not available.
   if (!boost::filesystem::is_directory(path)) {
     boost::filesystem::create_directories(path);
@@ -26,63 +24,55 @@ file_config_store::file_config_store(const std::string& path,
 }
 
 void file_config_store::add(std::shared_ptr<bs::bot> bot, empty_cb cb) {
-  io_service_->post([this, bot, cb]() {
-    try {
-      std::ofstream file;
-      file.exceptions(std::ios_base::failbit);
-      file.open(config_dir_ + "/" + bot->configuration().identifier() + ".json", std::ios::out);
-      file << bot->configuration().to_json(true);
-      return cb(boost::system::error_code());
-    } catch(const std::ios_base::failure& e) {
-      return cb(boost::system::error_code(EIO, boost::system::system_category()));
-    }
-  });
+  try {
+    std::ofstream file;
+    file.exceptions(std::ios_base::failbit);
+    file.open(config_dir_ + "/" + bot->configuration().identifier() + ".json", std::ios::out);
+    file << bot->configuration().to_json(true);
+    return cb(boost::system::error_code());
+  } catch(const std::ios_base::failure& e) {
+    return cb(boost::system::error_code(EIO, boost::system::system_category()));
+  }
 };
 
 void file_config_store::remove(const std::string& identifier, empty_cb cb) {
-  io_service_->post([this, identifier, cb]() {
-    try {
-      boost::filesystem::remove(config_dir_ + "/" + identifier + ".json");
-      return cb(boost::system::error_code());
-    } catch(const boost::filesystem::filesystem_error& e) {
-      return cb(boost::system::error_code(EIO, boost::system::system_category()));
-    }
-  });
+  try {
+    boost::filesystem::remove(config_dir_ + "/" + identifier + ".json");
+    return cb(boost::system::error_code());
+  } catch(const boost::filesystem::filesystem_error& e) {
+    return cb(boost::system::error_code(EIO, boost::system::system_category()));
+  }
 };
 
 void file_config_store::get(const std::string& identifier,
                             cb<std::string>::type cb) {
-  io_service_->post([this, identifier, cb]() {
-    try {
-      std::ifstream file(config_dir_ + "/" + identifier + ".json");
-      file.exceptions(std::ios_base::failbit);
-      std::stringstream buf;
-      buf << file.rdbuf();
-      return cb(buf.str(), boost::system::error_code());
-    } catch (const std::ios_base::failure& e) {
-      return cb("", boost::system::error_code(EIO, boost::system::system_category()));
-    }
-  });
+  try {
+    std::ifstream file(config_dir_ + "/" + identifier + ".json");
+    file.exceptions(std::ios_base::failbit);
+    std::stringstream buf;
+    buf << file.rdbuf();
+    return cb(buf.str(), boost::system::error_code());
+  } catch (const std::ios_base::failure& e) {
+    return cb("", boost::system::error_code(EIO, boost::system::system_category()));
+  }
 };
 
 void file_config_store::get(const std::vector<std::string>& identifiers,
                           cb<std::map<std::string, std::string>>::type cb) {
-  io_service_->post([=]() {
-    try {
-      std::map<std::string, std::string> configurations;
-      for (const auto& identifier : identifiers) {
-        std::ifstream file(config_dir_ + "/" + identifier + ".json");
-        file.exceptions(std::ios_base::failbit);
-        std::stringstream buf;
-        buf << file.rdbuf();
-        configurations[identifier] = buf.str();
-      }
-      return cb(configurations, boost::system::error_code());
-    } catch (const std::ios_base::failure& e) {
-      return cb(std::map<std::string, std::string>(),
-                boost::system::error_code(EIO, boost::system::system_category()));
+  try {
+    std::map<std::string, std::string> configurations;
+    for (const auto& identifier : identifiers) {
+      std::ifstream file(config_dir_ + "/" + identifier + ".json");
+      file.exceptions(std::ios_base::failbit);
+      std::stringstream buf;
+      buf << file.rdbuf();
+      configurations[identifier] = buf.str();
     }
-  });
+    return cb(configurations, boost::system::error_code());
+  } catch (const std::ios_base::failure& e) {
+    return cb(std::map<std::string, std::string>(),
+              boost::system::error_code(EIO, boost::system::system_category()));
+  }
 }
 
 void file_config_store::update_attribute(std::shared_ptr<bs::bot> bot,
@@ -122,55 +112,51 @@ void file_config_store::set_inactive(
     const std::string& identifier,
     bool flag,
     empty_cb cb) {
-  io_service_->post([this, cb, identifier, flag]() {
-    try {
-      std::stringstream buf;
+  try {
+    std::stringstream buf;
 
-      {
-        std::ifstream in_file(config_dir_ + "/" + identifier + ".json");
-        in_file.exceptions(std::ios_base::failbit);
-        buf << in_file.rdbuf();
-      }
-
-      bs::config c(buf.str());
-      c.inactive(flag);
-
-      {
-        std::ofstream file;
-        file.exceptions(std::ios_base::failbit);
-        file.open(config_dir_ + "/" + identifier + ".json", std::ios::out);
-        file << c.to_json(true);
-      }
-
-      return cb(boost::system::error_code());
-    } catch (const std::runtime_error& e) {
-      return cb(boost::system::error_code(EIO, boost::system::system_category()));
-    } catch (const std::ios_base::failure& e) {
-      return cb(boost::system::error_code(EIO, boost::system::system_category()));
+    {
+      std::ifstream in_file(config_dir_ + "/" + identifier + ".json");
+      in_file.exceptions(std::ios_base::failbit);
+      buf << in_file.rdbuf();
     }
-  });
+
+    bs::config c(buf.str());
+    c.inactive(flag);
+
+    {
+      std::ofstream file;
+      file.exceptions(std::ios_base::failbit);
+      file.open(config_dir_ + "/" + identifier + ".json", std::ios::out);
+      file << c.to_json(true);
+    }
+
+    return cb(boost::system::error_code());
+  } catch (const std::runtime_error& e) {
+    return cb(boost::system::error_code(EIO, boost::system::system_category()));
+  } catch (const std::ios_base::failure& e) {
+    return cb(boost::system::error_code(EIO, boost::system::system_category()));
+  }
 }
 
 void file_config_store::get_inactive(
     const std::string& identifier,
     cb<bool>::type cb) {
-  io_service_->post([this, identifier, cb]() {
-    try {
-      std::ifstream in_file(config_dir_ + "/" + identifier + ".json");
-      in_file.exceptions(std::ios_base::failbit);
+  try {
+    std::ifstream in_file(config_dir_ + "/" + identifier + ".json");
+    in_file.exceptions(std::ios_base::failbit);
 
-      std::stringstream buf;
-      buf << in_file.rdbuf();
+    std::stringstream buf;
+    buf << in_file.rdbuf();
 
-      bs::config c(buf.str());
+    bs::config c(buf.str());
 
-      return cb(c.inactive(), boost::system::error_code());
-    } catch (const std::runtime_error& e) {
-      return cb("", boost::system::error_code(EIO, boost::system::system_category()));
-    } catch (const std::ios_base::failure& e) {
-      return cb("", boost::system::error_code(EIO, boost::system::system_category()));
-    }
-  });
+    return cb(c.inactive(), boost::system::error_code());
+  } catch (const std::runtime_error& e) {
+    return cb("", boost::system::error_code(EIO, boost::system::system_category()));
+  } catch (const std::ios_base::failure& e) {
+    return cb("", boost::system::error_code(EIO, boost::system::system_category()));
+  }
 }
 
 }  // namespace botscript_server

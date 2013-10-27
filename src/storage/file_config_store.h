@@ -5,7 +5,6 @@
 #ifndef FILE_CONFIG_STORE_H_
 #define FILE_CONFIG_STORE_H_
 
-#include "boost/asio/io_service.hpp"
 
 #include "config_store.h"
 
@@ -18,8 +17,7 @@ class file_config_store : public config_store {
   ///
   /// \throws boost::filesystem_error
   /// \return all configurations in the path in a vector
-  file_config_store(const std::string& path,
-                    boost::asio::io_service* io_service);
+  file_config_store(const std::string& path);
 
   virtual void add(std::shared_ptr<botscript::bot> bot, empty_cb cb) override;
   virtual void remove(const std::string& identifier, empty_cb cb) override;
@@ -41,9 +39,6 @@ class file_config_store : public config_store {
  private:
   /// Path to the configuration directory.
   const std::string config_dir_;
-
-  /// Service managing I/O operations.
-  boost::asio::io_service* io_service_;
 };
 
 }  // namespace botscript_server

@@ -115,10 +115,16 @@ add_library(libbs SHARED EXCLUDE_FROM_ALL
   src/ws_server.cc
   src/bot_manager.cc
   src/storage/desktop_user_store.cc
+  src/jni/net_makielski_botscript_BotscriptServer.cpp
 )
-#include_directories(/usr/lib/jvm/java/include/)
+
+if(NOT ANDROID)
+  find_package(JNI)
+  include_directories(${JNI_INCLUDE_DIRS})
+endif()
+
 set_target_properties(libbs PROPERTIES COMPILE_FLAGS "-DDESKTOP")
-target_link_libraries(libbs botscriptserver_lib bs ${Boost_LIBRARIES})
+target_link_libraries(libbs botscriptserver_lib bs log ${Boost_LIBRARIES})
 
 
 if(MSVC OR MINGW)
