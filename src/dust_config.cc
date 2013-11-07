@@ -53,13 +53,13 @@ command_sequence dust_config::init_command_sequence() const {
   command_sequence commands;
 
   // Base settings first.
-  const string& wtf = doc_["modules"]["base"]["wait_time_factor"].val();
+  const std::string& wtf = doc_["modules"]["base"]["wait_time_factor"].val();
   auto wtf_init = make_pair("base_set_wait_time_factor", wtf);
   commands.emplace_back(move(wtf_init));
 
   // Iterate modules.
   for (const auto& module : doc_["modules"].children()) {
-    const string& module_name = module.index();
+    const std::string& module_name = module.index();
 
     // Don't handle base twice.
     if (module_name == "base") {
@@ -73,17 +73,18 @@ command_sequence dust_config::init_command_sequence() const {
         continue;
       }
 
-      string command = module_name + "_set_" + module_config.index();
+      std::string command = module_name + "_set_" + module_config.index();
       commands.emplace_back(make_pair(command, module_config.val()));
     }
 
+    // TODO
     // Last step: module activation.
-    const auto it = module_config.val().find("active");
-    if (it != module.second.end()) {
-      commands.emplace_back(make_pair(module_name + "_set_active", it->second));
-    } else {
-      commands.emplace_back(make_pair(module_name + "_set_active", "0"));
-    }
+    //const auto it = module_config.val().find("active");
+    //if (it != module.second.end()) {
+    //  commands.emplace_back(make_pair(module_name + "_set_active", it->second));
+    //} else {
+    //  commands.emplace_back(make_pair(module_name + "_set_active", "0"));
+    //}
   }
 
   return commands;
