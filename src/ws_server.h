@@ -18,12 +18,16 @@
 
 #include "./messages/outgoing_msgs.h"
 
+#include "./storage/config_store.h"
+#include "./storage/user_store.h"
+
 namespace botscript_server {
 
 /// Websocket server that uses the bot_mananger class to respond to requests.
 class ws_server {
  public:
-  ws_server();
+  ws_server(std::unique_ptr<config_store> cstore,
+            std::unique_ptr<user_store> ustore);
 
   /// Starts listening for connections.
   void start(const std::string& host, const std::string& port);

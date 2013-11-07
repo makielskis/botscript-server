@@ -12,12 +12,10 @@
 
 #include "boost/asio/io_service.hpp"
 
-#include "./kc_wrapper.h"
 #include "./callback.h"
 
 namespace botscript_server {
 
-/// Implementation of a user_store based on kyoto db.
 class desktop_user_store : public user_store {
  public:
   desktop_user_store(const std::string& path);

@@ -15,8 +15,8 @@ public class BotscriptServer {
 	public long service = 0;
     
 	/** Constructor. Initiates the native handle. */
-	public BotscriptServer() {
-		service = createService();
+	public BotscriptServer(String storagePath) {
+		service = createService(storagePath);
 		System.err.println("service created at " + service);
 	}
 	
@@ -34,5 +34,5 @@ public class BotscriptServer {
 	public native void stop();
 
 	/** Instanticate */
-	public static native long createService();
+	public static native long createService(String storagePath);
 }

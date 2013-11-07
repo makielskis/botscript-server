@@ -10,7 +10,8 @@
 
 #include "rapidjson_with_exception.h"
 
-#include "./config.h"
+#include "./storage/config_store.h"
+#include "./storage/user_store.h"
 
 using websocketpp::connection_hdl;
 using websocketpp::lib::bind;
@@ -18,10 +19,11 @@ using websocketpp::lib::error_code;
 
 namespace botscript_server {
 
-ws_server::ws_server()
+ws_server::ws_server(std::unique_ptr<config_store> cstore,
+                     std::unique_ptr<user_store> ustore)
     : signals_(io_service_),
-      config_store_(new CONFIG_STORE(io_service_)),
-      user_store_(new USER_STORE(io_service_)),
+      config_store_(std::move(cstore)),
+      user_store_(std::move(ustore)),
       mgr_("./packages",
            *config_store_.get(),
            *user_store_.get(),
