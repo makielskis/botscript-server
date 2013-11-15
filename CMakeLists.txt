@@ -22,13 +22,6 @@ project(botscript-server)
 
 
 ################################
-# Dependencies
-################################
-add_subdirectory(external_lib/botscript)
-add_subdirectory(external_lib/kyotocabinet-1.2.76)
-
-
-################################
 # Boost
 ################################
 set(Boost_USE_STATIC_LIBS ON)
@@ -70,6 +63,14 @@ else()
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
 endif()
+
+
+################################
+# Dependencies
+################################
+add_subdirectory(external_lib/botscript)
+add_subdirectory(external_lib/kyotocabinet-1.2.76)
+
 
 ################################
 # Include Paths
