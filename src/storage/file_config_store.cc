@@ -29,6 +29,7 @@ void file_config_store::add(std::shared_ptr<bs::bot> bot, empty_cb cb) {
     file.exceptions(std::ios_base::failbit);
     file.open(config_dir_ + "/" + bot->configuration().identifier() + ".json", std::ios::out);
     file << bot->configuration().to_json(true);
+    file.close();
     return cb(boost::system::error_code());
   } catch(const std::ios_base::failure& e) {
     return cb(boost::system::error_code(EIO, boost::system::system_category()));
@@ -51,6 +52,7 @@ void file_config_store::get(const std::string& identifier,
     file.exceptions(std::ios_base::failbit);
     std::stringstream buf;
     buf << file.rdbuf();
+    file.close();
     return cb(buf.str(), boost::system::error_code());
   } catch (const std::ios_base::failure& e) {
     return cb("", boost::system::error_code(EIO, boost::system::system_category()));
@@ -58,7 +60,7 @@ void file_config_store::get(const std::string& identifier,
 };
 
 void file_config_store::get(const std::vector<std::string>& identifiers,
-                          cb<std::map<std::string, std::string>>::type cb) {
+                            cb<std::map<std::string, std::string>>::type cb) {
   try {
     std::map<std::string, std::string> configurations;
     for (const auto& identifier : identifiers) {
@@ -67,6 +69,7 @@ void file_config_store::get(const std::vector<std::string>& identifiers,
       std::stringstream buf;
       buf << file.rdbuf();
       configurations[identifier] = buf.str();
+      file.close();
     }
     return cb(configurations, boost::system::error_code());
   } catch (const std::ios_base::failure& e) {
@@ -119,6 +122,7 @@ void file_config_store::set_inactive(
       std::ifstream in_file(config_dir_ + "/" + identifier + ".json");
       in_file.exceptions(std::ios_base::failbit);
       buf << in_file.rdbuf();
+      in_file.close();
     }
 
     bs::config c(buf.str());
@@ -129,6 +133,7 @@ void file_config_store::set_inactive(
       file.exceptions(std::ios_base::failbit);
       file.open(config_dir_ + "/" + identifier + ".json", std::ios::out);
       file << c.to_json(true);
+      file.close();
     }
 
     return cb(boost::system::error_code());
@@ -150,6 +155,7 @@ void file_config_store::get_inactive(
     buf << in_file.rdbuf();
 
     bs::config c(buf.str());
+    in_file.close();
 
     return cb(c.inactive(), boost::system::error_code());
   } catch (const std::runtime_error& e) {
