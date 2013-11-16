@@ -7,12 +7,22 @@
 
 #include "../ws_server.h"
 
+#include "../make_unique.h"
+
+#include "../storage/file_config_store.h"
+#include "../storage/desktop_user_store.h"
+
 #define MOBILE_UI_URL "http://makielski.net/mobileui-0.0.6/"
+
+using namespace botscript_server;
 
 HWND g_hMainWnd = NULL;
 CTrayIcon g_TrayIcon("Makielskis Bot", true,
                      LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(101)));
-botscript_server::ws_server s;
+
+auto ustore = make_unique<desktop_user_store>("./bot_list.txt");
+auto cstore = make_unique<file_config_store>("./configs/");
+ws_server s(std::move(cstore), std::move(ustore));
 boost::thread t;
 
 void on_action(CTrayIcon* pTrayIcon, UINT uMsg) {
