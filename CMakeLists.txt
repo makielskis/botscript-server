@@ -119,7 +119,7 @@ add_library(libbs SHARED EXCLUDE_FROM_ALL
   src/jni/net_makielski_botscript_BotscriptServer.cpp
 )
 
-if(NOT ANDROID)
+if(UNIX)
   find_package(JNI)
   include_directories(${JNI_INCLUDE_DIRS})
 endif()
