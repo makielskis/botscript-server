@@ -17,6 +17,10 @@ namespace botscript_server {
 
 db_bot_config::db_bot_config(dust::document document)
     : doc_(std::move(document)) {
+  if (!valid()) {
+    doc_.remove();
+    throw std::runtime_error("invalid configuration");
+  }
 }
 
 db_bot_config::db_bot_config(
@@ -24,6 +28,7 @@ db_bot_config::db_bot_config(
     const std::string& json_config)
     : doc_(std::move(document)) {
   dust::insert_json(doc_, json_config);
+
   if (!valid()) {
     doc_.remove();
     throw std::runtime_error("invalid configuration");
