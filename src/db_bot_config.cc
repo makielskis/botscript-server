@@ -83,7 +83,7 @@ command_sequence db_bot_config::init_command_sequence() const {
     std::string active = "0";
     for (const auto& module_config : module.children()) {
       // Module activation has to be done after the configuration.
-      if (module_config.val() == "active") {
+      if (module_config.index() == "active") {
         active = module_config.val();
         continue;
       }
