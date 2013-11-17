@@ -13,6 +13,7 @@
 #include <functional>
 
 #include "dust/storage/key_value_store.h"
+#include "dust/document.h"
 
 #include "./messages/message.h"
 #include "./operations/operation.h"
@@ -39,7 +40,7 @@ class bs_server {
   /// \param activity_cb           callback for bot activity (log, status upd.)
   /// \param session_end_callback  callback to inform about session end
   bs_server(boost::asio::io_service* io_service,
-            std::unique_ptr<dust::key_value_store> store,
+            std::shared_ptr<dust::key_value_store> store,
             std::vector<std::string> packages,
             sid_callback activity_cb,
             session_end_cb session_end_callback);
@@ -72,7 +73,10 @@ class bs_server {
   boost::asio::io_service* io_service_;
 
   /// Storage for bot configurations and user accounts.
-  std::unique_ptr<dust::key_value_store> store_;
+  std::shared_ptr<dust::key_value_store> store_;
+
+  /// The document holding all users.
+  dust::document users_;
 
   /// Bot package list.
   std::vector<std::string> packages_;
