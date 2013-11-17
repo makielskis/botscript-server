@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "../src/messages/login_msg.h"
+#include "../src/operations/login_op.h"
 
 #define CORRECT_MESSAGE \
 "{"\
@@ -40,7 +40,7 @@ TEST(rapid_json_exception_test, success_test) {
   EXPECT_NO_THROW({
     rapidjson::Document d;
     d.Parse<0>(CORRECT_MESSAGE);
-    login_msg msg(d);
+    login_op msg(d);
   });
 }
 
@@ -48,7 +48,7 @@ TEST(rapid_json_exception_test, invalid_json_test) {
   EXPECT_THROW({
     rapidjson::Document d;
     d.Parse<0>(INVALID_JSON_MESSAGE);
-    login_msg msg(d);
+    login_op msg(d);
   }, rapidjson_exception);
 }
 
@@ -56,6 +56,6 @@ TEST(rapid_json_exception_test, missing_attribute_test) {
   EXPECT_THROW({
     rapidjson::Document d;
     d.Parse<0>(MISSING_ATTRIBUTE_MESSAGE);
-    login_msg msg(d);
+    login_op msg(d);
   }, rapidjson_exception);
 }

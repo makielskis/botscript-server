@@ -10,7 +10,6 @@
 
 #include "rapidjson_with_exception.h"
 
-#include "./config.h"
 #include "./messages/message.h"
 #include "./messages/failure_msg.h"
 #include "./operations/all_ops.h"
