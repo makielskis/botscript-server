@@ -2,26 +2,26 @@
 // Licensed under the MIT license
 // https://raw.github.com/makielski/botscript/master/COPYING
 
-#ifndef BOTSCRIPT_SERVER_DUST_CONFIG_H_
-#define BOTSCRIPT_SERVER_DUST_CONFIG_H_
+#ifndef BOTSCRIPT_SERVER_DB_BOT_CONFIG_H_
+#define BOTSCRIPT_SERVER_DB_BOT_CONFIG_H_
 
-#include "config.h"
+#include "bot_config.h"
 
 #include "dust/document.h"
 
 namespace botscript_server {
 
-class dust_config : public botscript::config {
+class db_bot_config : public botscript::bot_config {
  public:
-  dust_config(dust::document document);
-  dust_config(dust::document document, const std::string& json_config);
-  dust_config(dust::document document,
-              const std::string& identifier,
-              const std::string& username,
-              const std::string& password,
-              const std::string& package,
-              const std::string& server,
-              const std::map<std::string, botscript::string_map>& module_settings);
+  db_bot_config(dust::document document);
+  db_bot_config(dust::document document, const std::string& json_config);
+  db_bot_config(dust::document document,
+                const std::string& identifier,
+                const std::string& username,
+                const std::string& password,
+                const std::string& package,
+                const std::string& server,
+                const std::map<std::string, botscript::string_map>& module_settings);
 
   virtual botscript::command_sequence init_command_sequence() const override;
   virtual std::string to_json(bool with_password) const override;
@@ -49,4 +49,4 @@ class dust_config : public botscript::config {
 
 }  // namespace botscript_server
 
-#endif  // BOTSCRIPT_SERVER_DUST_CONFIG_H_
+#endif  // BOTSCRIPT_SERVER_DB_BOT_CONFIG_H_

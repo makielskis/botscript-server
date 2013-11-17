@@ -77,10 +77,10 @@ class bs_server {
   /// Bot package list.
   std::vector<std::string> packages_;
 
-  /// This callback gets called if a bot sends activity (log msg./status upd.).
+  /// This callback gets called if a bot sends activity (log msg/status upd.).
   sid_callback activity_cb_;
 
-  /// This callback gets called if a session ended:
+  /// This callback gets called when a session ended:
   ///   - disconnect
   ///   - user logout
   ///   - user account deletion
@@ -99,7 +99,7 @@ class bs_server {
   std::set<std::string> bot_creation_blocklist_;
 
   /// Keeps the users who are creating bots.
-  /// This way no user can create 2 (or more) bots at the same time.
+  /// This way no user can create more than one bot at the same time.
   std::set<std::string> user_bot_creation_blocklist_;
 };
 

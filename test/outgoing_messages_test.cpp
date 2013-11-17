@@ -6,13 +6,13 @@
 
 #include "rapidjson_with_exception.h"
 
-#include "../src/messages/outgoing/success_msg.h"
-#include "../src/messages/outgoing/failure_msg.h"
-#include "../src/messages/outgoing/packages_msg.h"
-#include "../src/messages/outgoing/session_msg.h"
-#include "../src/messages/outgoing/account_msg.h"
-#include "../src/messages/outgoing/bots_msg.h"
-#include "../src/messages/outgoing/update_msg.h"
+#include "../src/messages/success_msg.h"
+#include "../src/messages/failure_msg.h"
+#include "../src/messages/packages_msg.h"
+#include "../src/messages/session_msg.h"
+#include "../src/messages/account_msg.h"
+#include "../src/messages/bots_msg.h"
+#include "../src/messages/update_msg.h"
 
 using namespace botscript_server;
 

@@ -38,7 +38,7 @@ if(MINGW)
   add_definitions(-DBOOST_THREAD_USE_LIB -D_WIN32_WINNT=0x0501 -DWINVER=0x0501 -D_WIN32_IE=0x0501)
 elseif(ANDROID)
   add_definitions(-DANDROID)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_DEBUG} -Wall -std=c++11")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
 else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -fPIC")
 endif()
@@ -112,8 +112,9 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 add_executable(botscript-server-tests EXCLUDE_FROM_ALL
   test/error_test.cpp
-#  test/rapid_json_exception_test.cpp
-#  test/outgoing_messages_test.cpp
+  test/rapid_json_exception_test.cpp
+  test/outgoing_messages_test.cpp
+  test/db_bot_config_test.cpp
 )
 
 target_link_libraries(botscript-server-tests botscriptserver_lib gtest gtest_main bs ${Boost_LIBRARIES} dust rt -pthread)
