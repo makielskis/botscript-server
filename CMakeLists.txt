@@ -95,9 +95,8 @@ if(MSVC OR MINGW)
     src/win32gui/res/bot.rc
   )
   set_target_properties(botscript-server-gui PROPERTIES COMPILE_FLAGS "-DDESKTOP")
-  if(MSVC)
-    target_link_libraries(botscript-server-gui botscriptserver_lib bs ${Boost_LIBRARIES})
-  elseif(MINGW)
+
+  if(MINGW)
     target_link_libraries(botscript-server-gui botscriptserver_lib bs ${Boost_LIBRARIES} -Wl,-Bstatic z ws2_32 mswsock -static-libgcc -static-libstdc++)
   endif()
 else()
@@ -105,7 +104,12 @@ else()
 # Server executable
 ################################
   add_executable(botscript-server-exe src/main.cc)
-  target_link_libraries(botscript-server-exe botscriptserver_lib bs ${Boost_LIBRARIES} dust rt -pthread)
+
+  if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    target_link_libraries(botscript-server-exe botscriptserver_lib bs ${Boost_LIBRARIES} dust)
+  elseif()
+    target_link_libraries(botscript-server-exe botscriptserver_lib bs ${Boost_LIBRARIES} dust rt -pthread)
+  endif()
 endif()
 
 
@@ -113,7 +117,7 @@ endif()
 # Unit Tests
 ################################
 if (NOT TARGET gtest)
-  add_subdirectory(test/gtest-1.6.0 EXCLUDE_FROM_ALL)
+  add_subdirectory(test/gtest-1.7.0 EXCLUDE_FROM_ALL)
   enable_testing()
 endif()
 
