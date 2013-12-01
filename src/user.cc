@@ -23,7 +23,7 @@ user::user(dust::document doc,
 }
 
 std::string user::username() {
-  return doc_["username"];
+  return doc_["username"].val();
 }
 
 void user::password(const std::string& old_pw, const std::string& new_pw) {
