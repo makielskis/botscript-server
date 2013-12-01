@@ -3,10 +3,32 @@ project(botscript-server)
 
 
 ################################
+# Compile flags
+################################
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11")
+if(MINGW)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s")
+  add_definitions(
+    -DBOOST_THREAD_USE_LIB
+    -D_WIN32_WINNT=0x0501
+    -DWINVER=0x0501
+    -D_WIN32_IE=0x0501
+  )
+elseif(ANDROID)
+  add_definitions(-DANDROID)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  add_definitions(-DOS_MACOSX)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11")
+else()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11")
+endif()
+
+
+################################
 # Dependencies
 ################################
-add_subdirectory(external_lib/botscript EXCLUDE_FROM_ALL)
-add_subdirectory(external_lib/dust EXCLUDE_FROM_ALL)
+add_subdirectory(external_lib/botscript)
+add_subdirectory(external_lib/dust)
 
 
 ################################
@@ -29,19 +51,6 @@ else(Boost_FOUND)
 endif(Boost_FOUND)
 link_directories(${CMAKE_LIBRARY_PATH})
 
-
-################################
-# Compile flags
-################################
-if(MINGW)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -s")
-  add_definitions(-DBOOST_THREAD_USE_LIB -D_WIN32_WINNT=0x0501 -DWINVER=0x0501 -D_WIN32_IE=0x0501)
-elseif(ANDROID)
-  add_definitions(-DANDROID)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
-else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -fPIC")
-endif()
 
 ################################
 # Include Paths
