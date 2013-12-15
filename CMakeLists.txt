@@ -18,9 +18,6 @@ elseif(ANDROID)
   add_definitions(-DANDROID)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   add_definitions(-DOS_MACOSX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11")
-else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11")
 endif()
 
 
@@ -74,6 +71,7 @@ list(REMOVE_ITEM  botscriptserver_lib_files ${gui_files})
 list(REMOVE_ITEM  botscriptserver_lib_files ${exe_files})
 list(REMOVE_ITEM  botscriptserver_lib_files ${jni_files})
 add_library(botscriptserver_lib STATIC ${botscriptserver_lib_files})
+target_link_libraries(botscriptserver_lib bs dust ${Boost_LIBRARIES})
 
 
 ################################
@@ -82,10 +80,9 @@ add_library(botscriptserver_lib STATIC ${botscriptserver_lib_files})
 add_library(botscript-server SHARED EXCLUDE_FROM_ALL ${jni_files})
 #include_directories(/usr/lib/jvm/java/include/)
 set_target_properties(botscript-server PROPERTIES COMPILE_FLAGS "-DDESKTOP")
-target_link_libraries(botscript-server botscriptserver_lib bs ${Boost_LIBRARIES})
 
 
-if(MSVC OR MINGW)
+if(MINGW)
 ################################
 # GUI executable
 ################################
@@ -95,10 +92,7 @@ if(MSVC OR MINGW)
     src/win32gui/res/bot.rc
   )
   set_target_properties(botscript-server-gui PROPERTIES COMPILE_FLAGS "-DDESKTOP")
-
-  if(MINGW)
-    target_link_libraries(botscript-server-gui botscriptserver_lib bs ${Boost_LIBRARIES} -Wl,-Bstatic z ws2_32 mswsock -static-libgcc -static-libstdc++)
-  endif()
+  target_link_libraries(botscript-server-gui botscriptserver_lib -Wl,-Bstatic z ws2_32 mswsock -static-libgcc -static-libstdc++)
 else()
 ################################
 # Server executable
@@ -106,9 +100,9 @@ else()
   add_executable(botscript-server-exe src/main.cc)
 
   if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    target_link_libraries(botscript-server-exe botscriptserver_lib bs ${Boost_LIBRARIES} dust)
-  elseif()
-    target_link_libraries(botscript-server-exe botscriptserver_lib bs ${Boost_LIBRARIES} dust rt -pthread)
+    target_link_libraries(botscript-server-exe botscriptserver_lib)
+  else()
+    target_link_libraries(botscript-server-exe botscriptserver_lib rt -pthread)
   endif()
 endif()
 
