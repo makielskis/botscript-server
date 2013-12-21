@@ -122,7 +122,11 @@ add_executable(botscript-server-tests EXCLUDE_FROM_ALL
   test/rapid_json_exception_test.cpp
   test/outgoing_messages_test.cpp
   test/db_bot_config_test.cpp
+  test/user_test.cpp
 )
 
-target_link_libraries(botscript-server-tests botscriptserver_lib gtest gtest_main bs ${Boost_LIBRARIES} dust rt -pthread)
-add_test(botscript-server-tests botscript-server-tests)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  target_link_libraries(botscript-server-tests gtest gtest_main botscriptserver_lib)
+else()
+  target_link_libraries(botscript-server-tests gtest gtest_main botscriptserver_lib -pthread)
+endif()
