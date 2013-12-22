@@ -13,7 +13,7 @@ namespace botscript_server {
 
 user::user(dust::document doc)
     : doc_(std::move(doc)) {
-  if (doc["password"].val().length() != 32) {
+  if (doc_["password"].val().length() != 32) {
     throw boost::system::system_error(error::user_not_found);
   }
 }
