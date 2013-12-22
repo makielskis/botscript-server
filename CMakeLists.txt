@@ -55,7 +55,7 @@ link_directories(${CMAKE_LIBRARY_PATH})
 include_directories("external_lib/websocketpp")
 include_directories("external_lib/botscript/src")
 include_directories("external_lib/botscript/external_lib/rapidjson/include")
-include_directories("external_lib/botscript/external_lib/pugixml-1.0/src")
+include_directories("external_lib/botscript/external_lib/pugixml-1.2/src")
 include_directories("external_lib/botscript/external_lib/lua-5.2.0/src")
 include_directories("external_lib/dust/include")
 
@@ -67,11 +67,11 @@ file(GLOB gui_files "src/win32gui/*.cc")
 file(GLOB exe_files "src/main.cc")
 file(GLOB jni_files "src/jni/*.cpp")
 file(GLOB_RECURSE botscriptserver_lib_files "src/*.cc")
-list(REMOVE_ITEM  botscriptserver_lib_files ${gui_files})
-list(REMOVE_ITEM  botscriptserver_lib_files ${exe_files})
-list(REMOVE_ITEM  botscriptserver_lib_files ${jni_files})
+list(REMOVE_ITEM botscriptserver_lib_files ${gui_files})
+list(REMOVE_ITEM botscriptserver_lib_files ${exe_files})
+list(REMOVE_ITEM botscriptserver_lib_files ${jni_files})
 add_library(botscriptserver_lib STATIC ${botscriptserver_lib_files})
-target_link_libraries(botscriptserver_lib bs dust ${Boost_LIBRARIES})
+target_link_libraries(botscriptserver_lib bs dust z)
 
 
 ################################
@@ -92,7 +92,7 @@ if(MINGW)
     src/win32gui/res/bot.rc
   )
   set_target_properties(botscript-server-gui PROPERTIES COMPILE_FLAGS "-DDESKTOP")
-  target_link_libraries(botscript-server-gui botscriptserver_lib -Wl,-Bstatic z ws2_32 mswsock -static-libgcc -static-libstdc++)
+  target_link_libraries(botscript-server-gui -Wl,-Bstatic botscriptserver_lib ws2_32 mswsock -static-libgcc -static-libstdc++)
 else()
 ################################
 # Server executable

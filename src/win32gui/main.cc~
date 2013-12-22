@@ -7,8 +7,6 @@
 
 #include "dust/storage/mem_store.h"
 
-#include "bot.h"
-
 #include "../ws_server.h"
 #include "../make_unique.h"
 
