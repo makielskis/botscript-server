@@ -32,7 +32,8 @@ class delete_update_op : public user_op {
   const std::string& current_pw() const;
 
   virtual std::vector<std::string> type() const override;
-  virtual void execute(bs_server& server, op_callback cb) const override;
+  virtual std::vector<msg_ptr> execute(bs_server& server,
+                                       op_callback cb) const override;
 
  private:
   /// The users current password

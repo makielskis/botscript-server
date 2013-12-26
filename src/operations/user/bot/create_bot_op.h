@@ -5,6 +5,7 @@
 #ifndef BOTSCRIPT_SERVER_OPERATIONS_USER_BOT_CREATE_BOT_OP_
 #define BOTSCRIPT_SERVER_OPERATIONS_USER_BOT_CREATE_BOT_OP_
 
+#include <memory>
 #include <vector>
 #include <string>
 
@@ -12,38 +13,40 @@
 
 #include "../user_op.h"
 
+namespace botscript {
+class bot;
+class bot_config;
+}
+
 namespace botscript_server {
 
-/// Bot creation message:
-/// "Create a bot with the given configuration!"
+class user;
+
+/// Abstract parent for bot creation operations.
 ///
-/// {
-///   'type': ['user', 'bot', 'create'],
-///   'arguments': {
-///     'sid': [String],
-///     'config': [String]
-///   }
-/// }
-class create_bot_op : public user_op {
+/// Creates a bot on execution.
+///
+/// Requires the bot_config() method to be overriden to get the
+/// actual bot configuration to load.
+class create_bot_op: public user_op {
  public:
-  /// \param sid     the session id
-  /// \param config  the configuration
-  create_bot_op(const std::string& sid, const std::string& config);
+  explicit create_bot_op(const std::string& sid);
+  create_bot_op(const rapidjson::Document& doc);
 
-  /// Reads the configuration from a create message.
-  ///
-  /// \param the create message
-  /// \throws parse_exception on parser errors (invalid message format)
-  explicit create_bot_op(const rapidjson::Document& doc);
+  virtual ~create_bot_op();
 
-  /// \return the bot configuration
-  const std::string& config() const;
+  virtual std::vector<msg_ptr> execute(bs_server& server,
+                                       op_callback cb) const override;
 
-  virtual std::vector<std::string> type() const override;
-  virtual void execute(bs_server& server, op_callback cb) const override;
+ protected:
+  /// \return returns the bot configuration
+  virtual std::shared_ptr<botscript::bot_config> bot_config(
+      const bs_server& server,
+      const user& u) const = 0;
 
- private:
-  std::string config_;
+  virtual void on_load_fail(
+      std::shared_ptr<botscript::bot_config> config,
+      user u) const = 0;
 };
 
 }  // namespace botscript_server

@@ -4,6 +4,8 @@
 
 #include "./email_update_op.h"
 
+#include <iostream> // TODO(felix) remove
+
 namespace botscript_server {
 
 email_update_op::email_update_op(const rapidjson::Document& doc)
@@ -21,10 +23,13 @@ const std::string& email_update_op::new_email() const {
 }
 
 std::vector<std::string> email_update_op::type() const {
-  return { "user", "update", "email" };
+  return {"user", "update", "email"};
 }
 
-void email_update_op::execute(bs_server& server, op_callback cb) const {
+std::vector<msg_ptr> email_update_op::execute(bs_server& server,
+                                              op_callback cb) const {
+  std::cout << "Executing email update message" << std::endl;
+  return {};
 }
 
 }  // namespace botscript_server

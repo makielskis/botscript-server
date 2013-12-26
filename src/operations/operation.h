@@ -29,7 +29,10 @@ class operation {
   /// Executes this operation on the given botscript server
   ///
   /// \param server  the server to execute this action on
-  virtual void execute(bs_server& server, op_callback cb) const = 0;
+  /// \param cb      callback function for asynchronous operations
+  /// \return the response messages of synchronous operations
+  virtual std::vector<msg_ptr> execute(bs_server& server,
+                                       op_callback cb) const = 0;
 };
 
 }  // namespace botscript_server

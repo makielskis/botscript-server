@@ -135,7 +135,7 @@ bool db_bot_config::inactive() const {
 }
 
 std::string db_bot_config::identifier() const {
-  return doc_["identifier"].exists() ? doc_["identifier"].val() : "";
+  return doc_.index();
 }
 
 std::string db_bot_config::username() const {

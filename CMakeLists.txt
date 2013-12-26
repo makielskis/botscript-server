@@ -123,6 +123,8 @@ add_executable(botscript-server-tests EXCLUDE_FROM_ALL
   test/outgoing_messages_test.cpp
   test/db_bot_config_test.cpp
   test/user_test.cpp
+  test/user_bot_config_test.cpp
+  test/multi_index_test.cpp
 )
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")

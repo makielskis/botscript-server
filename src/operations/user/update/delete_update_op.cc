@@ -4,6 +4,8 @@
 
 #include "./delete_update_op.h"
 
+#include <iostream> // TODO(felix) remove
+
 namespace botscript_server {
 
 delete_update_op::delete_update_op(const rapidjson::Document& doc)
@@ -16,10 +18,13 @@ const std::string& delete_update_op::current_pw() const {
 }
 
 std::vector<std::string> delete_update_op::type() const {
-  return { "user", "update", "delete" };
+  return {"user", "update", "delete"};
 }
 
-void delete_update_op::execute(bs_server& server, op_callback cb) const {
+std::vector<msg_ptr> delete_update_op::execute(bs_server& server,
+                                               op_callback cb) const {
+  std::cout << "Executing delete update message" << std::endl;
+  return {};
 }
 
 }  // namespace botscript_server

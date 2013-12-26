@@ -7,12 +7,15 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
 #include "rapidjson_with_exception.h"
 
 #include "../operation.h"
 
 namespace botscript_server {
+
+class user;
 
 /// This class is used in different cases:
 ///
@@ -45,7 +48,21 @@ class user_op : public operation {
   const std::string& sid() const;
 
   virtual std::vector<std::string> type() const override;
-  virtual void execute(bs_server& server, op_callback cb) const override;
+  virtual std::vector<msg_ptr> execute(bs_server& server,
+                                       op_callback cb) const override;
+
+ protected:
+  /// Checks whether the session ID is valid.
+  /// If it is invalid, this method will throw an session_error.
+  ///
+  /// \param bs  the bot server to operate on (needed to have DB access)
+  /// \return the user that has the session ID contained in this user message
+  user get_user_from_session(bs_server& bs) const;
+
+  /// \param u  the user to get the sessions for
+  /// \return a map with the bot identifier as key and the bot config (without
+  ///         password) as value
+  std::map<std::string, std::string> bot_configs(const user& u) const;
 
  private:
   std::string sid_;

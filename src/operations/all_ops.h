@@ -12,9 +12,9 @@
 #include "./user/update/delete_update_op.h"
 #include "./user/update/email_update_op.h"
 #include "./user/update/password_update_op.h"
-#include "./user/bot/create_bot_op.h"
+#include "./user/bot/create_new_bot_op.h"
+#include "./user/bot/reactivate_bot_op.h"
 #include "./user/bot/delete_bot_op.h"
 #include "./user/bot/execute_bot_op.h"
-#include "./user/bot/reactivate_bot_op.h"
 
 #endif  // BOTSCRIPT_SERVER_OPERATIONS_ALL_OPS_H_
