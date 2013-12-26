@@ -4,6 +4,15 @@
 
 #include "./register_op.h"
 
+#include "../bs_server.h"
+#include "../user.h"
+#include "../make_unique.h"
+
+#include "../messages/session_msg.h"
+#include "../messages/account_msg.h"
+#include "../messages/packages_msg.h"
+#include "../messages/bots_msg.h"
+
 namespace botscript_server {
 
 register_op::register_op(const rapidjson::Document& doc) {
@@ -12,10 +21,9 @@ register_op::register_op(const rapidjson::Document& doc) {
   email_ = doc["arguments"]["email"].GetString();
 }
 
-register_op::register_op(
-    const std::string& username,
-    const std::string& password,
-    const std::string& email)
+register_op::register_op(const std::string& username,
+                         const std::string& password,
+                         const std::string& email)
     : username_(username),
       password_(password),
       email_(email) {
@@ -34,10 +42,23 @@ const std::string& register_op::email() const {
 }
 
 std::vector<std::string> register_op::type() const {
-  return { "register" };
+  return {"register"};
 }
 
-void register_op::execute(bs_server& server, op_callback cb) const {
+std::vector<msg_ptr> register_op::execute(bs_server& server,
+                                          op_callback cb) const {
+  user u(server.users_[username()], password(), email());
+
+  server.update_session(u);
+  cb(u.session_id(), {});
+
+  std::vector<msg_ptr> out;
+  out.emplace_back(make_unique<session_msg>(u.session_expire(),
+                                            u.session_id()));
+  out.emplace_back(make_unique<account_msg>(u.email()));
+  out.emplace_back(make_unique<packages_msg>(server.packages_));
+  out.emplace_back(make_unique<bots_msg>(std::map<std::string, std::string>()));
+  return out;
 }
 
 }  // namespace botscript_server

@@ -4,6 +4,14 @@
 
 #include "./execute_bot_op.h"
 
+#include <memory>
+
+#include "bot.h"
+
+#include "../../../bs_server.h"
+#include "../../../user.h"
+#include "./bot_util.h"
+
 namespace botscript_server {
 
 execute_bot_op::execute_bot_op(const rapidjson::Document& doc)
@@ -26,10 +34,14 @@ const std::string& execute_bot_op::argument() const {
 }
 
 std::vector<std::string> execute_bot_op::type() const {
-  return { "user", "bot", "execute" };
+  return {"user", "bot", "execute"};
 }
 
-void execute_bot_op::execute(bs_server& server, op_callback cb) const {
+std::vector<msg_ptr> execute_bot_op::execute(bs_server& server,
+                                             op_callback cb) const {
+  user u = get_user_from_session(server);
+  get_bot(u, server, identifier())->execute(command(), argument());
+  return {};
 }
 
 }  // namespace botscript_server

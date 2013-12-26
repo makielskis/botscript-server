@@ -4,6 +4,8 @@
 
 #include "./password_update_op.h"
 
+#include <iostream> // TODO(felix) remove
+
 namespace botscript_server {
 
 password_update_op::password_update_op(const rapidjson::Document& doc)
@@ -21,10 +23,12 @@ const std::string& password_update_op::new_pw() const {
 }
 
 std::vector<std::string> password_update_op::type() const {
-  return { "user", "update", "password" };
+  return {"user", "update", "password"};
 }
 
-void password_update_op::execute(bs_server& server, op_callback cb) const {
+std::vector<msg_ptr> password_update_op::execute(bs_server& server,
+                                                 op_callback cb) const {
+  return {};
 }
 
 }  // namespace botscript_server

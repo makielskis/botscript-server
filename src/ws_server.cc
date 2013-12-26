@@ -49,10 +49,6 @@ ws_server::ws_server(std::unique_ptr<dust::key_value_store> store,
 }
 
 void ws_server::start(const std::string& host, const std::string& port) {
-  mgr_.load_bots([&]() {
-    std::cout << "Finished loading bots\n";
-  });
-
   websocket_server_.init_asio(&io_service_);
   websocket_server_.listen(host, port);
   websocket_server_.start_accept();
@@ -82,6 +78,7 @@ void ws_server::on_activity(std::string sid,
       }
     }
   } else {
+    mgr_.handle_connection_close(sid);
     std::cerr << "[FATAL] message for unknown session "
               << sid << " not delivered\n";
   }
@@ -140,6 +137,8 @@ void ws_server::on_close(connection_hdl hdl) {
 }
 
 void ws_server::on_msg(connection_hdl hdl, server::message_ptr msg) {
+  std::cout << "--> " << msg->get_payload() << std::endl;
+
   // Parse JSON message content.
   rapidjson::Document d;
   bool failure = d.Parse<0>(msg->get_payload().c_str()).HasParseError();
@@ -162,11 +161,19 @@ void ws_server::on_msg(connection_hdl hdl, server::message_ptr msg) {
   } catch(const boost::system::system_error& e) {
     std::cerr << "could not parse message \"" << msg->get_payload() << "\" "
               << "(unknown type)\n";
+    return;
   }
 
   // Execute operation.
   try {
-    op->execute(mgr_, create_sid_cb(hdl));
+    std::vector<msg_ptr> msgs = op->execute(mgr_, create_sid_cb(hdl));
+
+    // Send response.
+    for (const auto& msg : msgs) {
+      error_code send_ec;
+      websocket_server_.send(hdl, msg->to_json(),
+                             websocketpp::frame::opcode::TEXT, send_ec);
+    }
   } catch(const boost::system::system_error& e) {
     failure_msg m(0, op->type(), e.code().value(), e.code().message());
     error_code send_ec;
@@ -176,6 +183,10 @@ void ws_server::on_msg(connection_hdl hdl, server::message_ptr msg) {
 }
 
 std::unique_ptr<operation> ws_server::create_op(const rapidjson::Document& d) {
+  if (d["type"].Size() < 1) {
+    throw boost::system::system_error(botscript_server::error::invalid_message);
+  }
+
   std::string type = d["type"][rapidjson::SizeType(0)].GetString();
 
   if (type == "register") {
@@ -185,22 +196,25 @@ std::unique_ptr<operation> ws_server::create_op(const rapidjson::Document& d) {
   } else if (type == "user") {
     if (d["type"].Size() == 1u) {
       return make_unique<user_op>(d);
-    } else {
+    } else if (d["type"].Size() >= 2u) {
       type = d["type"][1].GetString();
 
-      if (type == "bot") {
+      if (type == "bot" && d["type"].Size() >= 3u) {
         type = d["type"][2].GetString();
 
-        if (type == "create") {
-          return make_unique<create_bot_op>(d);
+        if (type == "create" && d["type"].Size() >= 4u) {
+          type = d["type"][3].GetString();
+          if (type == "new") {
+            return make_unique<create_new_bot_op>(d);
+          } else if (type == "reactivate") {
+            return make_unique<reactivate_bot_op>(d);
+          }
         } else if (type == "delete") {
           return make_unique<delete_bot_op>(d);
         } else if (type == "execute") {
           return make_unique<execute_bot_op>(d);
-        } else if (type == "reactivate") {
-          return make_unique<reactivate_bot_op>(d);
         }
-      } else if (type == "update") {
+      } else if (type == "update" && d["type"].Size() >= 3u) {
         type = d["type"][2].GetString();
 
         if (std::string(d["type"][2].GetString()) == "delete") {

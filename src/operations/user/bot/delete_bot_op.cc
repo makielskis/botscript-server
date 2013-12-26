@@ -4,6 +4,15 @@
 
 #include "./delete_bot_op.h"
 
+#include "bot.h"
+
+#include "../../../make_unique.h"
+#include "../../../messages/bots_msg.h"
+#include "../../../error.h"
+#include "../../../bs_server.h"
+#include "../../../user.h"
+#include "./bot_util.h"
+
 namespace botscript_server {
 
 delete_bot_op::delete_bot_op(const std::string& sid,
@@ -22,10 +31,31 @@ const std::string& delete_bot_op::identifier() const {
 }
 
 std::vector<std::string> delete_bot_op::type() const {
-  return { "user", "bot", "delete" };
+  return {"user", "bot", "delete"};
 }
 
-void delete_bot_op::execute(bs_server& server, op_callback cb) const {
+std::vector<msg_ptr> delete_bot_op::execute(bs_server& server,
+                                            op_callback cb) const {
+  // Check whether user ownes the specified bot.
+  user u = get_user_from_session(server);
+  if (!u.has_bot(identifier())) {
+    throw boost::system::system_error(error::bot_not_found);
+  }
+
+  // Stop bot (don't care if it does not exist
+  // then it's probably inactive).
+  try {
+    get_bot(u, server, identifier())->shutdown();
+    server.bots_.erase(identifier());
+  } catch(const boost::system::system_error& e) {
+  }
+
+  // Remove bot configuration from the database.
+  u.remove_bot(identifier());
+
+  std::vector<msg_ptr> out;
+  out.emplace_back(make_unique<bots_msg>(bot_configs(u)));
+  return out;
 }
 
 }  // namespace botscript_server

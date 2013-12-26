@@ -4,10 +4,22 @@
 
 #include "./user_op.h"
 
+#include "bot_config.h"
+
+#include "../../make_unique.h"
+#include "../../error.h"
+#include "../../user.h"
+#include "../../messages/update_msg.h"
+#include "../../messages/session_msg.h"
+#include "../../messages/account_msg.h"
+#include "../../messages/packages_msg.h"
+#include "../../messages/bots_msg.h"
+#include "../../bs_server.h"
+
 namespace botscript_server {
 
 user_op::user_op(const std::string& sid)
-  : sid_(sid) {
+    : sid_(sid) {
 }
 
 user_op::user_op(const rapidjson::Document& doc) {
@@ -19,10 +31,51 @@ const std::string& user_op::sid() const {
 }
 
 std::vector<std::string> user_op::type() const {
-  return { "user" };
+  return {"user"};
 }
 
-void user_op::execute(bs_server& server, op_callback cb) const {
+std::vector<msg_ptr> user_op::execute(bs_server& server, op_callback cb) const {
+  user u = get_user_from_session(server);
+  cb(u.session_id(), {});
+
+  std::vector<msg_ptr> out;
+  out.emplace_back(make_unique<session_msg>(u.session_expire(),
+                                            u.session_id()));
+  out.emplace_back(make_unique<account_msg>(u.email()));
+  out.emplace_back(make_unique<packages_msg>(server.packages_));
+  out.emplace_back(make_unique<bots_msg>(bot_configs(u)));
+  for (const auto& entry : server.bot_logs(u)) {
+    out.emplace_back(make_unique<update_msg>(entry.first, "log", entry.second));
+  }
+
+  return out;
+}
+
+std::map<std::string, std::string> user_op::bot_configs(const user& u) const {
+  std::map<std::string, std::string> bots;
+  for (const auto& config : u.bot_configs()) {
+    bots[config->identifier()] = config->to_json(false);
+  }
+  return bots;
+}
+
+user user_op::get_user_from_session(bs_server& server) const {
+  typedef session_set::index<index_session_id>::type sid_index;
+
+  auto& sessions_indexed_by_sid = server.sessions_.get<index_session_id>();
+  sid_index::iterator it = sessions_indexed_by_sid.find(sid());
+
+  if (it == sessions_indexed_by_sid.end()) {
+    throw boost::system::system_error(error::session_id_not_available);
+  }
+
+  if (!it->u.session_active()) {
+    throw boost::system::system_error(error::session_id_timed_out);
+  }
+
+  server.update_session(it->u);
+
+  return it->u;
 }
 
 }  // namespace botscript_server
