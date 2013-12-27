@@ -28,7 +28,8 @@ class user;
 ///
 /// Requires the bot_config() method to be overriden to get the
 /// actual bot configuration to load.
-class create_bot_op: public user_op {
+class create_bot_op: public user_op,
+                     public std::enable_shared_from_this<create_bot_op> {
  public:
   explicit create_bot_op(const std::string& sid);
   create_bot_op(const rapidjson::Document& doc);

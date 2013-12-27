@@ -4,6 +4,7 @@
 
 #include "./ws_server.h"
 
+#include <memory>
 #include <signal.h>
 #include <iostream>
 #include <functional>
@@ -13,7 +14,6 @@
 #include "./messages/message.h"
 #include "./messages/failure_msg.h"
 #include "./operations/all_ops.h"
-#include "./make_unique.h"
 #include "./error.h"
 
 using websocketpp::connection_hdl;
@@ -152,7 +152,7 @@ void ws_server::on_msg(connection_hdl hdl, server::message_ptr msg) {
   }
 
   // Create operation.
-  std::unique_ptr<operation> op;
+  std::shared_ptr<operation> op;
   try {
     op = create_op(d);
   } catch(const rapidjson_exception& e) {
@@ -182,7 +182,7 @@ void ws_server::on_msg(connection_hdl hdl, server::message_ptr msg) {
   }
 }
 
-std::unique_ptr<operation> ws_server::create_op(const rapidjson::Document& d) {
+std::shared_ptr<operation> ws_server::create_op(const rapidjson::Document& d) {
   if (d["type"].Size() < 1) {
     throw boost::system::system_error(botscript_server::error::invalid_message);
   }
@@ -190,12 +190,12 @@ std::unique_ptr<operation> ws_server::create_op(const rapidjson::Document& d) {
   std::string type = d["type"][rapidjson::SizeType(0)].GetString();
 
   if (type == "register") {
-    return make_unique<register_op>(d);
+    return std::make_shared<register_op>(d);
   } else if (type == "login") {
-    return make_unique<login_op>(d);
+    return std::make_shared<login_op>(d);
   } else if (type == "user") {
     if (d["type"].Size() == 1u) {
-      return make_unique<user_op>(d);
+      return std::make_shared<user_op>(d);
     } else if (d["type"].Size() >= 2u) {
       type = d["type"][1].GetString();
 
@@ -205,24 +205,24 @@ std::unique_ptr<operation> ws_server::create_op(const rapidjson::Document& d) {
         if (type == "create" && d["type"].Size() >= 4u) {
           type = d["type"][3].GetString();
           if (type == "new") {
-            return make_unique<create_new_bot_op>(d);
+            return std::make_shared<create_new_bot_op>(d);
           } else if (type == "reactivate") {
-            return make_unique<reactivate_bot_op>(d);
+            return std::make_shared<reactivate_bot_op>(d);
           }
         } else if (type == "delete") {
-          return make_unique<delete_bot_op>(d);
+          return std::make_shared<delete_bot_op>(d);
         } else if (type == "execute") {
-          return make_unique<execute_bot_op>(d);
+          return std::make_shared<execute_bot_op>(d);
         }
       } else if (type == "update" && d["type"].Size() >= 3u) {
         type = d["type"][2].GetString();
 
         if (std::string(d["type"][2].GetString()) == "delete") {
-          return make_unique<delete_update_op>(d);
+          return std::make_shared<delete_update_op>(d);
         } else if (type == "email") {
-          return make_unique<email_update_op>(d);
+          return std::make_shared<email_update_op>(d);
         } else if (type == "password") {
-          return make_unique<password_update_op>(d);
+          return std::make_shared<password_update_op>(d);
         }
       }
     }

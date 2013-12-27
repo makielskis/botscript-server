@@ -18,6 +18,6 @@ using namespace botscript;
 int main() {
   auto store = make_unique<cached_db>("./db");
   ws_server s(std::move(store), bot::load_packages("./packages"));
-  s.start("0.0.0.0", "9003");
+  s.start("127.0.0.1", "9003");
   std::cout << "... exit\n";
 }

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <ctime>
 
 #include "dust/document.h"
 
