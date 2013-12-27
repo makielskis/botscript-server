@@ -84,7 +84,7 @@ class ws_server {
   ///
   /// \param d  the parsed JSON document
   /// \return the operation
-  std::unique_ptr<operation> create_op(const rapidjson::Document& d);
+  std::shared_ptr<operation> create_op(const rapidjson::Document& d);
 
   boost::asio::io_service io_service_;
 

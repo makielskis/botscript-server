@@ -67,7 +67,10 @@ void bs_server::handle_connection_close(const std::string& sid) {
   user u = it->u;
   auto print_upd_cb = print_cb();
   for (const auto& config : u.bot_configs()) {
-    bots_[config->identifier()]->update_callback_ = print_upd_cb;
+    auto it = bots_.find(config->identifier());
+    if (it != bots_.end()) {
+      it->second->update_callback_ = print_upd_cb;
+    }
   }
 }
 
