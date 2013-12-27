@@ -22,7 +22,7 @@ namespace botscript_server {
 
 class user;
 
-/// Abstract parent for bot creation operations.
+/// Abstract parent for bot creation operations (e.g. new bot, reactivate bot).
 ///
 /// Creates a bot on execution.
 ///
@@ -45,6 +45,12 @@ class create_bot_op: public user_op,
       const bs_server& server,
       const user& u) const = 0;
 
+  /// Will be called if the bot could not be created.
+  /// To be implemented by derived classes if they need to clean up
+  /// for example the configuration.
+  ///
+  /// \param config  the config that failed to load
+  /// \param u       the user that triggered this operation
   virtual void on_load_fail(
       std::shared_ptr<botscript::bot_config> config,
       user u) const = 0;

@@ -4,7 +4,9 @@
 
 #include "./email_update_op.h"
 
-#include <iostream> // TODO(felix) remove
+#include "../../../user.h"
+#include "../../../make_unique.h"
+#include "../../../messages/success_msg.h"
 
 namespace botscript_server {
 
@@ -28,8 +30,13 @@ std::vector<std::string> email_update_op::type() const {
 
 std::vector<msg_ptr> email_update_op::execute(bs_server& server,
                                               op_callback cb) const {
-  std::cout << "Executing email update message" << std::endl;
-  return {};
+  user u = get_user_from_session(server);
+
+  u.email(current_pw(), new_email());
+
+  std::vector<msg_ptr> out;
+  out.emplace_back(make_unique<success_msg>(0, type()));
+  return out;
 }
 
 }  // namespace botscript_server

@@ -4,7 +4,9 @@
 
 #include "./password_update_op.h"
 
-#include <iostream> // TODO(felix) remove
+#include "../../../user.h"
+#include "../../../make_unique.h"
+#include "../../../messages/success_msg.h"
 
 namespace botscript_server {
 
@@ -28,7 +30,13 @@ std::vector<std::string> password_update_op::type() const {
 
 std::vector<msg_ptr> password_update_op::execute(bs_server& server,
                                                  op_callback cb) const {
-  return {};
+  user u = get_user_from_session(server);
+
+  u.password(current_pw(), new_pw());
+
+  std::vector<msg_ptr> out;
+  out.emplace_back(make_unique<success_msg>(0, type()));
+  return out;
 }
 
 }  // namespace botscript_server

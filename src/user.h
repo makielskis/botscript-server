@@ -105,13 +105,16 @@ class user {
   /// Sets the email address if the old password was correct, otherwise throws
   /// an password_wrong error.
   ///
-  /// \param old_pw     the old password to check (before setting the new)
+  /// \param pw         the old password to check (before setting the new)
   /// \param new_email  the new email address to set
-  void email(const std::string& old_pw, const std::string& new_email);
+  void email(const std::string& pw, const std::string& new_email);
 
   /// \param password  the password to check
   /// \return true if the password did match the users password
   bool check_password(const std::string& password);
+
+  /// Deletes the whole user.
+  void remove();
 
   /// Less than comparison operator.
   /// Does the comparison based on the unique username.

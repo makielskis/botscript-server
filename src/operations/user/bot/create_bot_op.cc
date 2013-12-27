@@ -33,10 +33,15 @@ std::vector<msg_ptr> create_bot_op::execute(bs_server& server,
                                             op_callback cb) const {
   user u = get_user_from_session(server);
 
+  auto config = bot_config(server, u);
+  if (server.force_proxy_ && config->value_of("base_proxy").empty()) {
+    throw boost::system::system_error(error::proxy_required);
+  }
+
   auto self = shared_from_this();
   auto bot = std::make_shared<botscript::bot>(server.io_service_);
   bot->update_callback_ = server.sid_cb(sid());
-  bot->init(bot_config(server, u), [cb, u, &server, self](
+  bot->init(config, [cb, u, &server, self](
       std::shared_ptr<botscript::bot> bot,
       std::string err) {
     std::string identifier = bot->configuration().identifier();
