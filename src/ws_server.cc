@@ -22,10 +22,12 @@ using websocketpp::lib::error_code;
 
 namespace botscript_server {
 
-ws_server::ws_server(std::unique_ptr<dust::key_value_store> store,
+ws_server::ws_server(bool force_proxy,
+                     std::unique_ptr<dust::key_value_store> store,
                      std::vector<std::string> packages)
     : signals_(io_service_),
-      mgr_(&io_service_,
+      mgr_(force_proxy,
+           &io_service_,
            std::move(store),
            std::move(packages),
            std::bind(&ws_server::on_activity, this,

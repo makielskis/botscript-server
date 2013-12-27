@@ -28,9 +28,11 @@ namespace botscript_server {
 /// Websocket server that uses the bs_server class to respond to requests.
 class ws_server {
  public:
-  /// \param store     the key value store to use for users and configurations
-  /// \param packages  the packages to work with
-  ws_server(std::unique_ptr<dust::key_value_store> store,
+  /// \param force_proxy  \see the force proxy parameter of bs_server
+  /// \param store        the key value store to use for users and configurations
+  /// \param packages     the packages to work with
+  ws_server(bool force_proxy,
+            std::unique_ptr<dust::key_value_store> store,
             std::vector<std::string> packages);
 
   /// Starts listening for connections.

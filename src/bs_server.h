@@ -73,7 +73,8 @@ class bs_server {
   /// \param packages              the bot packages to provide
   /// \param activity_cb           callback for bot activity (log, status upd.)
   /// \param session_end_callback  callback to inform about session end
-  bs_server(boost::asio::io_service* io_service,
+  bs_server(bool force_proxy,
+            boost::asio::io_service* io_service,
             std::shared_ptr<dust::key_value_store> store,
             std::vector<std::string> packages,
             sid_callback activity_cb,
@@ -124,6 +125,9 @@ class bs_server {
   ///
   /// \return map with (key = bot identifier), (value = bot log)
   std::map<std::string, std::string> bot_logs(const user& u) const;
+
+  /// Flag indicating whether the user has to use a proxy or not.
+  bool force_proxy_;
 
   /// Asio I/O service required to create bots.
   boost::asio::io_service* io_service_;

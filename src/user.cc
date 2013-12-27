@@ -103,8 +103,8 @@ void user::password(const std::string& old_pw, const std::string& new_pw) {
   doc_["password"] = md5_hash_hex(new_pw);
 }
 
-void user::email(const std::string& old_pw, const std::string& new_email) {
-  if (!check_password(old_pw)) {
+void user::email(const std::string& pw, const std::string& new_email) {
+  if (!check_password(pw)) {
     throw boost::system::system_error(error::password_wrong);
   }
 
@@ -113,6 +113,10 @@ void user::email(const std::string& old_pw, const std::string& new_email) {
 
 bool user::check_password(const std::string& password) {
   return md5_hash_hex(password) == doc_["password"].val();
+}
+
+void user::remove() {
+  doc_.remove();
 }
 
 }  // namespace botscript_server

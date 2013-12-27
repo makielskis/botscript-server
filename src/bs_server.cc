@@ -15,12 +15,14 @@
 
 namespace botscript_server {
 
-bs_server::bs_server(boost::asio::io_service* io_service,
+bs_server::bs_server(bool force_proxy,
+                     boost::asio::io_service* io_service,
                      std::shared_ptr<dust::key_value_store> store,
                      std::vector<std::string> packages,
                      sid_callback activity_cb,
                      session_end_cb session_end_callback)
-    : io_service_(io_service),
+    : force_proxy_(force_proxy),
+      io_service_(io_service),
       store_(std::move(store)),
       users_(store_, "users"),
       packages_(std::move(packages)),
@@ -78,11 +80,20 @@ void bs_server::load_bot(std::shared_ptr<std::vector<bot_config_ptr>> configs,
                          std::size_t index) {
   using std::placeholders::_1;
   using std::placeholders::_2;
+
+  auto config = configs->at(index);
+  if (force_proxy_ && config->value_of("base_proxy").empty()) {
+    std::cout << "[ERROR] Config without proxy: " << config->identifier()
+              << std::endl;
+    config->inactive(true);
+    return;
+  }
+
   std::cout << "Loading bot " << configs->at(index)->identifier() << std::endl;
   auto load_cb = std::bind(&bs_server::on_bot_load, this, _1, _2, configs);
   auto bot = std::make_shared<botscript::bot>(io_service_);
   bot->update_callback_ = print_cb();
-  bot->init(configs->at(index), load_cb);
+  bot->init(config, load_cb);
   configs->erase(configs->begin() + index);
 }
 

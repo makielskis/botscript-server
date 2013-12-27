@@ -22,7 +22,8 @@ CTrayIcon g_TrayIcon("Makielskis Bot", true,
                      LoadIcon(GetModuleHandle(NULL),
                               MAKEINTRESOURCE(101)));
 
-botscript_server::ws_server s(make_unique<dust::mem_store>(),
+botscript_server::ws_server s(false,
+                              make_unique<dust::mem_store>(),
                               bot::load_packages("./packages"));
 boost::thread t;
 
