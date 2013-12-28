@@ -53,7 +53,7 @@ class ws_server {
   ///
   /// \param sid   the session id to thats associated with this activitiy
   /// \param msgs  the messages to send out
-  void on_activity(std::string sid, std::vector<msg_ptr> msgs);
+  void on_activity(std::string sid, const std::vector<msg_ptr>& msgs);
 
   /// This callback will be called on session end.
   ///

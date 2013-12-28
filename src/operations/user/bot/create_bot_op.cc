@@ -65,7 +65,7 @@ std::vector<msg_ptr> create_bot_op::execute(bs_server& server,
     cb("", std::move(out));
   });
 
-  return {};
+  return std::vector<msg_ptr>();
 }
 
 }  // namespace botscript_server

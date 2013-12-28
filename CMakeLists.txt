@@ -1,3 +1,8 @@
+set(CMAKE_USER_MAKE_RULES_OVERRIDE
+   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/c_flag_overrides.cmake)
+set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX
+   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cxx_flag_overrides.cmake)
+
 cmake_minimum_required(VERSION 2.6)
 project(botscript-server)
 
@@ -5,19 +10,23 @@ project(botscript-server)
 ################################
 # Compile flags
 ################################
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11")
-if(MINGW)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s")
-  add_definitions(
-    -DBOOST_THREAD_USE_LIB
-    -D_WIN32_WINNT=0x0501
-    -DWINVER=0x0501
-    -D_WIN32_IE=0x0501
-  )
-elseif(ANDROID)
-  add_definitions(-DANDROID)
-elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  add_definitions(-DOS_MACOSX)
+if(MSVC)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D _VARIADIC_MAX=10 /D _WIN32_WINNT=0x0501")
+else()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11")
+  if(MINGW)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s")
+    add_definitions(
+      -DBOOST_THREAD_USE_LIB
+      -D_WIN32_WINNT=0x0501
+      -DWINVER=0x0501
+      -D_WIN32_IE=0x0501
+    )
+  elseif(ANDROID)
+    add_definitions(-DANDROID)
+  elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    add_definitions(-DOS_MACOSX)
+  endif()
 endif()
 
 
@@ -42,9 +51,9 @@ find_package(Boost COMPONENTS
   random
 REQUIRED)
 if(Boost_FOUND)
-	include_directories(${Boost_INCLUDE_DIR})
+  include_directories(${Boost_INCLUDE_DIR})
 else(Boost_FOUND)
-	message("No Boost found.")
+  message("No Boost found.")
 endif(Boost_FOUND)
 link_directories(${CMAKE_LIBRARY_PATH})
 
@@ -71,7 +80,11 @@ list(REMOVE_ITEM botscriptserver_lib_files ${gui_files})
 list(REMOVE_ITEM botscriptserver_lib_files ${exe_files})
 list(REMOVE_ITEM botscriptserver_lib_files ${jni_files})
 add_library(botscriptserver_lib STATIC ${botscriptserver_lib_files})
-target_link_libraries(botscriptserver_lib bs dust z)
+if (MSVC)
+  target_link_libraries(botscriptserver_lib bs dust)
+else()
+  target_link_libraries(botscriptserver_lib bs dust z)
+endif()
 
 
 ################################
@@ -99,7 +112,7 @@ else()
 ################################
   add_executable(botscript-server-exe src/main.cc)
 
-  if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin" OR MSVC)
     target_link_libraries(botscript-server-exe botscriptserver_lib)
   else()
     target_link_libraries(botscript-server-exe botscriptserver_lib rt -pthread)

@@ -62,7 +62,7 @@ void ws_server::stop() {
 }
 
 void ws_server::on_activity(std::string sid,
-                            std::vector<msg_ptr> msgs) {
+                            const std::vector<msg_ptr>& msgs) {
   const auto it = sid_con_map_.find(sid);
   if (it != sid_con_map_.cend()) {
     // Connection active, send messagewebsocket_server_.

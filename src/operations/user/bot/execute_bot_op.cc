@@ -41,7 +41,7 @@ std::vector<msg_ptr> execute_bot_op::execute(bs_server& server,
                                              op_callback cb) const {
   user u = get_user_from_session(server);
   get_bot(u, server, identifier())->execute(command(), argument());
-  return {};
+  return std::vector<msg_ptr>();
 }
 
 }  // namespace botscript_server

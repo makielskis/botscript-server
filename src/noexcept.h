@@ -1,0 +1,10 @@
+#ifndef BOTSCRIPT_SERVER_NOEXCEPT_H_
+#define BOTSCRIPT_SERVER_NOEXCEPT_H_
+
+#ifndef _MSC_VER
+#define BSS_NOEXCEPT noexcept
+#else
+#define BSS_NOEXCEPT
+#endif
+
+#endif  // BOTSCRIPT_SERVER_NOEXCEPT_H_

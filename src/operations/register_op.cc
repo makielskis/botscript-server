@@ -50,7 +50,7 @@ std::vector<msg_ptr> register_op::execute(bs_server& server,
   user u(server.users_[username()], password(), email());
 
   server.update_session(u);
-  cb(u.session_id(), {});
+  cb(u.session_id(), std::vector<msg_ptr>());
 
   std::vector<msg_ptr> out;
   out.emplace_back(make_unique<session_msg>(u.session_expire(),
