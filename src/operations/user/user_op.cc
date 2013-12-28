@@ -36,7 +36,7 @@ std::vector<std::string> user_op::type() const {
 
 std::vector<msg_ptr> user_op::execute(bs_server& server, op_callback cb) const {
   user u = get_user_from_session(server);
-  cb(u.session_id(), {});
+  cb(u.session_id(), std::vector<msg_ptr>());
 
   std::vector<msg_ptr> out;
   out.emplace_back(make_unique<session_msg>(u.session_expire(),

@@ -10,6 +10,8 @@
 #include "boost/system/system_error.hpp"
 #include "boost/type_traits.hpp"
 
+#include "./noexcept.h"
+
 namespace botscript_server {
 
 namespace error {
@@ -49,15 +51,15 @@ namespace error {
     session_error = 1
   };
 
-  boost::system::error_code make_error_code(error_code_t e) noexcept;
-  boost::system::error_condition make_error_condition(error_condition_t e) noexcept;
+  boost::system::error_code make_error_code(error_code_t e) BSS_NOEXCEPT;
+  boost::system::error_condition make_error_condition(error_condition_t e) BSS_NOEXCEPT;
 }
 
 class error_category_impl : public boost::system::error_category {
  public:
-  virtual const char* name() const noexcept;
-  virtual std::string message(int ev) const noexcept;
-  virtual boost::system::error_condition default_error_condition(int ev) const noexcept;
+  virtual const char* name() const BSS_NOEXCEPT;
+  virtual std::string message(int ev) const BSS_NOEXCEPT;
+  virtual boost::system::error_condition default_error_condition(int ev) const BSS_NOEXCEPT;
 };
 
 const boost::system::error_category& error_category();
