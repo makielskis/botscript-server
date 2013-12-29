@@ -55,8 +55,6 @@ update_cb bs_server::print_cb() {
 }
 
 void bs_server::handle_connection_close(const std::string& sid) {
-  session_end_cb_(sid);
-
   // Resolve the session ID to a user.
   typedef session_set::index<index_session_id>::type session_id_index;
   auto& sessions_indexed_by_sid = sessions_.get<index_session_id>();
@@ -74,6 +72,11 @@ void bs_server::handle_connection_close(const std::string& sid) {
       it->second->update_callback_ = print_upd_cb;
     }
   }
+
+  // Trigger session end callback.
+  io_service_->post([this, sid]() {
+    session_end_cb_(sid);
+  });
 }
 
 void bs_server::load_bot(std::shared_ptr<std::vector<bot_config_ptr>> configs,

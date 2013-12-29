@@ -129,10 +129,7 @@ sid_callback ws_server::create_sid_cb(connection_hdl hdl) {
 }
 
 void ws_server::on_close(connection_hdl hdl) {
-  // Find corresponding session id.
-  const auto it = con_sid_map_.find(hdl);
-
-  // Inform bs_server if it was a registered session.
+  auto it = con_sid_map_.find(hdl);
   if (it != con_sid_map_.end()) {
     mgr_.handle_connection_close(it->second);
   }
