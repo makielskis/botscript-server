@@ -23,11 +23,13 @@ using websocketpp::lib::error_code;
 namespace botscript_server {
 
 ws_server::ws_server(bool force_proxy,
-                     std::unique_ptr<dust::key_value_store> store,
+                     boost::asio::io_service* io_service,
+                     std::shared_ptr<dust::key_value_store> store,
                      std::vector<std::string> packages)
-    : signals_(io_service_),
+    : io_service_(io_service),
+      signals_(*io_service),
       mgr_(force_proxy,
-           &io_service_,
+           io_service_,
            std::move(store),
            std::move(packages),
            std::bind(&ws_server::on_activity, this,
@@ -51,7 +53,7 @@ ws_server::ws_server(bool force_proxy,
 }
 
 void ws_server::start(const std::string& host, const std::string& port) {
-  websocket_server_.init_asio(&io_service_);
+  websocket_server_.init_asio(io_service_);
   websocket_server_.listen(host, port);
   websocket_server_.start_accept();
   websocket_server_.run();
