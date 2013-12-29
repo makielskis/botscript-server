@@ -5,14 +5,14 @@
 
 #include "boost/thread.hpp"
 
-#include "dust/storage/mem_store.h"
+#include "dust/storage/cached_db.h"
 
 #include "bot.h"
 
 #include "../ws_server.h"
 #include "../make_unique.h"
 
-#define MOBILE_UI_URL "http://makielski.net/mobileui-0.0.6/"
+#define MOBILE_UI_URL "http://makielski.net/mobileui-dev/"
 
 using namespace botscript;
 using namespace botscript_server;
@@ -23,7 +23,7 @@ CTrayIcon g_TrayIcon("Makielskis Bot", true,
                               MAKEINTRESOURCE(101)));
 
 botscript_server::ws_server s(false,
-                              make_unique<dust::mem_store>(),
+                              make_unique<dust::cached_db>("./db"),
                               bot::load_packages("./packages"));
 boost::thread t;
 

@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-#include "dust/storage/mem_store.h"
+#include "dust/storage/cached_db.h"
 
 #include "bot.h"
 
@@ -16,7 +16,7 @@ using namespace dust;
 using namespace botscript;
 
 int main() {
-  auto store = make_unique<mem_store>();
+  auto store = make_unique<cached_db>("./db");
   ws_server s(true, std::move(store), bot::load_packages("./packages"));
   s.start("127.0.0.1", "9003");
   std::cout << "... exit\n";
