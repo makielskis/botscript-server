@@ -95,10 +95,10 @@ add_library(botscript-server SHARED EXCLUDE_FROM_ALL ${jni_files})
 set_target_properties(botscript-server PROPERTIES COMPILE_FLAGS "-DDESKTOP")
 
 
-if(MINGW)
 ################################
 # GUI executable
 ################################
+if (MINGW OR MSVC)
   add_executable(botscript-server-gui
     WIN32
     ${gui_files}
@@ -106,17 +106,19 @@ if(MINGW)
   )
   set_target_properties(botscript-server-gui PROPERTIES COMPILE_FLAGS "-DDESKTOP")
   target_link_libraries(botscript-server-gui -Wl,-Bstatic botscriptserver_lib ws2_32 mswsock -static-libgcc -static-libstdc++)
-else()
+endif()
+
 ################################
 # Server executable
 ################################
-  add_executable(botscript-server-exe src/main.cc)
+add_executable(botscript-server-exe src/main.cc)
 
-  if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin" OR MSVC)
-    target_link_libraries(botscript-server-exe botscriptserver_lib)
-  else()
-    target_link_libraries(botscript-server-exe botscriptserver_lib rt -pthread)
-  endif()
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin" OR MSVC)
+  target_link_libraries(botscript-server-exe botscriptserver_lib)
+elseif (MINGW)
+  target_link_libraries(botscript-server-exe -Wl,-Bstatic botscriptserver_lib ws2_32 mswsock -static-libgcc -static-libstdc++)
+else()
+  target_link_libraries(botscript-server-exe botscriptserver_lib rt -pthread)
 endif()
 
 
