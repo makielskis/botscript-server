@@ -29,10 +29,12 @@ namespace botscript_server {
 class ws_server {
  public:
   /// \param force_proxy  \see the force proxy parameter of bs_server
-  /// \param store        the key value store to use for users and configurations
+  /// \param io_service   the Asio I/O service for asynchronous networking
+  /// \param store        the key value store for users and configurations
   /// \param packages     the packages to work with
   ws_server(bool force_proxy,
-            std::unique_ptr<dust::key_value_store> store,
+            boost::asio::io_service* io_service,
+            std::shared_ptr<dust::key_value_store> store,
             std::vector<std::string> packages);
 
   /// Starts listening for connections.
@@ -88,7 +90,7 @@ class ws_server {
   /// \return the operation
   std::shared_ptr<operation> create_op(const rapidjson::Document& d);
 
-  boost::asio::io_service io_service_;
+  boost::asio::io_service* io_service_;
 
   boost::asio::signal_set signals_;
 

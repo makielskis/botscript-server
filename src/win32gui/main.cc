@@ -4,6 +4,7 @@
 #include "TrayIcon.h"
 
 #include "boost/thread.hpp"
+#include "boost/asio/io_service.hpp"
 
 #include "dust/storage/cached_db.h"
 
@@ -22,8 +23,9 @@ CTrayIcon g_TrayIcon("Makielskis Bot", true,
                      LoadIcon(GetModuleHandle(NULL),
                               MAKEINTRESOURCE(101)));
 
-botscript_server::ws_server s(false,
-                              make_unique<dust::cached_db>("./db"),
+boost::asio::io_service io_service;
+botscript_server::ws_server s(false, &io_service,
+                              std::make_shared<dust::cached_db>("db"),
                               bot::load_packages("./packages"));
 boost::thread t;
 
