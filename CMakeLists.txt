@@ -8,6 +8,14 @@ project(botscript-server)
 
 
 ################################
+# Windows = Desktop Version
+################################
+if (MSVC OR MINGW)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDESKTOP")
+endif()
+
+
+################################
 # Dependencies
 ################################
 add_subdirectory(external_lib/botscript)
@@ -42,7 +50,7 @@ include_directories("external_lib/websocketpp")
 include_directories("external_lib/botscript/src")
 include_directories("external_lib/botscript/external_lib/rapidjson/include")
 include_directories("external_lib/botscript/external_lib/pugixml-1.2/src")
-include_directories("external_lib/botscript/external_lib/lua-5.2.0/src")
+include_directories("external_lib/botscript/external_lib/lua-5.2/src")
 include_directories("external_lib/dust/include")
 
 
@@ -136,13 +144,11 @@ if (MINGW OR MSVC)
       _WIN32_WINNT=0x0501
       WINVER=0x0501
       _WIN32_IE=0x0501
-      DESKTOP
     )
   else() # MSVC
     set(_def
       _VARIADIC_MAX=10
       _WIN32_WINNT=0x0501
-      DESKTOP
     )
   endif()
   set_target_properties(botscript-server-gui PROPERTIES COMPILE_DEFINITIONS "${_def}")
@@ -196,7 +202,7 @@ elseif(MINGW)
     _WIN32_WINNT=0x0501
     _WIN32_IE=0x0501
   )
-  set_target_properties(bs PROPERTIES COMPILE_DEFINITIONS "${_def}")
+  set_target_properties(botscript-server-exe PROPERTIES COMPILE_DEFINITIONS "${_def}")
 
   ### Compiler Flags
   set_target_properties(botscript-server-exe PROPERTIES COMPILE_FLAGS "-std=c++11 -s")
