@@ -60,6 +60,18 @@ std::map<std::string, std::string> user_op::bot_configs(const user& u) const {
 }
 
 user user_op::get_user_from_session(bs_server& server) const {
+#ifdef DESKTOP
+  auto guest_doc = server.users_["guest"];
+
+  if (!guest_doc.exists()) {
+    user guest(guest_doc, "password", "guest@localhost.tld");
+    guest.new_session();
+  }
+
+  user guest = user(guest_doc);
+  server.update_session(guest);
+  return guest;
+#else
   typedef session_set::index<index_session_id>::type sid_index;
 
   auto& sessions_indexed_by_sid = server.sessions_.get<index_session_id>();
@@ -76,6 +88,7 @@ user user_op::get_user_from_session(bs_server& server) const {
   server.update_session(it->u);
 
   return it->u;
+#endif
 }
 
 }  // namespace botscript_server
