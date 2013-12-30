@@ -150,6 +150,7 @@ if (MINGW OR MSVC)
   ### Compiler Flags
   if (MINGW)
     set_target_properties(botscript-server-gui PROPERTIES COMPILE_FLAGS "-std=c++11 -s")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s")
   endif()
 endif()
 
