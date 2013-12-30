@@ -16,22 +16,52 @@
 namespace botscript_server {
 
 bs_server::bs_server(bool force_proxy,
+                     std::string packages_path,
                      boost::asio::io_service* io_service,
                      std::shared_ptr<dust::key_value_store> store,
-                     std::vector<std::string> packages,
                      sid_callback activity_cb,
                      session_end_cb session_end_callback)
     : force_proxy_(force_proxy),
+      packages_path_(std::move(packages_path)),
       io_service_(io_service),
+      signals_(*io_service_),
       store_(std::move(store)),
       users_(store_, "users"),
-      packages_(std::move(packages)),
       activity_cb_(std::move(activity_cb)),
       session_end_cb_(std::move(session_end_callback)) {
+  update_packages();
   for (const auto& user_doc : users_.children()) {
     update_session(user(user_doc));
   }
   load_bots();
+
+#if not defined(_WIN32) && not defined(_WIN64)
+  signals_.add(SIGUSR1);
+#endif
+
+  listen_for_update_packages_signal();
+}
+
+void bs_server::listen_for_update_packages_signal() {
+#if not defined(_WIN32) && not defined(_WIN64)
+  signals_.async_wait([this](boost::system::error_code /*ec*/, int /*signo*/) {
+    update_packages();
+    listen_for_update_packages_signal();
+  });
+#else
+  update_packages();
+#endif
+}
+
+void bs_server::update_packages() {
+  std::cout << "Loading packages... ";
+  botscript::bot::load_packages(packages_path_);
+  packages_.resize(0);
+  for (const auto& package : botscript::bot::packages_) {
+    std::cout << package.second->name() << " ";
+    packages_.push_back(package.second->interface());
+  }
+  std::cout << std::endl;
 }
 
 update_cb bs_server::sid_cb(const std::string& sid) {

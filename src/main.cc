@@ -20,7 +20,7 @@ using namespace botscript;
 int main() {
   auto store = std::make_shared<cached_db>("db");
   boost::asio::io_service io_service;
-  ws_server s(true, &io_service, store, bot::load_packages("./packages"));
+  ws_server s(true, "packages", &io_service, store);
   s.start("127.0.0.1", "9003");
   std::cout << "... exit\n";
 }
