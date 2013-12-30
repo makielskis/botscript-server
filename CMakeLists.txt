@@ -163,12 +163,12 @@ if (MINGW OR MSVC)
   # Package target
   ################################
   add_custom_target(dist
-    rm -rf dist &&
-    mkdir -p dist/packages &&
-    cp external_lib/botscript/kv/kv.package dist/packages &&
-    cp external_lib/botscript/pg/pg.package dist/packages &&
-    cp botscript-server-gui.exe dist &&
-    zip -r makielskis-bot.zip dist
+    rm -rf makielskisbot &&
+    mkdir -p makielskisbot/packages &&
+    cp external_lib/botscript/kv/kv.package makielskisbot/packages &&
+    cp external_lib/botscript/pg/pg.package makielskisbot/packages &&
+    cp botscript-server-gui.exe makielskisbot &&
+    zip -r -9 makielskisbot.zip dist
   )
   add_dependencies(dist botscript-server-gui compile_packages)
 endif()
