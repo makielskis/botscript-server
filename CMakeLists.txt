@@ -152,6 +152,19 @@ if (MINGW OR MSVC)
     set_target_properties(botscript-server-gui PROPERTIES COMPILE_FLAGS "-std=c++11 -s")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s")
   endif()
+
+  ################################
+  # Package target
+  ################################
+  add_custom_target(dist
+    rm -rf dist &&
+    mkdir -p dist/packages &&
+    cp external_lib/botscript/kv/kv.package dist/packages &&
+    cp external_lib/botscript/pg/pg.package dist/packages &&
+    cp botscript-server-gui.exe dist &&
+    zip -r makielskis-bot.zip dist
+  )
+  add_dependencies(dist botscript-server-gui compile_packages)
 endif()
 
 
