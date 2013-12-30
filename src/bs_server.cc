@@ -37,9 +37,8 @@ bs_server::bs_server(bool force_proxy,
 
 #if not defined(_WIN32) && not defined(_WIN64)
   signals_.add(SIGUSR1);
-#endif
-
   listen_for_update_packages_signal();
+#endif
 }
 
 void bs_server::listen_for_update_packages_signal() {
@@ -48,8 +47,6 @@ void bs_server::listen_for_update_packages_signal() {
     update_packages();
     listen_for_update_packages_signal();
   });
-#else
-  update_packages();
 #endif
 }
 
