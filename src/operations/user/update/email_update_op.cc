@@ -29,7 +29,7 @@ std::vector<std::string> email_update_op::type() const {
 }
 
 std::vector<msg_ptr> email_update_op::execute(bs_server& server,
-                                              op_callback cb) const {
+                                              op_callback /* cb */) const {
   user u = get_user_from_session(server);
 
   u.email(current_pw(), new_email());

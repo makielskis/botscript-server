@@ -44,8 +44,8 @@ std::shared_ptr<botscript::bot_config> reactivate_bot_op::bot_config(
 }
 
 void reactivate_bot_op::on_load_fail(
-    std::shared_ptr<botscript::bot_config> config,
-    user u) const {
+    std::shared_ptr<botscript::bot_config> /* config */,
+    user /* u */) const {
 }
 
 std::vector<std::string> reactivate_bot_op::type() const {

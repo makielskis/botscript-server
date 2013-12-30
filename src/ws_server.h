@@ -33,9 +33,9 @@ class ws_server {
   /// \param store        the key value store for users and configurations
   /// \param packages     the packages to work with
   ws_server(bool force_proxy,
+            std::string packages_path,
             boost::asio::io_service* io_service,
-            std::shared_ptr<dust::key_value_store> store,
-            std::vector<std::string> packages);
+            std::shared_ptr<dust::key_value_store> store);
 
   /// Starts listening for connections.
   void start(const std::string& host, const std::string& port);

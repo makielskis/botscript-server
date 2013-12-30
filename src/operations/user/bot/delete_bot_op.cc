@@ -35,7 +35,7 @@ std::vector<std::string> delete_bot_op::type() const {
 }
 
 std::vector<msg_ptr> delete_bot_op::execute(bs_server& server,
-                                            op_callback cb) const {
+                                            op_callback /* cb */) const {
   // Check whether user ownes the specified bot.
   user u = get_user_from_session(server);
   if (!u.has_bot(identifier())) {

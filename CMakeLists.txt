@@ -8,29 +8,6 @@ project(botscript-server)
 
 
 ################################
-# Compile flags
-################################
-if(MSVC)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D _VARIADIC_MAX=10 /D _WIN32_WINNT=0x0501")
-else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11")
-  if(MINGW)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s")
-    add_definitions(
-      -DBOOST_THREAD_USE_LIB
-      -D_WIN32_WINNT=0x0501
-      -DWINVER=0x0501
-      -D_WIN32_IE=0x0501
-    )
-  elseif(ANDROID)
-    add_definitions(-DANDROID)
-  elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    add_definitions(-DOS_MACOSX)
-  endif()
-endif()
-
-
-################################
 # Dependencies
 ################################
 add_subdirectory(external_lib/botscript)
@@ -84,20 +61,57 @@ file(GLOB_RECURSE botscriptserver_lib_files "src/*.cc")
 list(REMOVE_ITEM botscriptserver_lib_files ${gui_files})
 list(REMOVE_ITEM botscriptserver_lib_files ${exe_files})
 list(REMOVE_ITEM botscriptserver_lib_files ${jni_files})
+
 add_library(botscriptserver_lib STATIC ${botscriptserver_lib_files})
-if (MSVC)
+if(MSVC)
   target_link_libraries(botscriptserver_lib bs dust)
+  set(_def
+    _VARIADIC_MAX=10
+    _WIN32_WINNT=0x0501
+  )
+  set_target_properties(botscriptserver_lib PROPERTIES COMPILE_DEFINITIONS "${_def}")
 else()
   target_link_libraries(botscriptserver_lib bs dust z)
+  if(MINGW)
+    target_link_libraries(botscriptserver_lib
+      -Wl,-Bstatic
+        ws2_32
+        mswsock
+      -static-libgcc
+      -static-libstdc++
+    )
+
+    ### Compiler Definitions
+    set(_def
+      BOOST_THREAD_USE_LIB
+      WINVER=0x0501
+      _WIN32_WINNT=0x0501
+      _WIN32_IE=0x0501
+    )
+    set_target_properties(botscriptserver_lib PROPERTIES COMPILE_DEFINITIONS "${_def}")
+
+    ### Compiler Flags
+    set_target_properties(botscriptserver_lib PROPERTIES COMPILE_FLAGS "-std=c++11 -s")
+  else()
+    set_target_properties(botscriptserver_lib PROPERTIES COMPILE_FLAGS "-Wall -Wextra -std=c++11")
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+      target_link_libraries(botscriptserver_lib bs dust z)
+    else()
+      target_link_libraries(botscriptserver_lib bs dust z rt -pthread)
+    endif()
+  endif()
 endif()
 
 
 ################################
 # JNI shared library
 ################################
-add_library(botscript-server SHARED EXCLUDE_FROM_ALL ${jni_files})
-#include_directories(/usr/lib/jvm/java/include/)
-set_target_properties(botscript-server PROPERTIES COMPILE_FLAGS "-DDESKTOP")
+if (ANDROID)
+  add_definitions(-DANDROID)
+  add_library(botscript-server SHARED EXCLUDE_FROM_ALL ${jni_files})
+  #include_directories(/usr/lib/jvm/java/include/)
+  set_target_properties(botscript-server PROPERTIES COMPILE_FLAGS "-DDESKTOP")
+endif()
 
 
 ################################
@@ -109,46 +123,111 @@ if (MINGW OR MSVC)
     ${gui_files}
     src/win32gui/res/bot.rc
   )
-  set_target_properties(botscript-server-gui PROPERTIES COMPILE_FLAGS "-DDESKTOP")
-  target_link_libraries(botscript-server-gui -Wl,-Bstatic botscriptserver_lib ws2_32 mswsock -static-libgcc -static-libstdc++)
+
+  ### Library Dependencies
+  target_link_libraries(botscript-server-gui
+    -Wl,-Bstatic
+      botscriptserver_lib
+      ws2_32
+      mswsock
+    -static-libgcc
+    -static-libstdc++
+  )
+
+  ### Compiler Definitions
+  if (MINGW)
+    set(_def
+      BOOST_THREAD_USE_LIB
+      _WIN32_WINNT=0x0501
+      WINVER=0x0501
+      _WIN32_IE=0x0501
+      DESKTOP
+    )
+  else() # MSVC
+    set(_def
+      _VARIADIC_MAX=10
+      _WIN32_WINNT=0x0501
+      DESKTOP
+    )
+  endif()
+  set_target_properties(botscript-server-gui PROPERTIES COMPILE_DEFINITIONS "${_def}")
+
+  ### Compiler Flags
+  if (MINGW)
+    set_target_properties(botscript-server-gui PROPERTIES COMPILE_FLAGS "-std=c++11 -s")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s")
+  endif()
 endif()
+
 
 ################################
 # Server executable
 ################################
 add_executable(botscript-server-exe src/main.cc)
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin" OR MSVC)
+if(MSVC)
   target_link_libraries(botscript-server-exe botscriptserver_lib dust-server)
-elseif (MINGW)
-  target_link_libraries(botscript-server-exe -Wl,-Bstatic botscriptserver_lib dust-server ws2_32 mswsock -static-libgcc -static-libstdc++)
+  set(_def
+    _VARIADIC_MAX=10
+    _WIN32_WINNT=0x0501
+  )
+  set_target_properties(botscript-server-exe PROPERTIES COMPILE_DEFINITIONS "${_def}")
+elseif(MINGW)
+  target_link_libraries(botscript-server-exe
+    -Wl,-Bstatic
+      botscriptserver_lib
+      dust-server
+      ws2_32
+      mswsock
+    -static-libgcc
+    -static-libstdc++
+  )
+
+  ### Compiler Definitions
+  set(_def
+    BOOST_THREAD_USE_LIB
+    WINVER=0x0501
+    _WIN32_WINNT=0x0501
+    _WIN32_IE=0x0501
+  )
+  set_target_properties(bs PROPERTIES COMPILE_DEFINITIONS "${_def}")
+
+  ### Compiler Flags
+  set_target_properties(botscript-server-exe PROPERTIES COMPILE_FLAGS "-std=c++11 -s")
 else()
-  target_link_libraries(botscript-server-exe botscriptserver_lib dust-server rt -pthread)
-endif()
+  set_target_properties(botscript-server-exe PROPERTIES COMPILE_FLAGS "-Wall -Wextra -std=c++11")
+  if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    target_link_libraries(botscript-server-exe botscriptserver_lib dust-server)
+  else()
+    target_link_libraries(botscript-server-exe botscriptserver_lib dust-server rt -pthread)
+  endif()
+ endif()
 
 
 ################################
 # Unit Tests
 ################################
-if (NOT TARGET gtest)
-  add_subdirectory(test/gtest-1.7.0)
-  enable_testing()
-endif()
+if (NOT MSVC AND NOT  MINGW)
+  if (NOT TARGET gtest)
+    add_subdirectory(test/gtest-1.7.0)
+    enable_testing()
+  endif()
 
-include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+  include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
-add_executable(botscript-server-tests EXCLUDE_FROM_ALL
-  test/error_test.cpp
-  test/rapid_json_exception_test.cpp
-  test/outgoing_messages_test.cpp
-  test/db_bot_config_test.cpp
-  test/user_test.cpp
-  test/user_bot_config_test.cpp
-  test/multi_index_test.cpp
-)
+  add_executable(botscript-server-tests EXCLUDE_FROM_ALL
+    test/error_test.cpp
+    test/rapid_json_exception_test.cpp
+    test/outgoing_messages_test.cpp
+    test/db_bot_config_test.cpp
+    test/user_test.cpp
+    test/user_bot_config_test.cpp
+    test/multi_index_test.cpp
+  )
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  target_link_libraries(botscript-server-tests gtest gtest_main botscriptserver_lib)
-else()
-  target_link_libraries(botscript-server-tests gtest gtest_main botscriptserver_lib -pthread)
+  if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    target_link_libraries(botscript-server-tests gtest gtest_main botscriptserver_lib)
+  else()
+    target_link_libraries(botscript-server-tests gtest gtest_main botscriptserver_lib -pthread)
+  endif()
 endif()

@@ -17,6 +17,8 @@
 #include "boost/multi_index/identity.hpp"
 #include "boost/multi_index/member.hpp"
 
+#include "boost/asio/signal_set.hpp"
+
 #include "dust/storage/key_value_store.h"
 #include "dust/document.h"
 
@@ -74,11 +76,18 @@ class bs_server {
   /// \param activity_cb           callback for bot activity (log, status upd.)
   /// \param session_end_callback  callback to inform about session end
   bs_server(bool force_proxy,
+            std::string packages_path,
             boost::asio::io_service* io_service,
             std::shared_ptr<dust::key_value_store> store,
-            std::vector<std::string> packages,
             sid_callback activity_cb,
             session_end_cb session_end_callback);
+
+  /// Starts listening for SIGUSR1 and reloads the packages on this signal.
+  void listen_for_update_packages_signal();
+
+  /// Calls bot::load_packages with the path given in the constructor and
+  /// updates the packages_ vector with the JSON package descriptions.
+  void update_packages();
 
   /// Called on connection close.
   /// Removes all data that is kept for this session.
@@ -129,8 +138,14 @@ class bs_server {
   /// Flag indicating whether the user has to use a proxy or not.
   bool force_proxy_;
 
+  /// The path where the botscript packages are located.
+  std::string packages_path_;
+
   /// Asio I/O service required to create bots.
   boost::asio::io_service* io_service_;
+
+  /// Signals set for reloading the packages on USERSIG1.
+  boost::asio::signal_set signals_;
 
   /// Storage for bot configurations and user accounts.
   std::shared_ptr<dust::key_value_store> store_;

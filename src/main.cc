@@ -23,6 +23,7 @@ using namespace dust;
 using namespace dust_server;
 using namespace botscript;
 
+<<<<<<< HEAD
 namespace po = boost::program_options;
 
 int main(int argc, char** argv) {
@@ -80,7 +81,7 @@ int main(int argc, char** argv) {
 
     auto store = std::make_shared<cached_db>("db");
     boost::asio::io_service io_service;
-    ws_server s(true, &io_service, store, bot::load_packages("./packages"));
+    ws_server s(true, "packages", &io_service, store);
     http_service db_service(&io_service, store, db_ip, db_port, "admin", db_pass);
     db_service.start_server();
     s.start(bot_ip, bot_port);
