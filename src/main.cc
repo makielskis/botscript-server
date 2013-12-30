@@ -23,7 +23,6 @@ using namespace dust;
 using namespace dust_server;
 using namespace botscript;
 
-<<<<<<< HEAD
 namespace po = boost::program_options;
 
 int main(int argc, char** argv) {
