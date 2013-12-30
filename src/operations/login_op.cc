@@ -41,7 +41,7 @@ std::vector<std::string> login_op::type() const {
 }
 
 std::vector<msg_ptr> login_op::execute(bs_server& server,
-                                       op_callback cb) const {
+                                       op_callback /* cb */) const {
   user u(server.users_[username()]);
 
   if (!u.check_password(password())) {
