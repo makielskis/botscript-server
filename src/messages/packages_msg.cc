@@ -17,11 +17,15 @@ const std::vector<std::string>& packages_msg::packages() const {
 }
 
 std::string packages_msg::to_json() const {
-  std::stringstream s;
-  for (const std::string& package : packages_) {
-    s << "," << package;
+  if (!packages_.empty()) {
+    std::stringstream s;
+    for (const std::string& package : packages_) {
+      s << "," << package;
+    }
+    return "{\"type\":\"packages\",\"arguments\":[" + s.str().substr(1) + "]}";
+  } else {
+    return "{\"type\":\"packages\",\"arguments\":[]}";
   }
-  return "{\"type\":\"packages\",\"arguments\":[" + s.str().substr(1) + "]}";
 }
 
 }  // namespace botscript_server
