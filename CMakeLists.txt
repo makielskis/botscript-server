@@ -34,8 +34,10 @@ endif()
 # Dependencies
 ################################
 add_subdirectory(external_lib/botscript)
-add_subdirectory(external_lib/dust)
-
+add_subdirectory(external_lib/dust-server)
+if (NOT TARGET dust)
+  add_subdirectory(external_lib/dust-server/external_lib/dust)
+endif()
 
 ################################
 # Boost
@@ -49,6 +51,7 @@ find_package(Boost COMPONENTS
   iostreams
   regex
   random
+  program_options
 REQUIRED)
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIR})
@@ -66,7 +69,9 @@ include_directories("external_lib/botscript/src")
 include_directories("external_lib/botscript/external_lib/rapidjson/include")
 include_directories("external_lib/botscript/external_lib/pugixml-1.2/src")
 include_directories("external_lib/botscript/external_lib/lua-5.2.0/src")
-include_directories("external_lib/dust/include")
+include_directories("external_lib/dust-server/external_lib/dust/include")
+include_directories("external_lib/dust-server/external_lib/http_server")
+include_directories("external_lib/dust-server/include")
 
 
 ################################
@@ -114,11 +119,11 @@ endif()
 add_executable(botscript-server-exe src/main.cc)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin" OR MSVC)
-  target_link_libraries(botscript-server-exe botscriptserver_lib)
+  target_link_libraries(botscript-server-exe botscriptserver_lib dust-server)
 elseif (MINGW)
-  target_link_libraries(botscript-server-exe -Wl,-Bstatic botscriptserver_lib ws2_32 mswsock -static-libgcc -static-libstdc++)
+  target_link_libraries(botscript-server-exe -Wl,-Bstatic botscriptserver_lib dust-server ws2_32 mswsock -static-libgcc -static-libstdc++)
 else()
-  target_link_libraries(botscript-server-exe botscriptserver_lib rt -pthread)
+  target_link_libraries(botscript-server-exe botscriptserver_lib dust-server rt -pthread)
 endif()
 
 
