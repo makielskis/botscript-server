@@ -20,9 +20,7 @@ endif()
 ################################
 add_subdirectory(external_lib/botscript)
 add_subdirectory(external_lib/dust-server)
-if (NOT TARGET dust)
-  add_subdirectory(external_lib/dust-server/external_lib/dust)
-endif()
+
 
 ################################
 # Boost
