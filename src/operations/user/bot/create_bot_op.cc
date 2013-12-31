@@ -33,6 +33,12 @@ std::vector<msg_ptr> create_bot_op::execute(bs_server& server,
                                             op_callback cb) const {
   user u = get_user_from_session(server);
 
+  auto& blocklist = server.user_bot_creation_blocklist_;
+  if (blocklist.find(u.username()) != blocklist.end()) {
+    throw boost::system::system_error(error::bot_in_blocklist);
+  }
+  server.user_bot_creation_blocklist_.insert(u.username());
+
   auto config = bot_config(server, u);
   if (server.force_proxy_ && config->value_of("base_proxy").empty()) {
     throw boost::system::system_error(error::proxy_required);
@@ -44,25 +50,47 @@ std::vector<msg_ptr> create_bot_op::execute(bs_server& server,
   bot->init(config, [cb, u, &server, self](
       std::shared_ptr<botscript::bot> bot,
       std::string err) {
-    std::string identifier = bot->configuration().identifier();
+    server.user_bot_creation_blocklist_.erase(u.username());
+    try {
+      std::vector<msg_ptr> out;
+      std::string identifier = bot->configuration().identifier();
 
-    bool success = err.empty();
-    bot->configuration().inactive(!success);
+      bool success = err.empty();
+      bot->configuration().inactive(!success);
 
-    std::vector<msg_ptr> out;
-    if (success) {
-      server.bots_[bot->configuration().identifier()] = bot;
-      out.emplace_back(make_unique<bots_msg>(self->bot_configs(u)));
-    } else {
-      self->on_load_fail(bot->config(), u);
-      bot->shutdown();
-      std::vector<std::string> type = {"user", "bot", "create"};
-      boost::system::error_code ec = error::bot_creation_failed;
-      std::string message = ec.message() + ": " + err;
-      out.emplace_back(make_unique<failure_msg>(0, type, ec.value(), message));
+      if (success) {
+        server.bots_[bot->configuration().identifier()] = bot;
+        out.emplace_back(make_unique<bots_msg>(self->bot_configs(u)));
+      } else {
+        self->on_load_fail(bot->config(), u);
+        bot->shutdown();
+        boost::system::error_code ec = error::bot_creation_failed;
+        std::string message = ec.message() + ": " + err;
+        out.emplace_back(make_unique<failure_msg>(0, self->type(), ec.value(),
+                                                  message));
+      }
+
+      return cb("", std::move(out));
+    } catch (const boost::system::system_error& e) {
+      std::vector<msg_ptr> out;
+      out.emplace_back(make_unique<failure_msg>(0, self->type(),
+                                                e.code().value(),
+                                                e.code().message()));
+      return cb("", std::move(out));
+    } catch (const std::exception& e) {
+      std::vector<msg_ptr> out;
+      boost::system::error_code ec = error::unknown_error;
+      std::string message = ec.message() + e.what();
+      out.emplace_back(make_unique<failure_msg>(0, self->type(), ec.value(),
+                                                message));
+      return cb("", std::move(out));
+    } catch (...) {
+      std::vector<msg_ptr> out;
+      boost::system::error_code ec = error::unknown_error;
+      out.emplace_back(make_unique<failure_msg>(0, self->type(), ec.value(),
+                                                ec.message()));
+      return cb("", std::move(out));
     }
-
-    cb("", std::move(out));
   });
 
   return std::vector<msg_ptr>();

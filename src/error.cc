@@ -67,6 +67,7 @@ std::string error_category_impl::message(int ev) const BSS_NOEXCEPT {
     case error::proxy_required:
       return "You need to provide a proxy";
 
+    case error::unknown_error:
     default:
       return "Unknown error";
   }

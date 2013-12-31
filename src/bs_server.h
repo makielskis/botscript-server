@@ -171,10 +171,6 @@ class bs_server {
   /// Bot map from bot identifier to bot shared pointer.
   std::map<std::string, std::shared_ptr<botscript::bot>> bots_;
 
-  /// Keeps the bot names that get currently created.
-  /// This way no bot can get created twice.
-  std::set<std::string> bot_creation_blocklist_;
-
   /// Keeps the users who are creating bots.
   /// This way no user can create more than one bot at the same time.
   std::set<std::string> user_bot_creation_blocklist_;
