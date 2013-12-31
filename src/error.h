@@ -42,7 +42,10 @@ namespace error {
     bot_creation_failed = 54,
     bot_in_blocklist = 55,
     bot_not_inactive = 56,
-    proxy_required = 57
+    proxy_required = 57,
+
+    // unknown
+    unknown_error = 999
   };
 
   // error_condition

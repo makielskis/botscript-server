@@ -19,6 +19,7 @@
 using websocketpp::connection_hdl;
 using websocketpp::lib::bind;
 using websocketpp::lib::error_code;
+using websocketpp::frame::opcode::TEXT;
 
 namespace botscript_server {
 
@@ -70,8 +71,7 @@ void ws_server::on_activity(std::string sid,
     // Connection active, send messagewebsocket_server_.
     for (const auto& msg : msgs) {
       error_code e;
-      websocket_server_.send(it->second, msg->to_json(),
-                             websocketpp::frame::opcode::TEXT, e);
+      websocket_server_.send(it->second, msg->to_json(), TEXT, e);
 
       // Check error.
       if (e) {
@@ -106,8 +106,7 @@ sid_callback ws_server::create_sid_cb(connection_hdl hdl) {
     bool failure = false;
     for (const auto& msg : msgs) {
       error_code err;
-      websocket_server_.send(hdl, msg->to_json(),
-                             websocketpp::frame::opcode::TEXT, err);
+      websocket_server_.send(hdl, msg->to_json(), TEXT, err);
       if (err) {
         std::cout << "[ERROR] could not deliver message\n";
         failure = true;
@@ -138,48 +137,50 @@ void ws_server::on_close(connection_hdl hdl) {
 }
 
 void ws_server::on_msg(connection_hdl hdl, server::message_ptr msg) {
-  std::cout << "--> " << msg->get_payload() << std::endl;
-
-  // Parse JSON message content.
-  rapidjson::Document d;
-  bool failure = d.Parse<0>(msg->get_payload().c_str()).HasParseError();
-
-  // Check failure:
-  // Print error message and return (prevent further message processing)
-  if (failure) {
-    std::cerr << "could not parse message \"" << msg->get_payload() << "\" "
-              << "(no valid JSON message)\n";
-    return;
-  }
-
-  // Create operation.
-  std::shared_ptr<operation> op;
   try {
-    op = create_op(d);
-  } catch(const rapidjson_exception& e) {
-    std::cerr << "could not parse message \"" << msg->get_payload() << "\" "
-              << "(expected attributes missing)\n";
-  } catch(const boost::system::system_error& e) {
-    std::cerr << "could not parse message \"" << msg->get_payload() << "\" "
-              << "(unknown type)\n";
-    return;
-  }
+    std::cout << "--> " << msg->get_payload() << std::endl;
 
-  // Execute operation.
-  try {
-    std::vector<msg_ptr> msgs = op->execute(mgr_, create_sid_cb(hdl));
+    // Parse JSON message content.
+    rapidjson::Document d;
+    bool failure = d.Parse<0>(msg->get_payload().c_str()).HasParseError();
 
-    // Send response.
-    for (const auto& msg : msgs) {
-      error_code send_ec;
-      websocket_server_.send(hdl, msg->to_json(),
-                             websocketpp::frame::opcode::TEXT, send_ec);
+    // Check failure:
+    // Print error message and return (prevent further message processing)
+    if (failure) {
+      std::cerr << "could not parse message \"" << msg->get_payload() << "\" "
+                << "(no valid JSON message)\n";
+      return;
     }
-  } catch(const boost::system::system_error& e) {
-    failure_msg m(0, op->type(), e.code().value(), e.code().message());
-    error_code send_ec;
-    websocket_server_.send(hdl, m.to_json(),
-                           websocketpp::frame::opcode::TEXT, send_ec);
+
+    // Create operation.
+    std::shared_ptr<operation> op;
+    try {
+      op = create_op(d);
+    } catch (const rapidjson_exception& e) {
+      std::cerr << "could not parse message \"" << msg->get_payload() << "\" "
+                << "(expected attributes missing)\n";
+    } catch (const boost::system::system_error& e) {
+      std::cerr << "could not parse message \"" << msg->get_payload() << "\" "
+                << "(unknown type)\n";
+      return;
+    }
+
+    // Execute operation.
+    try {
+      std::vector<msg_ptr> msgs = op->execute(mgr_, create_sid_cb(hdl));
+
+      // Send response.
+      for (const auto& msg : msgs) {
+        error_code send_ec;
+        websocket_server_.send(hdl, msg->to_json(), TEXT, send_ec);
+      }
+    } catch (const boost::system::system_error& e) {
+      failure_msg m(0, op->type(), e.code().value(), e.code().message());
+      error_code send_ec;
+      websocket_server_.send(hdl, m.to_json(), TEXT, send_ec);
+    }
+  } catch (...) {
+    std::cout << "[FATAL] Unhandled exception in ws_server on_msg\n";
   }
 }
 
