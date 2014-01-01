@@ -1,0 +1,27 @@
+// Copyright (c) 2013, makielski.net
+// Licensed under the MIT license
+// https://raw.github.com/makielski/botscript/master/COPYING
+
+#ifndef BOTSCRIPT_SERVER_VERSION_H_
+#define BOTSCRIPT_SERVER_VERSION_H_
+
+#include <sstream>
+
+#define BOTSCRIPT_SERVER_MAJOR_VERSION @botscript_server_major@
+#define BOTSCRIPT_SERVER_MINOR_VERSION @botscript_server_minor@
+#define BOTSCRIPT_SERVER_PATCH_VERSION @botscript_server_patch@
+#define MOBILE_UI_URL @botscript_server_gui_address@
+
+namespace botscript_server {
+
+std::string version() {
+  std::ostringstream v;
+  v << BOTSCRIPT_SERVER_MAJOR_VERSION << "."
+    << BOTSCRIPT_SERVER_MINOR_VERSION << "."
+    << BOTSCRIPT_SERVER_PATCH_VERSION;
+  return v.str();
+}
+
+}  // namespace botscript_server
+
+#endif /* BOTSCRIPT_SERVER_VERSION_H_ */

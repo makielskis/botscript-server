@@ -12,8 +12,7 @@
 
 #include "../ws_server.h"
 #include "../make_unique.h"
-
-#define MOBILE_UI_URL "http://makielski.net/mobileui-dev/"
+#include "../botscript_server_version.h"
 
 using namespace botscript;
 using namespace botscript_server;
@@ -36,15 +35,17 @@ void on_action(CTrayIcon* pTrayIcon, UINT uMsg) {
   POINT pt;
   if (GetCursorPos(&pt)) {
     HMENU hMenu = CreatePopupMenu();
-    AppendMenu(hMenu, MF_STRING, 1, "Bot");
-    AppendMenu(hMenu, MF_STRING, 2, "Quit");
+    AppendMenu(hMenu, MF_STRING | MF_GRAYED, 1,
+               std::string(std::string("v") + version()).c_str());
+    AppendMenu(hMenu, MF_STRING, 2, "Bot");
+    AppendMenu(hMenu, MF_STRING, 3, "Quit");
 
     SetForegroundWindow(g_hMainWnd);
     UINT cmd = TrackPopupMenu(hMenu, TPM_RETURNCMD|TPM_RIGHTBUTTON,
                               pt.x, pt.y, 0, g_hMainWnd, NULL);
-    if (cmd == 1) {
+    if (cmd == 2) {
       ShellExecute(NULL, "open", MOBILE_UI_URL, NULL, NULL, SW_SHOWNORMAL);
-    } else if (cmd == 2) {
+    } else if (cmd == 3) {
       PostMessage(g_hMainWnd, WM_CLOSE, 0, 0);
     }
     DestroyMenu(hMenu);

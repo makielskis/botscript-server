@@ -8,6 +8,20 @@ project(botscript-server)
 
 
 ################################
+# BotScript Server Version
+################################
+set(botscript_server_gui_address \"http://192.168.178.46:8080\")
+set(botscript_server_major 0)
+set(botscript_server_minor 2)
+set(botscript_server_patch 2)
+configure_file (
+  "src/botscript_server_version.h.in"
+  "${PROJECT_SOURCE_DIR}/src/botscript_server_version.h"
+)
+set(botscript_server_version ${botscript_server_major}.${botscript_server_minor}.${botscript_server_patch})
+
+
+################################
 # Windows = Desktop Version
 ################################
 if (MSVC OR MINGW)
@@ -165,15 +179,25 @@ if (MINGW OR MSVC)
   ################################
   # Package target
   ################################
-  add_custom_target(dist
-    rm -rf makielskisbot &&
-    mkdir -p makielskisbot/packages &&
-    cp external_lib/botscript/kv/kv.package makielskisbot/packages &&
-    cp external_lib/botscript/pg/pg.package makielskisbot/packages &&
-    cp botscript-server-gui.exe makielskisbot &&
-    zip -r -9 makielskisbot.zip dist
+  set(foldername makielskisbot-${botscript_server_version})
+  set(packagename makielskisbot-${botscript_server_version}.zip)
+  add_custom_target(package
+    rm -rf ${foldername} &&
+    mkdir -p ${foldername}/packages &&
+    cp external_lib/botscript/kv/kv.package ${foldername}/packages &&
+    cp external_lib/botscript/pg/pg.package ${foldername}/packages &&
+    cp botscript-server-gui.exe ${foldername} &&
+    zip -r -9 ${packagename} ${foldername}
   )
-  add_dependencies(dist botscript-server-gui compile_packages)
+  add_dependencies(package botscript-server-gui compile_packages)
+
+  ################################
+  # Deploy Upload
+  ################################
+  add_custom_target(release
+    scp ${packagename} perry@5.45.107.68:/var/www/dl/
+  )
+  add_dependencies(release package)
 endif()
 
 
@@ -227,9 +251,9 @@ else()
 if (NOT MSVC AND NOT  MINGW)
   if (NOT TARGET gtest)
     add_subdirectory(test/gtest-1.7.0)
-    enable_testing()
   endif()
 
+  enable_testing()
   include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
   add_executable(botscript-server-tests EXCLUDE_FROM_ALL
@@ -247,4 +271,7 @@ if (NOT MSVC AND NOT  MINGW)
   else()
     target_link_libraries(botscript-server-tests gtest gtest_main botscriptserver_lib -pthread)
   endif()
+  set_target_properties(botscript-server-tests PROPERTIES COMPILE_FLAGS "-std=c++11")
+
+  add_test(botscript-server-tests botscript-server-tests)
 endif()
