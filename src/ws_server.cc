@@ -159,6 +159,7 @@ void ws_server::on_msg(connection_hdl hdl, server::message_ptr msg) {
     } catch (const rapidjson_exception& e) {
       std::cerr << "could not parse message \"" << msg->get_payload() << "\" "
                 << "(expected attributes missing)\n";
+      return;
     } catch (const boost::system::system_error& e) {
       std::cerr << "could not parse message \"" << msg->get_payload() << "\" "
                 << "(unknown type)\n";

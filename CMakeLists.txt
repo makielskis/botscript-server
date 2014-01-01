@@ -198,6 +198,39 @@ if (MINGW OR MSVC)
     scp ${packagename} perry@5.45.107.68:/var/www/dl/
   )
   add_dependencies(release package)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "/usr/local/Cellar/qt5/5.2.0/lib/cmake/Qt5Widgets/")
+
+  # Tell CMake to run moc when necessary:
+  set(CMAKE_AUTOMOC ON)
+
+  # As moc files are generated in the binary dir, tell CMake
+  # to always look for includes there:
+  set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+  # Widgets finds its own dependencies.
+  find_package(Qt5Widgets REQUIRED)
+  find_package(Qt5Core REQUIRED)
+
+  set(systray_SRCS src/qtgui/res/systray.qrc)
+  qt5_add_resources(systray_RCC_SRCS ${systray_SRCS})
+
+  add_executable(botscript-server-gui
+    ${GUI_TYPE}
+    ${systray_RCC_SRCS}
+    src/qtgui/main.cpp
+    src/qtgui/Window.cpp
+    src/qtgui/BotThread.cpp
+  )
+
+  target_link_libraries(botscript-server-gui botscriptserver_lib)
+
+  qt5_use_modules(botscript-server-gui Widgets)
+
+  set_target_properties(botscript-server-gui PROPERTIES COMPILE_FLAGS "-std=c++11")
+
+  set(_def DESKTOP)
+  set_target_properties(botscript-server-gui PROPERTIES COMPILE_DEFINITIONS "${_def}")
 endif()
 
 
@@ -242,7 +275,7 @@ else()
   else()
     target_link_libraries(botscript-server-exe botscriptserver_lib dust-server rt -pthread)
   endif()
- endif()
+endif()
 
 
 ################################
