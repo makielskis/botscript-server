@@ -175,7 +175,7 @@ void ws_server::on_msg(connection_hdl hdl, server::message_ptr msg) {
         websocket_server_.send(hdl, msg->to_json(), TEXT, send_ec);
       }
     } catch (const boost::system::system_error& e) {
-      failure_msg m(0, op->type(), e.code().value(), e.code().message());
+      failure_msg m(0, op->type(), e.code().value(), e.what());
       error_code send_ec;
       websocket_server_.send(hdl, m.to_json(), TEXT, send_ec);
     }
