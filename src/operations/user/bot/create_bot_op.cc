@@ -18,6 +18,29 @@
 
 namespace botscript_server {
 
+struct blocklist_element {
+ public:
+  blocklist_element(bs_server& server, user u)
+      : server_(server),
+        u_(std::move(u)) {
+    auto& blocklist = server.user_bot_creation_blocklist_;
+    if (blocklist.find(u_.username()) != blocklist.end()) {
+      throw boost::system::system_error(error::user_in_blocklist);
+    }
+    blocklist.insert(u_.username());
+  }
+
+  blocklist_element(const blocklist_element&) = delete;
+  blocklist_element& operator=(const blocklist_element&) = delete;
+
+  virtual ~blocklist_element() {
+    server_.user_bot_creation_blocklist_.erase(u_.username());
+  }
+
+  user u_;
+  bs_server& server_;
+};
+
 create_bot_op::create_bot_op(const std::string& sid)
     : user_op(sid) {
 }
@@ -33,11 +56,7 @@ std::vector<msg_ptr> create_bot_op::execute(bs_server& server,
                                             op_callback cb) const {
   user u = get_user_from_session(server);
 
-  auto& blocklist = server.user_bot_creation_blocklist_;
-  if (blocklist.find(u.username()) != blocklist.end()) {
-    throw boost::system::system_error(error::bot_in_blocklist);
-  }
-  server.user_bot_creation_blocklist_.insert(u.username());
+  auto blocker = std::make_shared<blocklist_element>(server, u);
 
   auto config = bot_config(server, u);
   if (server.force_proxy_ && config->value_of("base_proxy").empty()) {
@@ -47,10 +66,9 @@ std::vector<msg_ptr> create_bot_op::execute(bs_server& server,
   auto self = shared_from_this();
   auto bot = std::make_shared<botscript::bot>(server.io_service_);
   bot->update_callback_ = server.sid_cb(sid());
-  bot->init(config, [cb, u, &server, self](
+  bot->init(config, [cb, u, &server, self, blocker](
       std::shared_ptr<botscript::bot> bot,
       std::string err) {
-    server.user_bot_creation_blocklist_.erase(u.username());
     try {
       std::vector<msg_ptr> out;
       std::string identifier = bot->configuration().identifier();

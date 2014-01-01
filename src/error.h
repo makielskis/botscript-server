@@ -43,6 +43,7 @@ namespace error {
     bot_in_blocklist = 55,
     bot_not_inactive = 56,
     proxy_required = 57,
+    user_in_blocklist = 58,
 
     // unknown
     unknown_error = 999

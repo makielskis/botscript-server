@@ -67,6 +67,9 @@ std::string error_category_impl::message(int ev) const BSS_NOEXCEPT {
     case error::proxy_required:
       return "You need to provide a proxy";
 
+    case error::user_in_blocklist:
+      return "You can only create one bot at the time";
+
     case error::unknown_error:
     default:
       return "Unknown error";
