@@ -37,8 +37,8 @@ struct blocklist_element {
     server_.user_bot_creation_blocklist_.erase(u_.username());
   }
 
-  user u_;
   bs_server& server_;
+  user u_;
 };
 
 create_bot_op::create_bot_op(const std::string& sid)
