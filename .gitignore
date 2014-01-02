@@ -1,3 +1,4 @@
+src/botscript_server_version.h
 build
 config_store.kch
 user_store.kch
