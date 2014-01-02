@@ -18,6 +18,7 @@
 
 #include "./bs_server.h"
 #include "./messages/message.h"
+#include "./ws_server_options.h"
 
 namespace dust {
 class key_value_store;
@@ -25,20 +26,23 @@ class key_value_store;
 
 namespace botscript_server {
 
+class bs_server_options;
+
 /// Websocket server that uses the bs_server class to respond to requests.
 class ws_server {
  public:
+  /// \param autologin    \see the autologin parameter of bs_server
   /// \param force_proxy  \see the force proxy parameter of bs_server
   /// \param io_service   the Asio I/O service for asynchronous networking
   /// \param store        the key value store for users and configurations
   /// \param packages     the packages to work with
-  ws_server(bool force_proxy,
-            std::string packages_path,
+  ws_server(ws_server_options options,
+            bs_server_options mgr_options,
             boost::asio::io_service* io_service,
             std::shared_ptr<dust::key_value_store> store);
 
   /// Starts listening for connections.
-  void start(const std::string& host, const std::string& port);
+  void start();
 
   /// Stops the server.
   void stop();
@@ -96,6 +100,8 @@ class ws_server {
 
   std::unique_ptr<dust::key_value_store> store_;
   bs_server mgr_;
+
+  ws_server_options options_;
 
   std::map<std::string, websocketpp::connection_hdl> sid_con_map_;
   std::map<websocketpp::connection_hdl, std::string> con_sid_map_;

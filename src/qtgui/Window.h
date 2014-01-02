@@ -15,6 +15,7 @@
 class QAction;
 class QMenu;
 class QDialog;
+class QCloseEvent;
 
 class Window : public QDialog {
 
@@ -33,10 +34,11 @@ class Window : public QDialog {
 
   QAction *botAction;
   QAction *quitAction;
+  QAction *versionAction;
   QSystemTrayIcon *trayIcon;
   QMenu *trayIconMenu;
 
   BotThread& botThread;
 };
 
-#endif
+#endif  // BOTSERVER_WINDOW_H_

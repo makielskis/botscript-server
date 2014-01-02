@@ -13,12 +13,18 @@
 
 class QThread;
 
+namespace botscript_server {
+class ws_server_options;
+class bs_server_options;
+}
+
 class BotThread : public QThread {
 
   Q_OBJECT
 
  public:
-  BotThread(const std::string& exe_dir);
+  BotThread(botscript_server::ws_server_options wss_options,
+            botscript_server::bs_server_options bss_options);
   virtual ~BotThread();
   void stopService();
 

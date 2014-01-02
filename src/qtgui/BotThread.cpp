@@ -6,8 +6,9 @@
 
 #include "dust/storage/cached_db.h"
 
-BotThread::BotThread(const std::string& exe_dir)
-    : s_(false, exe_dir, &io_service,
+BotThread::BotThread(botscript_server::ws_server_options wss_options,
+                     botscript_server::bs_server_options bss_options)
+    : s_(std::move(wss_options), std::move(bss_options), &io_service,
          std::make_shared<dust::cached_db>("db")) {
 }
 
@@ -15,9 +16,10 @@ BotThread::~BotThread() {
 }
 
 void BotThread::run() {
-  s_.start("127.0.0.1", "9003");
+  s_.start();
 }
 
 void BotThread::stopService() {
+  std::cout << "Stopping\n";
   s_.stop();
 }

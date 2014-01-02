@@ -224,13 +224,34 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   )
 
   target_link_libraries(botscript-server-gui botscriptserver_lib)
+  set_target_properties(botscript-server-gui PROPERTIES COMPILE_FLAGS "-std=c++11")
 
   qt5_use_modules(botscript-server-gui Widgets)
 
-  set_target_properties(botscript-server-gui PROPERTIES COMPILE_FLAGS "-std=c++11")
+  ################################
+  # Package target
+  ################################
+  set(foldername makielskisbot.app)
+  set(packagename makielskisbot-${botscript_server_version}-MacOS.zip)
+  add_custom_target(package
+    rm -rf ${foldername} &&
+    mkdir -p ${foldername}/packages &&
+    cp ${CMAKE_CURRENT_LIST_DIR}/mac_os_res/Info.plist ${foldername} &&
+    cp ${CMAKE_CURRENT_LIST_DIR}/mac_os_res/makielskisbotIcon.icns ${foldername} &&
+    cp external_lib/botscript/kv/kv.package ${foldername}/packages &&
+    cp external_lib/botscript/pg/pg.package ${foldername}/packages &&
+    cp botscript-server-gui ${foldername}/makielskisbot &&
+    zip -r -9 ${packagename} ${foldername}
+  )
+  add_dependencies(package botscript-server-gui compile_packages)
 
-  set(_def DESKTOP)
-  set_target_properties(botscript-server-gui PROPERTIES COMPILE_DEFINITIONS "${_def}")
+  ################################
+  # Deploy Upload
+  ################################
+  add_custom_target(release
+    scp ${packagename} perry@5.45.107.68:/var/www/dl/
+  )
+  add_dependencies(release package)
 endif()
 
 

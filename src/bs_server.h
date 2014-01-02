@@ -26,6 +26,7 @@
 #include "./session.h"
 #include "./operations/operation.h"
 #include "./messages/message.h"
+#include "./bs_server_options.h"
 
 namespace boost { namespace asio {
 class io_service;
@@ -75,8 +76,7 @@ class bs_server {
   /// \param packages              the bot packages to provide
   /// \param activity_cb           callback for bot activity (log, status upd.)
   /// \param session_end_callback  callback to inform about session end
-  bs_server(bool force_proxy,
-            std::string packages_path,
+  bs_server(bs_server_options options,
             boost::asio::io_service* io_service,
             std::shared_ptr<dust::key_value_store> store,
             sid_callback activity_cb,
@@ -135,11 +135,8 @@ class bs_server {
   /// \return map with (key = bot identifier), (value = bot log)
   std::map<std::string, std::string> bot_logs(const user& u) const;
 
-  /// Flag indicating whether the user has to use a proxy or not.
-  bool force_proxy_;
-
-  /// The path where the botscript packages are located.
-  std::string packages_path_;
+  /// Configuration.
+  bs_server_options options_;
 
   /// Asio I/O service required to create bots.
   boost::asio::io_service* io_service_;
