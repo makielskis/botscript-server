@@ -14,7 +14,7 @@
 
 namespace botscript_server {
 
-std::string version() {
+static std::string version() {
   std::ostringstream v;
   v << BOTSCRIPT_SERVER_MAJOR_VERSION << "."
     << BOTSCRIPT_SERVER_MINOR_VERSION << "."

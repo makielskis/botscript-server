@@ -23,21 +23,21 @@ using websocketpp::frame::opcode::TEXT;
 
 namespace botscript_server {
 
-ws_server::ws_server(bool force_proxy,
-                     std::string packages_path,
+ws_server::ws_server(ws_server_options options,
+                     bs_server_options mgr_options,
                      boost::asio::io_service* io_service,
                      std::shared_ptr<dust::key_value_store> store)
     : io_service_(io_service),
       signals_(*io_service),
-      mgr_(force_proxy,
-           std::move(packages_path),
+      mgr_(std::move(mgr_options),
            io_service_,
            std::move(store),
            std::bind(&ws_server::on_activity, this,
                      std::placeholders::_1,
                      std::placeholders::_2),
            std::bind(&ws_server::on_session_end, this,
-                     std::placeholders::_1)) {
+                     std::placeholders::_1)),
+      options_(std::move(options)) {
   websocket_server_.set_access_channels(websocketpp::log::alevel::none);
   websocket_server_.set_close_handler(bind(&ws_server::on_close, this,
                                            websocketpp::lib::placeholders::_1));
@@ -53,14 +53,16 @@ ws_server::ws_server(bool force_proxy,
   });
 }
 
-void ws_server::start(const std::string& host, const std::string& port) {
+void ws_server::start() {
   websocket_server_.init_asio(io_service_);
-  websocket_server_.listen(host, port);
+  std::cout << "listening on " << options_.host() << ":" << options_.port() << "\n";
+  websocket_server_.listen(options_.host(), options_.port());
   websocket_server_.start_accept();
   websocket_server_.run();
 }
 
 void ws_server::stop() {
+  mgr_.stop();
   websocket_server_.stop();
 }
 

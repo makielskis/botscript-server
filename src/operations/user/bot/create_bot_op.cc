@@ -59,7 +59,7 @@ std::vector<msg_ptr> create_bot_op::execute(bs_server& server,
   auto blocker = std::make_shared<blocklist_element>(server, u);
 
   auto config = bot_config(server, u);
-  if (server.force_proxy_ && config->value_of("base_proxy").empty()) {
+  if (server.options_.forceproxy() && config->value_of("base_proxy").empty()) {
     throw boost::system::system_error(error::proxy_required);
   }
 

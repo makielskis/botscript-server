@@ -15,14 +15,12 @@
 
 namespace botscript_server {
 
-bs_server::bs_server(bool force_proxy,
-                     std::string packages_path,
+bs_server::bs_server(bs_server_options options,
                      boost::asio::io_service* io_service,
                      std::shared_ptr<dust::key_value_store> store,
                      sid_callback activity_cb,
                      session_end_cb session_end_callback)
-    : force_proxy_(force_proxy),
-      packages_path_(std::move(packages_path)),
+    : options_(std::move(options)),
       io_service_(io_service),
       signals_(*io_service_),
       store_(std::move(store)),
@@ -52,7 +50,7 @@ void bs_server::listen_for_update_packages_signal() {
 
 void bs_server::update_packages() {
   std::cout << "Loading packages... ";
-  botscript::bot::load_packages(packages_path_);
+  botscript::bot::load_packages(options_.packages_path());
   packages_.resize(0);
   for (const auto& package : botscript::bot::packages_) {
     std::cout << package.second->name() << " ";
@@ -112,7 +110,7 @@ void bs_server::load_bot(std::shared_ptr<std::vector<bot_config_ptr>> configs,
   using std::placeholders::_2;
 
   auto config = configs->at(index);
-  if (force_proxy_ && config->value_of("base_proxy").empty()) {
+  if (options_.forceproxy() && config->value_of("base_proxy").empty()) {
     std::cout << "[ERROR] Config without proxy: " << config->identifier()
               << std::endl;
     config->inactive(true);
