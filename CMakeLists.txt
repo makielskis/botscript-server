@@ -10,7 +10,7 @@ project(botscript-server)
 ################################
 # BotScript Server Version
 ################################
-set(botscript_server_gui_address \"http://192.168.178.46:8080\")
+set(botscript_server_gui_address \"http://5.45.107.68/ui/0.0.8\")
 set(botscript_server_major 0)
 set(botscript_server_minor 2)
 set(botscript_server_patch 2)
@@ -180,13 +180,14 @@ if (MINGW OR MSVC)
   # Package target
   ################################
   set(foldername makielskisbot-${botscript_server_version})
-  set(packagename makielskisbot-${botscript_server_version}.zip)
+  set(packagename makielskisbot-win-${botscript_server_version}.zip)
   add_custom_target(package
     rm -rf ${foldername} &&
     mkdir -p ${foldername}/packages &&
     cp external_lib/botscript/kv/kv.package ${foldername}/packages &&
     cp external_lib/botscript/pg/pg.package ${foldername}/packages &&
-    cp botscript-server-gui.exe ${foldername} &&
+    cp botscript-server-gui.exe ${foldername}/makielskisbot.exe &&
+    cp ${CMAKE_CURRENT_LIST_DIR}/win_res/config.ini ${foldername} &&
     zip -r -9 ${packagename} ${foldername}
   )
   add_dependencies(package botscript-server-gui compile_packages)
@@ -199,8 +200,6 @@ if (MINGW OR MSVC)
   )
   add_dependencies(release package)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "/usr/local/Cellar/qt5/5.2.0/lib/cmake/Qt5Widgets/")
-
   # Tell CMake to run moc when necessary:
   set(CMAKE_AUTOMOC ON)
 
@@ -232,7 +231,7 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   # Package target
   ################################
   set(foldername makielskisbot.app)
-  set(packagename makielskisbot-${botscript_server_version}-MacOS.zip)
+  set(packagename makielskisbot-mac-${botscript_server_version}.zip)
   add_custom_target(package
     rm -rf ${foldername} &&
     mkdir -p ${foldername}/packages &&
