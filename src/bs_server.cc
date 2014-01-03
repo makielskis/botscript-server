@@ -104,12 +104,11 @@ void bs_server::handle_connection_close(const std::string& sid) {
   });
 }
 
-void bs_server::load_bot(std::shared_ptr<std::vector<bot_config_ptr>> configs,
-                         std::size_t index) {
+void bs_server::load_bot(bot_config_ptr config,
+                         std::shared_ptr<std::vector<bot_config_ptr>> configs) {
   using std::placeholders::_1;
   using std::placeholders::_2;
 
-  auto config = configs->at(index);
   if (options_.forceproxy() && config->value_of("base_proxy").empty()) {
     std::cout << "[ERROR] Config without proxy: " << config->identifier()
               << std::endl;
@@ -117,12 +116,11 @@ void bs_server::load_bot(std::shared_ptr<std::vector<bot_config_ptr>> configs,
     return;
   }
 
-  std::cout << "Loading bot " << configs->at(index)->identifier() << std::endl;
+  std::cout << "Loading bot " << config->identifier() << std::endl;
   auto load_cb = std::bind(&bs_server::on_bot_load, this, _1, _2, configs);
   auto bot = std::make_shared<botscript::bot>(io_service_);
   bot->update_callback_ = print_cb();
   bot->init(config, load_cb);
-  configs->erase(configs->begin() + index);
 }
 
 void bs_server::load_bots() {
@@ -140,10 +138,11 @@ void bs_server::load_bots() {
   }
 
   // Load the first N bots.
-  int start = configs->size() - 1;
-  int end = std::max(start - 50, 0);
-  for (int i = start; i >= end; --i) {
-    load_bot(configs, i);
+  int i = 0;
+  while (i++ < 50 && !configs->empty()) {
+    bot_config_ptr config = *configs->rbegin();
+    configs->resize(configs->size() - 1);
+    load_bot(config, configs);
   }
 }
 
@@ -165,7 +164,9 @@ void bs_server::on_bot_load(
   }
 
   if (!configs->empty()) {
-    load_bot(configs, configs->size() - 1);
+    bot_config_ptr config = *configs->rbegin();
+    configs->resize(configs->size() - 1);
+    load_bot(config, configs);
   }
 }
 

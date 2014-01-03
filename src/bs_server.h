@@ -97,8 +97,8 @@ class bs_server {
   ///
   /// \param configs  the configurations
   /// \param index    the index in the configurations vector
-  void load_bot(std::shared_ptr<std::vector<bot_config_ptr>> configs,
-                std::size_t index);
+  void load_bot(bot_config_ptr config,
+                std::shared_ptr<std::vector<bot_config_ptr>> configs);
 
   /// Loads the bots that are located in the store.
   void load_bots();
