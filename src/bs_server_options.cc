@@ -27,7 +27,9 @@ void bs_server_options::configure_description(po::options_description& desc) {
     ("botscript_server.autologin", po::value<bool>()->default_value(autologin_),
         "single user mode with autologin (no authentification needed)")
     ("botscript_server.packages_path", po::value<std::string>()->default_value(packages_path_),
-        "directory where the botscript packages are located");
+        "directory where the botscript packages are located")
+    ("botscript_server.botlog", po::value<bool>()->default_value(botlog_),
+        "whether the bots should print their output to stdout");
 }
 
 void bs_server_options::parse(const po::variables_map& vm) {
