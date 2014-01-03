@@ -36,7 +36,7 @@ void bs_server_options::parse(const po::variables_map& vm) {
   forceproxy_ = vm["botscript_server.forceproxy"].as<bool>();
   autologin_ = vm["botscript_server.autologin"].as<bool>();
   packages_path_ = vm["botscript_server.packages_path"].as<std::string>();
-  botlog_ = vm["botscript_server.botlog"].as<std::string>();
+  botlog_ = vm["botscript_server.botlog"].as<bool>();
 }
 
 bool bs_server_options::forceproxy() const {
