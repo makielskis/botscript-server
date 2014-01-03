@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
   // Prepare configurations with default values.
   std::string file;
   ws_server_options wss_options("127.0.0.1", "9003");
-  bs_server_options bss_options(false, true, "packages");
+  bs_server_options bss_options(false, true, "packages", false);
 
   // Prepare program description.
   std::string config_file;

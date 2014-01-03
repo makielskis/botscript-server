@@ -77,10 +77,12 @@ include_directories("external_lib/dust-server/include")
 file(GLOB gui_files "src/win32gui/*.cc")
 file(GLOB exe_files "src/main.cc")
 file(GLOB jni_files "src/jni/*.cpp")
+file(GLOB c_api_files "src/c_api/*.cc")
 file(GLOB_RECURSE botscriptserver_lib_files "src/*.cc")
 list(REMOVE_ITEM botscriptserver_lib_files ${gui_files})
 list(REMOVE_ITEM botscriptserver_lib_files ${exe_files})
 list(REMOVE_ITEM botscriptserver_lib_files ${jni_files})
+list(REMOVE_ITEM botscriptserver_lib_files ${c_api_files})
 
 add_library(botscriptserver_lib STATIC ${botscriptserver_lib_files})
 if(MSVC)
@@ -132,6 +134,15 @@ if (ANDROID)
   #include_directories(/usr/lib/jvm/java/include/)
   set_target_properties(botscript-server PROPERTIES COMPILE_FLAGS "-DDESKTOP")
 endif()
+
+
+################################
+# C Library
+################################
+message(${c_api_files})
+add_library(c_bss SHARED EXCLUDE_FROM_ALL ${c_api_files})
+target_link_libraries(c_bss botscriptserver_lib)
+set_target_properties(c_bss PROPERTIES COMPILE_FLAGS "-std=c++11")
 
 
 ################################

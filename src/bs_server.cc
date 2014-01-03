@@ -61,7 +61,7 @@ void bs_server::update_packages() {
 
 update_cb bs_server::sid_cb(const std::string& sid) {
   return [this, sid](std::string id, std::string k, std::string v) {
-    if (k == "log") {
+    if (options_.botlog() && k == "log") {
       std::cout << v;
     }
 
@@ -72,8 +72,8 @@ update_cb bs_server::sid_cb(const std::string& sid) {
 }
 
 update_cb bs_server::print_cb() {
-  return [](std::string /* id */, std::string k, std::string v) {
-    if (k == "log") {
+  return [this](std::string /* id */, std::string k, std::string v) {
+    if (options_.botlog() && k == "log") {
       std::cout << v;
     }
   };
@@ -112,6 +112,7 @@ void bs_server::load_bot(bot_config_ptr config,
   if (options_.forceproxy() && config->value_of("base_proxy").empty()) {
     std::cout << "[ERROR] Config without proxy: " << config->identifier()
               << std::endl;
+    load_further_bot(configs);
     config->inactive(true);
     return;
   }
@@ -139,7 +140,14 @@ void bs_server::load_bots() {
 
   // Load the first N bots.
   int i = 0;
-  while (i++ < 50 && !configs->empty()) {
+  while (i++ < 50) {
+    load_further_bot(configs);
+  }
+}
+
+void bs_server::load_further_bot(
+    std::shared_ptr<std::vector<bot_config_ptr>> configs) {
+  if (!configs->empty()) {
     bot_config_ptr config = *configs->rbegin();
     configs->resize(configs->size() - 1);
     load_bot(config, configs);
@@ -163,11 +171,7 @@ void bs_server::on_bot_load(
     bot->shutdown();
   }
 
-  if (!configs->empty()) {
-    bot_config_ptr config = *configs->rbegin();
-    configs->resize(configs->size() - 1);
-    load_bot(config, configs);
-  }
+  load_further_bot(configs);
 }
 
 void bs_server::stop() {

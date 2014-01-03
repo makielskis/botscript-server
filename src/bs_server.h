@@ -93,6 +93,12 @@ class bs_server {
   /// Removes all data that is kept for this session.
   void handle_connection_close(const std::string& sid);
 
+  /// Loads a further bot if there is one. Takes the last element from the
+  /// given configs vector.
+  ///
+  /// \param configs  the configs to load from
+  void load_further_bot(std::shared_ptr<std::vector<bot_config_ptr>> configs);
+
   /// Loads the specified bot configuration and removes it from the configs vec.
   ///
   /// \param configs  the configurations

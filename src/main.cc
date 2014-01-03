@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
   // Prepare configurations with default values.
   std::string file;
   ws_server_options wss_options("0.0.0.0", "9003");
-  bs_server_options bss_options(true, false, "packages");
+  bs_server_options bss_options(true, false, "packages", true);
   dust_server_options ds_options("0.0.0.0", "9004", "");
 
   // Prepare program description.
