@@ -12,10 +12,12 @@ namespace botscript_server {
 
 bs_server_options::bs_server_options(bool forceproxy_default,
                                      bool autologin_default,
-                                     std::string default_packages_path)
+                                     std::string default_packages_path,
+                                     bool botlog)
     : forceproxy_(forceproxy_default),
       autologin_(autologin_default),
-      packages_path_(default_packages_path) {
+      packages_path_(default_packages_path),
+      botlog_(botlog) {
 }
 
 void bs_server_options::configure_description(po::options_description& desc) {
@@ -46,12 +48,17 @@ std::string bs_server_options::packages_path() const {
   return packages_path_;
 }
 
+bool bs_server_options::botlog() const {
+  return botlog_;
+}
+
 std::ostream& operator<<(std::ostream& out, const bs_server_options& options) {
   out << "\n  botscript_server.forceproxy: "
       << std::boolalpha << options.forceproxy() << "\n"
       << "  botscript_server.autologin: "
       << std::boolalpha << options.autologin() << "\n"
-      << "  botscript_server.packages_path: " << options.packages_path()
+      << "  botscript_server.packages_path: " << options.packages_path() << "\n"
+      << "  botscript_server.botlog: " << options.botlog() << "\n"
       << "\n";
   return out;
 }
