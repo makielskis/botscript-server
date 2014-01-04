@@ -210,58 +210,6 @@ if (MINGW OR MSVC)
     scp ${packagename} perry@5.45.107.68:/var/www/dl/
   )
   add_dependencies(release package)
-elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  # Tell CMake to run moc when necessary:
-  set(CMAKE_AUTOMOC ON)
-
-  # As moc files are generated in the binary dir, tell CMake
-  # to always look for includes there:
-  set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-  # Widgets finds its own dependencies.
-  find_package(Qt5Widgets REQUIRED)
-  find_package(Qt5Core REQUIRED)
-
-  set(systray_SRCS src/qtgui/res/systray.qrc)
-  qt5_add_resources(systray_RCC_SRCS ${systray_SRCS})
-
-  add_executable(botscript-server-gui
-    ${GUI_TYPE}
-    ${systray_RCC_SRCS}
-    src/qtgui/main.cpp
-    src/qtgui/Window.cpp
-    src/qtgui/BotThread.cpp
-  )
-
-  target_link_libraries(botscript-server-gui botscriptserver_lib)
-  set_target_properties(botscript-server-gui PROPERTIES COMPILE_FLAGS "-std=c++11")
-
-  qt5_use_modules(botscript-server-gui Widgets)
-
-  ################################
-  # Package target
-  ################################
-  set(foldername makielskisbot.app)
-  set(packagename makielskisbot-mac-${botscript_server_version}.zip)
-  add_custom_target(package
-    rm -rf ${foldername} &&
-    mkdir -p ${foldername}/packages &&
-    cp ${CMAKE_CURRENT_LIST_DIR}/mac_os_res/Info.plist ${foldername} &&
-    cp ${CMAKE_CURRENT_LIST_DIR}/mac_os_res/makielskisbotIcon.icns ${foldername} &&
-    cp external_lib/botscript/kv/kv.package ${foldername}/packages &&
-    cp external_lib/botscript/pg/pg.package ${foldername}/packages &&
-    cp botscript-server-gui ${foldername}/makielskisbot &&
-    zip -r -9 ${packagename} ${foldername}
-  )
-  add_dependencies(package botscript-server-gui compile_packages)
-
-  ################################
-  # Deploy Upload
-  ################################
-  add_custom_target(release
-    scp ${packagename} perry@5.45.107.68:/var/www/dl/
-  )
-  add_dependencies(release package)
 endif()
 
 
