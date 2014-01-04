@@ -71,13 +71,13 @@ std::vector<msg_ptr> create_bot_op::execute(bs_server& server,
       std::string err) {
     try {
       std::vector<msg_ptr> out;
-      std::string identifier = bot->configuration().identifier();
+      std::string identifier = bot->config()->identifier();
 
       bool success = err.empty();
-      bot->configuration().inactive(!success);
+      bot->config()->inactive(!success);
 
       if (success) {
-        server.bots_[bot->configuration().identifier()] = bot;
+        server.bots_[bot->config()->identifier()] = bot;
         out.emplace_back(make_unique<bots_msg>(self->bot_configs(u)));
       } else {
         self->on_load_fail(bot->config(), u);
