@@ -159,14 +159,14 @@ void bs_server::on_bot_load(
     std::string err,
     std::shared_ptr<std::vector<bot_config_ptr>> configs) {
   bool success = err.empty();
-  bot->configuration().inactive(!success);
+  bot->config()->inactive(!success);
 
   if (success) {
-    bots_[bot->configuration().identifier()] = bot;
+    bots_[bot->config()->identifier()] = bot;
     std::cout << "[INFO ] Successfully loaded "
-              << bot->configuration().identifier() << std::endl;
+              << bot->config()->identifier() << std::endl;
   } else {
-    std::cout << "[ERROR] Could not load " << bot->configuration().identifier()
+    std::cout << "[ERROR] Could not load " << bot->config()->identifier()
               << ": " << err << std::endl;
     bot->shutdown();
   }
