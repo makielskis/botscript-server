@@ -131,8 +131,14 @@ endif()
 if (ANDROID)
   add_definitions(-DANDROID)
   add_library(botscript-server SHARED EXCLUDE_FROM_ALL ${jni_files})
+#  target_link_libraries(botscript-server botscriptserver_lib)
   #include_directories(/usr/lib/jvm/java/include/)
-  set_target_properties(botscript-server PROPERTIES COMPILE_FLAGS "-DDESKTOP")
+  set(_def
+    _WEBSOCKETPP_CPP11_STL_
+  )
+  set_target_properties(botscript-server PROPERTIES COMPILE_DEFINITIONS "${_def}")
+  set_target_properties(botscript-server PROPERTIES COMPILE_FLAGS "-std=c++11")
+  set_target_properties(botscript-server PROPERTIES SUFFIX ".so")
 endif()
 
 

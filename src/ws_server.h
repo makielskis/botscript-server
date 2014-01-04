@@ -47,6 +47,9 @@ class ws_server {
   /// Stops the server.
   void stop();
 
+  /// \return the used Asio I/O service
+  boost::asio::io_service* io_service() const;
+
  private:
   /// We use the Boost Asio powered websocket server.
   typedef websocketpp::server<websocketpp::config::asio> server;

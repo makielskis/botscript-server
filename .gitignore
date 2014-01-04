@@ -4,5 +4,8 @@ config_store.kch
 user_store.kch
 bot_list.txt
 configs
+android-boost
+toolchain
+*.class
 .project
 .cproject
