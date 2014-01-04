@@ -66,6 +66,10 @@ void ws_server::stop() {
   websocket_server_.stop();
 }
 
+boost::asio::io_service* ws_server::io_service() const {
+  return io_service_;
+}
+
 void ws_server::on_activity(std::string sid,
                             const std::vector<msg_ptr>& msgs) {
   const auto it = sid_con_map_.find(sid);
