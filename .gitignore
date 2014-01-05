@@ -5,7 +5,8 @@ user_store.kch
 bot_list.txt
 configs
 android-boost
-toolchain
+android-toolchain
+cmake/android.toolchain.cmake
 *.class
 .project
 .cproject

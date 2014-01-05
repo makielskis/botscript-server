@@ -12,7 +12,7 @@ function echo_bold {
 }
 
 function prepareNDK() {
-  # Don't do this twice
+  # Do this only once.
   if  [ -z $NDK ]; then
     # is 'ndk-build' available in PATH?
     if hash ndk-build 2>/dev/null; then
@@ -42,31 +42,30 @@ function prepareToolchain() {
     prepareNDK;
 
     # generate a toolchain with the NDK
-    $NDK/build/tools/make-standalone-toolchain.sh --toolchain=arm-linux-androideabi-4.8 --llvm-version=3.3 --install-dir=$DIR/toolchain;
+    $NDK/build/tools/make-standalone-toolchain.sh --toolchain=arm-linux-androideabi-4.8 --install-dir=$DIR/android-toolchain;
 
     # save path to toolchain
-    TOOLCHAIN=$DIR/toolchain/bin;
-    export PATH=$PATH:$TOOLCHAIN;
-
-    echo_bold "You perhaps want to add 'export PATH=\$PATH:$TOOLCHAIN' to your .bashrc.";
+    TOOLCHAIN_SYSROOT=$DIR/android-toolchain/sysroot;
+    TOOLCHAIN_BIN=$DIR/android-toolchain/bin;
   fi
-
-  # set compiler environment variables
-  export CXX=arm-linux-androideabi-g++;
-  export CC=arm-linux-androideabi-gcc;
 }
 
 function prepareBoost() {
   # are boost libs and headers in there expected location?
   if [ -d $DIR/android-boost/build/lib -a -d $DIR/android-boost/build/include/boost-1_53/ ]; then
-    # we're fine.
-    echo_bold "Boost seems ready."
+    # update symlinks
+    rm $TOOLCHAIN_SYSROOT/usr/lib/libboost*.a;
+    rm $TOOLCHAIN_SYSROOT/usr/include/boost;
+    ln -s $DIR/android-boost/build/lib/libboost*.a $TOOLCHAIN_SYSROOT/usr/lib/;
+    ln -s $DIR/android-boost/build/include/boost-1_53/boost $TOOLCHAIN_SYSROOT/usr/include/;
+    echo_bold "Boost is ready.";
   else
+    if [ "$1" == "checkonly" ]; then
+      echo_bold "Something went wrong about compiling boost".;
+      return;
+    fi
     # boost is missing so get it
     echo_bold "Boost not found. Compiling it.";
-
-    # NDK is needed
-    prepareNDK;
 
     # clean up any previous installation
     rm -rf $DIR/android-boost;
@@ -74,24 +73,33 @@ function prepareBoost() {
     # get a known working copy of the boost for android scripts
     git clone https://github.com/MysticTreeGames/Boost-for-Android.git android-boost;
     cd android-boost; # always remember to go back to $DIR
-    git checkout 02f7e8d384ad5cdca65528ddae12ea53cb897c3a; # latest checked commit; uses boost 1.53
+    git reset --hard 02f7e8d384ad5cdca65528ddae12ea53cb897c3a; # latest checked commit; uses boost 1.53
 
     # build boost
     ./build-android.sh --with-libraries=system,thread,date_time,chrono,regex,filesystem,iostreams,random $NDK;
 
     # go back to the default dir
     cd $DIR;
+    prepareBoost "checkonly";
   fi
-
-  # save include und library paths for boost
-  export BOOST_INCLUDE=$DIR/android-boost/build/include/boost-1_53;
-  export BOOST_LIB=$DIR/android-boost/build/lib;
 }
 
 prepareNDK;
-prepareBoost;
 prepareToolchain;
+prepareBoost;
 
 cd $ORIGINAL_DIR;
 
-echo_bold "CMake Command: 'cmake -DCMAKE_INCLUDE_PATH=\$BOOST_INCLUDE -DCMAKE_LIBRARY_PATH=\$BOOST_LIBS -DBoost_COMPILER=-gcc -DANDROID:boolean=true;'";
+echo_bold "Writing cmake toolchian file to '$DIR/cmake/android.toolchain.cmake'";
+
+echo "set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_C_COMPILER $TOOLCHAIN_BIN/arm-linux-androideabi-gcc)
+set(CMAKE_CXX_COMPILER $TOOLCHAIN_BIN/arm-linux-androideabi-g++)
+set(CMAKE_FIND_ROOT_PATH $TOOLCHAIN_SYSROOT)
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+
+set(Boost_COMPILER -gcc)
+
+set(ANDROID true)" > $DIR/cmake/android.toolchain.cmake
