@@ -39,23 +39,27 @@ add_subdirectory(external_lib/dust-server)
 ################################
 # Boost
 ################################
-set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost COMPONENTS
+set(_boostlibs
   system
   thread
-  date_time
   filesystem
   iostreams
   regex
-  random
-  program_options
-REQUIRED)
+)
+if(NOT ANDROID)
+  list(APPEND _boostlibs
+    date_time
+    program_options
+    random
+  )
+endif()
+set(Boost_USE_STATIC_LIBS ON)
+find_package(Boost COMPONENTS ${_boostlibs} REQUIRED)
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIR})
 else(Boost_FOUND)
   message("No Boost found.")
 endif(Boost_FOUND)
-link_directories(${CMAKE_LIBRARY_PATH})
 
 
 ################################
@@ -93,7 +97,6 @@ if(MSVC)
   )
   set_target_properties(botscriptserver_lib PROPERTIES COMPILE_DEFINITIONS "${_def}")
 else()
-  target_link_libraries(botscriptserver_lib bs dust ${Boost_LIBRARIES} z)
   if(MINGW)
     target_link_libraries(botscriptserver_lib
       -Wl,-Bstatic
@@ -118,8 +121,10 @@ else()
     set_target_properties(botscriptserver_lib PROPERTIES COMPILE_FLAGS "-Wall -Wextra -std=c++11")
     if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
       target_link_libraries(botscriptserver_lib bs dust ${Boost_LIBRARIES} z)
+    elseif(ANDROID)
+      target_link_libraries(botscriptserver_lib ${Boost_LIBRARIES} bs dust z)
     else()
-      target_link_libraries(botscriptserver_lib bs dust ${Boost_LIBRARIES} z rt  -pthread)
+      target_link_libraries(botscriptserver_lib ${Boost_LIBRARIES} bs dust z rt -pthread)
     endif()
   endif()
 endif()
@@ -131,7 +136,7 @@ endif()
 if (ANDROID)
   add_definitions(-DANDROID)
   add_library(botscript-server SHARED EXCLUDE_FROM_ALL ${jni_files})
-#  target_link_libraries(botscript-server botscriptserver_lib)
+  target_link_libraries(botscript-server botscriptserver_lib)
   #include_directories(/usr/lib/jvm/java/include/)
   set(_def
     _WEBSOCKETPP_CPP11_STL_
