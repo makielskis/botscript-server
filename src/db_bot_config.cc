@@ -19,6 +19,7 @@ db_bot_config::db_bot_config(dust::document document)
     : doc_(std::move(document)) {
   if (!valid()) {
     doc_.remove();
+    std::cerr << "Invalid Confguration:\n" << doc_.to_json() << "\n";
     throw std::runtime_error("invalid configuration");
   }
 }
