@@ -15,6 +15,18 @@
 
 namespace botscript_server {
 
+bot_load_lock::bot_load_lock(bs_server& server,
+                                               std::string identifier)
+    : server_(server),
+      identifier_(std::move(identifier)) {
+  server.bot_creation_blocklist_.insert(identifier_);
+}
+
+bot_load_lock::~bot_load_lock() {
+  server_.bot_creation_blocklist_.erase(identifier_);
+}
+
+
 bs_server::bs_server(bs_server_options options,
                      boost::asio::io_service* io_service,
                      std::shared_ptr<dust::key_value_store> store,
@@ -118,7 +130,8 @@ void bs_server::load_bot(bot_config_ptr config,
   }
 
   std::cout << "Loading bot " << config->identifier() << std::endl;
-  auto load_cb = std::bind(&bs_server::on_bot_load, this, _1, _2, configs);
+  auto l = std::make_shared<bot_load_lock>(*this, config->identifier());
+  auto load_cb = std::bind(&bs_server::on_bot_load, this, _1, _2, configs, l);
   auto bot = std::make_shared<botscript::bot>(io_service_);
   bot->update_callback_ = print_cb();
   bot->init(config, load_cb);
@@ -157,7 +170,8 @@ void bs_server::load_further_bot(
 void bs_server::on_bot_load(
     std::shared_ptr<botscript::bot> bot,
     std::string err,
-    std::shared_ptr<std::vector<bot_config_ptr>> configs) {
+    std::shared_ptr<std::vector<bot_config_ptr>> configs,
+    std::shared_ptr<bot_load_lock>) {
   bool success = err.empty();
   bot->config()->inactive(!success);
 

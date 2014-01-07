@@ -42,6 +42,12 @@ std::vector<msg_ptr> delete_bot_op::execute(bs_server& server,
     throw boost::system::system_error(error::bot_not_found);
   }
 
+  // Don't delete bots in the blocklist.
+  const auto& blocklist = server.bot_creation_blocklist_;
+  if (blocklist.find(identifier()) != blocklist.end()) {
+    throw boost::system::system_error(error::bot_in_blocklist);
+  }
+
   // Stop bot (don't care if it does not exist
   // then it's probably inactive).
   try {
@@ -54,7 +60,7 @@ std::vector<msg_ptr> delete_bot_op::execute(bs_server& server,
   u.remove_bot(identifier());
 
   std::vector<msg_ptr> out;
-  out.emplace_back(make_unique<bots_msg>(bot_configs(u)));
+  out.emplace_back(make_unique<bots_msg>(bot_configs(u, server)));
   return out;
 }
 

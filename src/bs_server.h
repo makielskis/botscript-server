@@ -68,6 +68,20 @@ typedef boost::multi_index_container<
   >
 > session_set;
 
+struct bot_load_lock {
+ public:
+  bot_load_lock(bs_server& server, std::string identifier);
+
+  bot_load_lock(const bot_load_lock&) = delete;
+  bot_load_lock& operator=(const bot_load_lock&) = delete;
+
+  virtual ~bot_load_lock();
+
+ private:
+  bs_server& server_;
+  std::string identifier_;
+};
+
 /// Main bot and user management class.
 class bs_server {
  public:
@@ -124,9 +138,11 @@ class bs_server {
   /// \param bot          the bot that has been loaded
   /// \param err          the load result (empty string = success)
   /// \param configs_ptr  pointer to the remaining configurations
+  /// \param lock         the lock that prevents the bot from beeing deleted
   void on_bot_load(std::shared_ptr<botscript::bot> bot,
                    std::string err,
-                   std::shared_ptr<std::vector<bot_config_ptr>> configs);
+                   std::shared_ptr<std::vector<bot_config_ptr>> configs,
+                   std::shared_ptr<bot_load_lock> lock);
 
   /// Callback for activity from bots whose user is currently connected.
   ///
@@ -177,6 +193,9 @@ class bs_server {
   /// Keeps the users who are creating bots.
   /// This way no user can create more than one bot at the same time.
   std::set<std::string> user_bot_creation_blocklist_;
+
+  /// List of bot identifiers of bots that are in the init process.
+  std::set<std::string> bot_creation_blocklist_;
 };
 
 }  // namespace botscript_server

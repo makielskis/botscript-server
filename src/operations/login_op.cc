@@ -53,7 +53,10 @@ std::vector<msg_ptr> login_op::execute(bs_server& server,
 
   std::map<std::string, std::string> bots;
   for (const auto& config : u.bot_configs()) {
-    bots[config->identifier()] = config->to_json(false);
+    const auto& blocklist = server.bot_creation_blocklist_;
+    if (blocklist.find(config->identifier()) == blocklist.end()) {
+      bots[config->identifier()] = config->to_json(false);
+    }
   }
 
   std::vector<msg_ptr> out;
