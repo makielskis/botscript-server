@@ -23,7 +23,8 @@ struct blocklist_element {
   blocklist_element(bs_server& server, user u, std::string identifier)
       : server_(server),
         u_(std::move(u)),
-        identifier_(std::move(identifier)) {
+        identifier_(std::move(identifier)),
+        freed_(false) {
     auto& user_blocklist = server.user_bot_creation_blocklist_;
     if (user_blocklist.find(u_.username()) != user_blocklist.end()) {
       throw boost::system::system_error(error::user_in_blocklist);
@@ -41,13 +42,21 @@ struct blocklist_element {
   blocklist_element& operator=(const blocklist_element&) = delete;
 
   virtual ~blocklist_element() {
-    server_.user_bot_creation_blocklist_.erase(u_.username());
-    server_.bot_creation_blocklist_.erase(identifier_);
+      free_block_list();
+  }
+
+  void free_block_list() {
+    if (!freed_) {
+      freed_ = true;
+      server_.user_bot_creation_blocklist_.erase(u_.username());
+      server_.bot_creation_blocklist_.erase(identifier_);
+    }
   }
 
   bs_server& server_;
   user u_;
   std::string identifier_;
+  bool freed_;
 };
 
 create_bot_op::create_bot_op(const std::string& sid)
@@ -87,6 +96,7 @@ std::vector<msg_ptr> create_bot_op::execute(bs_server& server,
       bot->config()->inactive(!success);
 
       if (success) {
+        blocker->free_block_list();
         server.bots_[bot->config()->identifier()] = bot;
         out.emplace_back(make_unique<bots_msg>(self->bot_configs(u, server)));
       } else {
