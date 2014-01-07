@@ -20,14 +20,21 @@ namespace botscript_server {
 
 struct blocklist_element {
  public:
-  blocklist_element(bs_server& server, user u)
+  blocklist_element(bs_server& server, user u, std::string identifier)
       : server_(server),
-        u_(std::move(u)) {
-    auto& blocklist = server.user_bot_creation_blocklist_;
-    if (blocklist.find(u_.username()) != blocklist.end()) {
+        u_(std::move(u)),
+        identifier_(std::move(identifier)) {
+    auto& user_blocklist = server.user_bot_creation_blocklist_;
+    if (user_blocklist.find(u_.username()) != user_blocklist.end()) {
       throw boost::system::system_error(error::user_in_blocklist);
     }
-    blocklist.insert(u_.username());
+    user_blocklist.insert(u_.username());
+
+    auto& bot_blocklist = server.bot_creation_blocklist_;
+    if (bot_blocklist.find(identifier_) != bot_blocklist.end()) {
+      throw boost::system::system_error(error::bot_in_blocklist);
+    }
+    bot_blocklist.insert(identifier_);
   }
 
   blocklist_element(const blocklist_element&) = delete;
@@ -35,10 +42,12 @@ struct blocklist_element {
 
   virtual ~blocklist_element() {
     server_.user_bot_creation_blocklist_.erase(u_.username());
+    server_.bot_creation_blocklist_.erase(identifier_);
   }
 
   bs_server& server_;
   user u_;
+  std::string identifier_;
 };
 
 create_bot_op::create_bot_op(const std::string& sid)
@@ -56,12 +65,13 @@ std::vector<msg_ptr> create_bot_op::execute(bs_server& server,
                                             op_callback cb) const {
   user u = get_user_from_session(server);
 
-  auto blocker = std::make_shared<blocklist_element>(server, u);
-
   auto config = bot_config(server, u);
   if (server.options_.forceproxy() && config->value_of("base_proxy").empty()) {
     throw boost::system::system_error(error::proxy_required);
   }
+
+  auto blocker = std::make_shared<blocklist_element>(server, u,
+                                                     config->identifier());
 
   auto self = shared_from_this();
   auto bot = std::make_shared<botscript::bot>(server.io_service_);
@@ -78,7 +88,7 @@ std::vector<msg_ptr> create_bot_op::execute(bs_server& server,
 
       if (success) {
         server.bots_[bot->config()->identifier()] = bot;
-        out.emplace_back(make_unique<bots_msg>(self->bot_configs(u)));
+        out.emplace_back(make_unique<bots_msg>(self->bot_configs(u, server)));
       } else {
         self->on_load_fail(bot->config(), u);
         bot->shutdown();

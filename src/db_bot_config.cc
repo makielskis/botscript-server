@@ -18,8 +18,12 @@ namespace botscript_server {
 db_bot_config::db_bot_config(dust::document document)
     : doc_(std::move(document)) {
   if (!valid()) {
+    try {
+      std::cerr << "Invalid Confguration:\n" << doc_.to_json() << "\n";
+    } catch (...) {
+      std::cout << "Unable to print bad config at " << doc_.full_path() << "\n";
+    }
     doc_.remove();
-    std::cerr << "Invalid Confguration:\n" << doc_.to_json() << "\n";
     throw std::runtime_error("invalid configuration");
   }
 }
@@ -31,6 +35,11 @@ db_bot_config::db_bot_config(
   dust::insert_json(doc_, json_config);
 
   if (!valid()) {
+    try {
+      std::cerr << "Invalid Confguration:\n" << doc_.to_json() << "\n";
+    } catch (...) {
+      std::cout << "Unable to print bad config at " << doc_.full_path() << "\n";
+    }
     doc_.remove();
     throw std::runtime_error("invalid configuration");
   }

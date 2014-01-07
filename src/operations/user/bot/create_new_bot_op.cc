@@ -51,13 +51,12 @@ void create_new_bot_op::on_load_fail(
 }
 
 std::string create_new_bot_op::bot_identifier() const {
-  botscript::mem_bot_config c;
   try {
-    c = {config()};
+    botscript::mem_bot_config c(config());
+    return c.identifier();
   } catch(const std::runtime_error& e) {
     throw boost::system::system_error(error::invalid_configuration);
   }
-  return c.identifier();
 }
 
 }  // namespace botscript_server

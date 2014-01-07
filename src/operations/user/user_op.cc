@@ -43,7 +43,7 @@ std::vector<msg_ptr> user_op::execute(bs_server& server, op_callback cb) const {
                                             u.session_id()));
   out.emplace_back(make_unique<account_msg>(u.email()));
   out.emplace_back(make_unique<packages_msg>(server.packages_));
-  out.emplace_back(make_unique<bots_msg>(bot_configs(u)));
+  out.emplace_back(make_unique<bots_msg>(bot_configs(u, server)));
   for (const auto& entry : server.bot_logs(u)) {
     out.emplace_back(make_unique<update_msg>(entry.first, "log", entry.second));
   }
@@ -51,10 +51,14 @@ std::vector<msg_ptr> user_op::execute(bs_server& server, op_callback cb) const {
   return out;
 }
 
-std::map<std::string, std::string> user_op::bot_configs(const user& u) const {
+std::map<std::string, std::string> user_op::bot_configs(const user& u,
+                                                        bs_server& server) const {
   std::map<std::string, std::string> bots;
   for (const auto& config : u.bot_configs()) {
-    bots[config->identifier()] = config->to_json(false);
+    const auto& blocklist = server.bot_creation_blocklist_;
+    if (blocklist.find(config->identifier()) == blocklist.end()) {
+      bots[config->identifier()] = config->to_json(false);
+    }
   }
   return bots;
 }
