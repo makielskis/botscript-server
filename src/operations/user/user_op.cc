@@ -64,8 +64,6 @@ std::map<std::string, std::string> user_op::bot_configs(const user& u,
 }
 
 user user_op::get_user_from_session(bs_server& server) const {
-  std::cout << "Autologin " << std::boolalpha << server.options_.autologin()
-            << "\n";
   if (server.options_.autologin()) {
     auto guest_doc = server.users_["guest"];
 

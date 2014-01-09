@@ -47,6 +47,8 @@ class reactivate_bot_op : public create_bot_op {
       std::shared_ptr<botscript::bot_config> config,
       user u) const override;
 
+  virtual std::string bot_id() const;
+
  private:
   std::string identifier_;
   std::string proxy_;

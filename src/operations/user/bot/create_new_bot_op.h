@@ -44,10 +44,9 @@ class create_new_bot_op : public create_bot_op {
       std::shared_ptr<botscript::bot_config> config,
       user u) const override;
 
- private:
-  /// \return the bot identifier resulting from the configuration
-  std::string bot_identifier() const;
+  virtual std::string bot_id() const override;
 
+ private:
   std::string config_;
 };
 

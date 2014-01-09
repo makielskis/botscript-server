@@ -74,18 +74,17 @@ std::vector<msg_ptr> create_bot_op::execute(bs_server& server,
                                             op_callback cb) const {
   user u = get_user_from_session(server);
 
+  auto block = std::make_shared<blocklist_element>(server, u, bot_id());
+
   auto config = bot_config(server, u);
   if (server.options_.forceproxy() && config->value_of("base_proxy").empty()) {
     throw boost::system::system_error(error::proxy_required);
   }
 
-  auto blocker = std::make_shared<blocklist_element>(server, u,
-                                                     config->identifier());
-
   auto self = shared_from_this();
   auto bot = std::make_shared<botscript::bot>(server.io_service_);
   bot->update_callback_ = server.sid_cb(sid());
-  bot->init(config, [cb, u, &server, self, blocker](
+  bot->init(config, [cb, u, &server, self, block](
       std::shared_ptr<botscript::bot> bot,
       std::string err) {
     try {
@@ -96,7 +95,7 @@ std::vector<msg_ptr> create_bot_op::execute(bs_server& server,
       bot->config()->inactive(!success);
 
       if (success) {
-        blocker->free_block_list();
+        block->free_block_list();
         server.bots_[bot->config()->identifier()] = bot;
         out.emplace_back(make_unique<bots_msg>(self->bot_configs(u, server)));
       } else {
