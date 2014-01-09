@@ -45,6 +45,9 @@ class create_bot_op: public user_op,
       const bs_server& server,
       const user& u) const = 0;
 
+  /// \return the identifier thats given by the configuration
+  virtual std::string bot_id() const = 0;
+
   /// Will be called if the bot could not be created.
   /// To be implemented by derived classes if they need to clean up
   /// for example the configuration.

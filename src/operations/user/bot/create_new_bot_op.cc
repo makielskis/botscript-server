@@ -36,7 +36,7 @@ std::vector<std::string> create_new_bot_op::type() const {
 std::shared_ptr<botscript::bot_config> create_new_bot_op::bot_config(
     const bs_server& server,
     const user& u) const {
-  std::string identifier = bot_identifier();
+  std::string identifier = bot_id();
   if (server.bots_.find(identifier) != server.bots_.end()) {
     throw boost::system::system_error(error::bot_already_exists);
   }
@@ -50,7 +50,7 @@ void create_new_bot_op::on_load_fail(
   u.remove_bot(config->identifier());
 }
 
-std::string create_new_bot_op::bot_identifier() const {
+std::string create_new_bot_op::bot_id() const {
   try {
     botscript::mem_bot_config c(config());
     return c.identifier();

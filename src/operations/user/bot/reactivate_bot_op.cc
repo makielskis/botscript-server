@@ -43,6 +43,10 @@ std::shared_ptr<botscript::bot_config> reactivate_bot_op::bot_config(
   return bot_config;
 }
 
+std::string reactivate_bot_op::bot_id() const {
+  return identifier();
+}
+
 void reactivate_bot_op::on_load_fail(
     std::shared_ptr<botscript::bot_config> /* config */,
     user /* u */) const {
