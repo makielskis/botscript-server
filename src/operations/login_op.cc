@@ -41,7 +41,7 @@ std::vector<std::string> login_op::type() const {
 }
 
 std::vector<msg_ptr> login_op::execute(bs_server& server,
-                                       op_callback /* cb */) const {
+                                       op_callback cb) const {
   user u(server.users_[username()]);
 
   if (!u.check_password(password())) {
@@ -50,6 +50,7 @@ std::vector<msg_ptr> login_op::execute(bs_server& server,
 
   u.new_session();
   server.update_session(u);
+  cb(u.session_id(), std::vector<msg_ptr>());
 
   std::map<std::string, std::string> bots;
   for (const auto& config : u.bot_configs()) {
