@@ -10,10 +10,10 @@ project(botscript-server)
 ################################
 # BotScript Server Version
 ################################
-set(botscript_server_gui_address \"http://5.45.107.68/ui/0.0.8\")
+set(botscript_server_gui_address \"http://makielski.net/ui/0.0.8\")
 set(botscript_server_major 0)
 set(botscript_server_minor 2)
-set(botscript_server_patch 2)
+set(botscript_server_patch 4)
 configure_file (
   "src/botscript_server_version.h.in"
   "${PROJECT_SOURCE_DIR}/src/botscript_server_version.h"
@@ -135,16 +135,23 @@ endif()
 
 
 ################################
+# Static packages
+################################
+if (STATIC_PACKAGES)
+  add_definitions(-DSTATIC_PACKAGES)
+endif()
+
+
+################################
 # JNI shared library
 ################################
 if (ANDROID)
   add_definitions(-DANDROID)
   add_library(botscript-server SHARED EXCLUDE_FROM_ALL ${jni_files})
   target_link_libraries(botscript-server botscriptserver_lib)
+  #include_directories(/System//Library/Frameworks/JavaVM.framework/Versions/A/Headers/)
   #include_directories(/usr/lib/jvm/java/include/)
-  set(_def
-    _WEBSOCKETPP_CPP11_STL_
-  )
+  set(_def _WEBSOCKETPP_CPP11_STL_)
   set_target_properties(botscript-server PROPERTIES COMPILE_DEFINITIONS "${_def}")
   set_target_properties(botscript-server PROPERTIES COMPILE_FLAGS "-std=c++11")
   set_target_properties(botscript-server PROPERTIES SUFFIX ".so")
