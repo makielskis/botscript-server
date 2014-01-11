@@ -76,7 +76,7 @@ function prepareBoost() {
     git reset --hard 02f7e8d384ad5cdca65528ddae12ea53cb897c3a; # latest checked commit; uses boost 1.53
 
     # build boost
-    ./build-android.sh --with-libraries=system,thread,date_time,chrono,regex,filesystem,iostreams,random $NDK;
+    ./build-android.sh --with-libraries=system,thread,date_time,chrono,regex,filesystem,iostreams,random,program_options $NDK;
 
     # go back to the default dir
     cd $DIR;
