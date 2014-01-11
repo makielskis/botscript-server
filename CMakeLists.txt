@@ -45,11 +45,11 @@ set(_boostlibs
   filesystem
   iostreams
   regex
+  program_options
 )
 if(NOT ANDROID)
   list(APPEND _boostlibs
     date_time
-    program_options
     random
   )
 endif()
