@@ -38,11 +38,12 @@ bss::ws_server* get_handle(JNIEnv* env, jobject obj) {
 JNIEXPORT void JNICALL Java_net_makielski_botscript_BotscriptServer_start
   (JNIEnv* env, jobject obj) {
   bss::ws_server* s = get_handle(env, obj);
-  if (s == nullptr) {
+  if (s == nullptr || s->io_service() == nullptr) {
     std::cerr << "ERROR: start not possible, object not initialized\n";
     return;
   }
   s->start();
+  s->io_service()->run();
 }
 
 JNIEXPORT void JNICALL Java_net_makielski_botscript_BotscriptServer_stop

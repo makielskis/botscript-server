@@ -35,7 +35,8 @@ void* create_server(const char* arg0) {
 
 void start_server(void* data) {
   server* s = reinterpret_cast<server*>(data);
-  s->t = boost::thread([s]() {s->s.start();});
+  s->s.start();
+  s->t = boost::thread(([&ios]() { ios.run(); }));
 }
 
 void close_server(void* data) {

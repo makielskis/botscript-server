@@ -8,8 +8,6 @@
 #include <memory>
 #include <cstdlib>
 
-#include <unistd.h>
-
 #include "boost/program_options.hpp"
 #include "boost/asio/io_service.hpp"
 

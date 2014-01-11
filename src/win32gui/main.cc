@@ -168,7 +168,8 @@ int main(int argc, char* argv[]) {
   boost::asio::io_service ios;
   ws_server wss(std::move(wss_options), std::move(bss_options), &ios, store);
   s = &wss;
-  t = boost::thread(([]() { s->start(); }));
+  s->start();
+  t = boost::thread(([&ios]() { ios.run(); }));
 
   g_TrayIcon.SetListener(on_action);
   g_TrayIcon.SetVisible(true);
