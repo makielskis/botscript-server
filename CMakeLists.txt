@@ -99,7 +99,11 @@ if(MSVC)
 else()
   if(MINGW)
     target_link_libraries(botscriptserver_lib
+      ${Boost_LIBRARIES}
       -Wl,-Bstatic
+        bs
+        dust
+        z
         ws2_32
         mswsock
       -static-libgcc
