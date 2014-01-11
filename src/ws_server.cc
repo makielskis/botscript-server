@@ -58,7 +58,6 @@ void ws_server::start() {
   std::cout << "listening on " << options_.host() << ":" << options_.port() << "\n";
   websocket_server_.listen(options_.host(), options_.port());
   websocket_server_.start_accept();
-  websocket_server_.run();
 }
 
 void ws_server::stop() {

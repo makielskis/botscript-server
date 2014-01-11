@@ -6,6 +6,9 @@
 #include <iostream>
 #include <fstream>
 #include <memory>
+#include <cstdlib>
+
+#include <unistd.h>
 
 #include "boost/program_options.hpp"
 #include "boost/asio/io_service.hpp"
@@ -96,6 +99,16 @@ int main(int argc, char** argv) {
   ws_server s(std::move(wss_options), std::move(bss_options), &ios, store);
   http_service db_service(&ios, store, std::move(ds_options));
   s.start();
+
+  std::function<void()> run = [&ios, &run]() {
+    try {
+      ios.run();
+    } catch (const websocketpp::lib::error_code& ec) {
+      std::cerr << "WARNING: Ignoring websocketpp error!\n";
+      run();
+    }
+  };
+  run();
 
   std::cout << "... exit\n";
 }
