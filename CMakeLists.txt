@@ -162,7 +162,7 @@ endif()
 # C Library
 ################################
 message(${c_api_files})
-add_library(c_bss SHARED EXCLUDE_FROM_ALL ${c_api_files})
+add_library(c_bss STATIC EXCLUDE_FROM_ALL ${c_api_files})
 target_link_libraries(c_bss botscriptserver_lib)
 set_target_properties(c_bss PROPERTIES COMPILE_FLAGS "-std=c++11")
 
