@@ -55,14 +55,12 @@ ws_server::ws_server(ws_server_options options,
 
 void ws_server::start() {
   websocket_server_.init_asio(io_service_);
-  std::cout << "listening on " << options_.host() << ":" << options_.port() << "\n";
   websocket_server_.listen(options_.host(), options_.port());
   websocket_server_.start_accept();
 }
 
 void ws_server::stop() {
   mgr_.stop();
-  websocket_server_.stop();
 }
 
 boost::asio::io_service* ws_server::io_service() const {
