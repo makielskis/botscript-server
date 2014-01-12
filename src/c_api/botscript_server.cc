@@ -18,9 +18,9 @@ public:
   server(std::string packages_path, const std::string& db_path)
       : s(bss::ws_server_options("127.0.0.1", "9003"),
           bss::bs_server_options(false, true, std::move(packages_path), true),
-          &ios, std::make_shared<dust::cached_db>(db_path)) {
+          &io_s, std::make_shared<dust::cached_db>(db_path)) {
   }
-  boost::asio::io_service ios;
+  boost::asio::io_service io_s;
   bss::ws_server s;
   boost::thread t;
 };
@@ -36,16 +36,21 @@ void* create_server(const char* arg0) {
 void start_server(void* data) {
   server* s = reinterpret_cast<server*>(data);
   s->s.start();
-  s->t = boost::thread(([&ios]() { ios.run(); }));
-}
-
-void close_server(void* data) {
-  server* s = reinterpret_cast<server*>(data);
-  delete s;
+  s->t = boost::thread([s]() {
+    try {
+      s->io_s.run();
+      delete s;
+    } catch (...) {
+      fprintf(stderr, "run stopped: unknown exception\n");
+    }
+  });
 }
 
 void stop_server(void* data) {
   server* s = reinterpret_cast<server*>(data);
   s->s.stop();
-  s->t.join();
+  s->io_s.stop();
+  if (s->t.joinable()) {
+    s->t.join();
+  }
 }
