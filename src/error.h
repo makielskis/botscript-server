@@ -24,6 +24,8 @@ namespace error {
     username_already_taken = 11,
     password_too_short = 12,
     email_address_not_valid = 13,
+    user_not_allowed = 14,
+    allowed_users_read_error = 15,
 
     // user error
     user_not_found = 21,

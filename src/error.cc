@@ -34,6 +34,12 @@ std::string error_category_impl::message(int ev) const BSS_NOEXCEPT {
     case error::email_address_not_valid:
       return "Email address not valid";
 
+    case error::user_not_allowed:
+      return "You are not allowed to register";
+
+    case error::allowed_users_read_error:
+      return "Could not read allowed users";
+
     case error::user_not_found:
       return "User not found";
 

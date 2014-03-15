@@ -29,6 +29,8 @@ using namespace botscript;
 namespace po = boost::program_options;
 
 int main(int argc, char** argv) {
+  std::cout << "\n\tMakielskis Bot v" + version() << "\n\n";
+
   // Prepare configurations with default values.
   std::string file;
   ws_server_options wss_options("0.0.0.0", "9003");
@@ -37,8 +39,7 @@ int main(int argc, char** argv) {
 
   // Prepare program description.
   std::string config_file;
-  po::options_description desc("\n\tMakielskis Bot v" + version()
-                               + "\n\nOptions", 100);
+  po::options_description desc("\nOptions", 100);
   desc.add_options()
       ("help", "produce help message")
       ("config,c", po::value<std::string>(&file)->default_value("config.ini"),
