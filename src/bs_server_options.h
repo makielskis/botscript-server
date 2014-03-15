@@ -34,12 +34,14 @@ public:
   bool autologin() const;
   std::string packages_path() const;
   bool botlog() const;
+  std::string allowed_users() const;
 
 private:
   bool forceproxy_;
   bool autologin_;
   std::string packages_path_;
   bool botlog_;
+  std::string allowed_users_;
 };
 
 std::ostream& operator<<(std::ostream& out, const bs_server_options& options);
