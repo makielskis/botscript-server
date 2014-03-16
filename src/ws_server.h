@@ -11,6 +11,7 @@
 #include "boost/asio/io_service.hpp"
 #include "boost/asio.hpp"
 
+#include "websocketpp/config/boost_config.hpp"
 #include "websocketpp/config/asio_no_tls.hpp"
 #include "websocketpp/server.hpp"
 
@@ -107,7 +108,7 @@ class ws_server {
   ws_server_options options_;
 
   std::map<std::string, websocketpp::connection_hdl> sid_con_map_;
-  std::map<websocketpp::connection_hdl, std::string> con_sid_map_;
+  std::map<websocketpp::connection_hdl, std::string, std::owner_less<websocketpp::connection_hdl>> con_sid_map_;
   server websocket_server_;
 };
 
