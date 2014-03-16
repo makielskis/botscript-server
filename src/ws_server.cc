@@ -45,12 +45,14 @@ ws_server::ws_server(ws_server_options options,
                                              websocketpp::lib::placeholders::_1,
                                              websocketpp::lib::placeholders::_2));
 
+#if !defined(_WIN32) && !defined(_WIN64)
   signals_.add(SIGINT);
   signals_.async_wait([this](boost::system::error_code /*ec*/, int /*signo*/) {
     std::cout << "Caught SIGINT, shutting down ..." << std::endl;
     mgr_.stop();
     websocket_server_.stop();
   });
+#endif
 }
 
 void ws_server::start() {
@@ -61,6 +63,7 @@ void ws_server::start() {
 
 void ws_server::stop() {
   mgr_.stop();
+  websocket_server_.stop();
 }
 
 boost::asio::io_service* ws_server::io_service() const {
