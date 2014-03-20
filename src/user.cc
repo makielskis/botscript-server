@@ -52,8 +52,13 @@ std::string user::email() const {
 
 std::vector<std::shared_ptr<botscript::bot_config>> user::bot_configs() const {
   std::vector<std::shared_ptr<botscript::bot_config>> configs;
-  for (const auto& bot : doc_["bots"].children()) {
-    configs.push_back(std::make_shared<db_bot_config>(bot));
+  for (auto& bot : doc_["bots"].children()) {
+    try {
+      configs.push_back(std::make_shared<db_bot_config>(bot));
+    } catch (std::exception const& e) {
+      std::cout << "invalid configuration: " << bot.full_path();
+      bot.remove();
+    }
   }
   return configs;
 }
