@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <map>
 
 namespace botscript {
 class bot;
@@ -31,9 +32,18 @@ void check_owner(const user& u, const std::string& identifier);
 /// \param server      the server that runs the bot
 /// \param identifier  the identifier of the bot
 /// \return a shared pointer to the selected bot
-std::shared_ptr<botscript::bot> get_bot(const user& u,
-                                        const bs_server& server,
+std::shared_ptr<botscript::bot> get_bot(const user& u, const bs_server& server,
                                         const std::string& identifier);
+
+/// Returns all bot configurations of active bots
+/// (not in the bs_server::bot_creation_blocklist_!) owned by the user.
+///
+/// \param u       the user to get the sessions for
+/// \param server  the server which is responsible
+/// \return a map with the bot identifier as key and the bot config (without
+///         password) as value
+std::map<std::string, std::string> bot_configs(user const& u,
+                                               bs_server& server);
 
 }  // namespace botscript_server
 

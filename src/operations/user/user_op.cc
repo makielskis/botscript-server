@@ -5,6 +5,7 @@
 #include "./user_op.h"
 
 #include "bot_config.h"
+#include "bot.h"
 
 #include "../../make_unique.h"
 #include "../../error.h"
@@ -15,6 +16,7 @@
 #include "../../messages/packages_msg.h"
 #include "../../messages/bots_msg.h"
 #include "../../bs_server.h"
+#include "./bot/bot_util.h"
 
 namespace botscript_server {
 
@@ -38,29 +40,27 @@ std::vector<msg_ptr> user_op::execute(bs_server& server, op_callback cb) const {
   user u = get_user_from_session(server);
   cb(u.session_id(), std::vector<msg_ptr>());
 
+  auto bot_configurations = bot_configs(u, server);
+
   std::vector<msg_ptr> out;
   out.emplace_back(make_unique<session_msg>(u.session_expire(),
                                             u.session_id()));
   out.emplace_back(make_unique<account_msg>(u.email()));
   out.emplace_back(make_unique<packages_msg>(server.packages_));
-  out.emplace_back(make_unique<bots_msg>(bot_configs(u, server)));
-  for (const auto& entry : server.bot_logs(u)) {
+  out.emplace_back(make_unique<bots_msg>(bot_configurations));
+  for (auto const& entry : server.bot_logs(u)) {
     out.emplace_back(make_unique<update_msg>(entry.first, "log", entry.second));
   }
 
-  return out;
-}
-
-std::map<std::string, std::string> user_op::bot_configs(const user& u,
-                                                        bs_server& server) const {
-  std::map<std::string, std::string> bots;
-  for (const auto& config : u.bot_configs()) {
-    const auto& blocklist = server.bot_creation_blocklist_;
-    if (blocklist.find(config->identifier()) == blocklist.end()) {
-      bots[config->identifier()] = config->to_json(false);
+  for (auto const& bot_config : bot_configurations) {
+    try {
+      get_bot(u, server, bot_config.first)->update_all_shared();
+    } catch (boost::system::system_error const&) {
+      continue;
     }
   }
-  return bots;
+
+  return out;
 }
 
 user user_op::get_user_from_session(bs_server& server) const {

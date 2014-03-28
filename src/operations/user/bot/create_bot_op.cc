@@ -9,6 +9,7 @@
 #include "bot.h"
 #include "bot_config.h"
 
+#include "bot_util.h"
 #include "../../../bs_server.h"
 #include "../../../error.h"
 #include "../../../user.h"
@@ -98,7 +99,7 @@ std::vector<msg_ptr> create_bot_op::execute(bs_server& server,
       if (success) {
         block->free_block_list();
         server.bots_[bot->config()->identifier()] = bot;
-        out.emplace_back(make_unique<bots_msg>(self->bot_configs(u, server)));
+        out.emplace_back(make_unique<bots_msg>(bot_configs(u, server)));
       } else {
         self->on_load_fail(bot->config(), u);
         bot->shutdown();

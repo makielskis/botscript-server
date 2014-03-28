@@ -5,6 +5,7 @@
 #include "./login_op.h"
 
 #include "bot_config.h"
+#include "bot.h"
 
 #include "../make_unique.h"
 #include "../error.h"
@@ -15,6 +16,7 @@
 #include "../messages/packages_msg.h"
 #include "../messages/bots_msg.h"
 #include "../bs_server.h"
+#include "user/bot/bot_util.h"
 
 namespace botscript_server {
 
@@ -60,14 +62,24 @@ std::vector<msg_ptr> login_op::execute(bs_server& server,
     }
   }
 
+  auto bot_configurations = bot_configs(u, server);
+
   std::vector<msg_ptr> out;
   out.emplace_back(make_unique<session_msg>(u.session_expire(),
                                             u.session_id()));
   out.emplace_back(make_unique<account_msg>(u.email()));
   out.emplace_back(make_unique<packages_msg>(server.packages_));
-  out.emplace_back(make_unique<bots_msg>(bots));
+  out.emplace_back(make_unique<bots_msg>(bot_configurations));
   for (const auto& entry : server.bot_logs(u)) {
     out.emplace_back(make_unique<update_msg>(entry.first, "log", entry.second));
+  }
+
+  for (auto const& bot_config : bot_configurations) {
+    try {
+      get_bot(u, server, bot_config.first)->update_all_shared();
+    } catch (boost::system::system_error const&) {
+      continue;
+    }
   }
 
   return out;
