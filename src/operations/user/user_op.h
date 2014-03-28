@@ -59,13 +59,6 @@ class user_op : public operation {
   /// \return the user that has the session ID contained in this user message
   user get_user_from_session(bs_server& bs) const;
 
-  /// \param u       the user to get the sessions for
-  /// \param server  the server which is responsible
-  /// \return a map with the bot identifier as key and the bot config (without
-  ///         password) as value
-  std::map<std::string, std::string> bot_configs(const user& u,
-                                                 bs_server& server) const;
-
  private:
   std::string sid_;
 };
