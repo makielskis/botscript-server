@@ -10,10 +10,10 @@ project(botscript-server)
 ################################
 # BotScript Server Version
 ################################
-set(botscript_server_gui_address \"http://makielski.net/ui/0.0.8\")
+set(botscript_server_gui_address \"http://bot.makielski.net/ui/0.0.10\")
 set(botscript_server_major 0)
 set(botscript_server_minor 2)
-set(botscript_server_patch 5)
+set(botscript_server_patch 6)
 configure_file (
   "src/botscript_server_version.h.in"
   "${PROJECT_SOURCE_DIR}/src/botscript_server_version.h"
