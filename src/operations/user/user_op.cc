@@ -54,7 +54,11 @@ std::vector<msg_ptr> user_op::execute(bs_server& server, op_callback cb) const {
 
   for (auto const& bot_config : bot_configurations) {
     try {
-      get_bot(u, server, bot_config.first)->update_all_shared();
+      auto updates = get_bot(u, server, bot_config.first)->update_all_shared();
+      for (auto const& upd : updates) {
+        out.emplace_back(
+            make_unique<update_msg>(bot_config.first, upd.first, upd.second));
+      }
     } catch (boost::system::system_error const&) {
       continue;
     }
