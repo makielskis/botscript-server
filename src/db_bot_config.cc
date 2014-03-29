@@ -118,6 +118,7 @@ std::string db_bot_config::to_json(bool with_password) const {
   if (!with_password) {
     json.ignore("password");
   }
+  json.ignore("shared");
   doc_.accept(json);
   return buffer.GetString();
 }
