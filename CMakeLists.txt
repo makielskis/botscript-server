@@ -278,6 +278,21 @@ else()
   endif()
 endif()
 
+################################
+# Server package target
+################################
+set(server-foldername makielskisbot-server-${botscript_server_version})
+set(server-packagename makielskisbot-server-${botscript_server_version}.zip)
+add_custom_target(server-package
+  rm -rf ${server-foldername} &&
+  mkdir -p ${server-foldername}/packages &&
+  cp external_lib/botscript/kv/kv.package ${server-foldername}/packages &&
+  cp external_lib/botscript/pg/pg.package ${server-foldername}/packages &&
+  cp botscript-server-exe ${server-foldername}/makielskisbot &&
+  zip -r -9 ${server-packagename} ${server-foldername}
+)
+add_dependencies(server-package botscript-server-exe compile_packages)
+
 
 ################################
 # Unit Tests
