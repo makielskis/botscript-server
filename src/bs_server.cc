@@ -116,22 +116,25 @@ void bs_server::handle_connection_close(const std::string& sid) {
   });
 }
 
-void bs_server::load_bot(bot_config_ptr config,
-                         std::shared_ptr<std::vector<bot_config_ptr>> configs) {
+void bs_server::load_bot(
+    bot_load_info load_info,
+    std::shared_ptr<std::vector<bot_load_info>> load_infos) {
   using std::placeholders::_1;
   using std::placeholders::_2;
+
+  auto config = load_info.config;
 
   if (options_.forceproxy() && config->value_of("base_proxy").empty()) {
     std::cout << "[ERROR] Config without proxy: " << config->identifier()
               << std::endl;
-    load_further_bot(configs);
+    load_further_bot(load_infos);
     config->inactive(true);
     return;
   }
 
   std::cout << "Loading bot " << config->identifier() << std::endl;
-  auto l = std::make_shared<bot_load_lock>(*this, config->identifier());
-  auto load_cb = std::bind(&bs_server::on_bot_load, this, _1, _2, configs, l);
+  auto load_cb = std::bind(&bs_server::on_bot_load, this, _1, _2,
+                           load_infos, load_info.load_lock);
   auto bot = std::make_shared<botscript::bot>(io_service_);
   bot->update_callback_ = print_cb();
   bot->init(config, load_cb);
@@ -139,38 +142,42 @@ void bs_server::load_bot(bot_config_ptr config,
 
 void bs_server::load_bots() {
   // Create configurations vector.
-  auto configs = std::make_shared<std::vector<bot_config_ptr>>();
+  auto load_infos = std::make_shared<std::vector<bot_load_info>>();
   for (const auto& user_doc : users_.children()) {
     auto user_bots = user(user_doc).bot_configs();
-    configs->insert(configs->end(), user_bots.begin(), user_bots.end());
 
     std::cerr << "Adding bots from user " << user(user_doc).username() << ":\n";
     std::for_each(user_bots.begin(), user_bots.end(),
-                  [](const std::shared_ptr<botscript::bot_config>& conf) {
+                  [&load_infos, this](const bot_config_ptr& conf) {
                     std::cout << "\t" << conf->identifier() << "\n";
+
+                    load_infos->push_back({
+                      conf,
+                      std::make_shared<bot_load_lock>(*this, conf->identifier())
+                    });
                   });
   }
 
   // Load the first N bots.
   int i = 0;
   while (i++ < 50) {
-    load_further_bot(configs);
+    load_further_bot(load_infos);
   }
 }
 
 void bs_server::load_further_bot(
-    std::shared_ptr<std::vector<bot_config_ptr>> configs) {
-  if (!configs->empty()) {
-    bot_config_ptr config = *configs->rbegin();
-    configs->resize(configs->size() - 1);
-    load_bot(config, configs);
+    std::shared_ptr<std::vector<bot_load_info>> load_infos) {
+  if (!load_infos->empty()) {
+    bot_load_info load_info = *load_infos->rbegin();
+    load_infos->resize(load_infos->size() - 1);
+    load_bot(load_info, load_infos);
   }
 }
 
 void bs_server::on_bot_load(
     std::shared_ptr<botscript::bot> bot,
     std::string err,
-    std::shared_ptr<std::vector<bot_config_ptr>> configs,
+    std::shared_ptr<std::vector<bot_load_info>> load_infos,
     std::shared_ptr<bot_load_lock>) {
   bool success = err.empty();
   bot->config()->inactive(!success);
@@ -185,7 +192,7 @@ void bs_server::on_bot_load(
     bot->shutdown();
   }
 
-  load_further_bot(configs);
+  load_further_bot(load_infos);
 }
 
 void bs_server::stop() {

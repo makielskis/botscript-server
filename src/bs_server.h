@@ -82,6 +82,11 @@ struct bot_load_lock {
   std::string identifier_;
 };
 
+struct bot_load_info {
+  bot_config_ptr config;
+  std::shared_ptr<bot_load_lock> load_lock;
+};
+
 /// Main bot and user management class.
 class bs_server {
  public:
@@ -111,14 +116,14 @@ class bs_server {
   /// given configs vector.
   ///
   /// \param configs  the configs to load from
-  void load_further_bot(std::shared_ptr<std::vector<bot_config_ptr>> configs);
+  void load_further_bot(std::shared_ptr<std::vector<bot_load_info>> load_infos);
 
   /// Loads the specified bot configuration and removes it from the configs vec.
   ///
   /// \param configs  the configurations
   /// \param index    the index in the configurations vector
-  void load_bot(bot_config_ptr config,
-                std::shared_ptr<std::vector<bot_config_ptr>> configs);
+  void load_bot(bot_load_info load_info,
+                std::shared_ptr<std::vector<bot_load_info>> load_infos);
 
   /// Loads the bots that are located in the store.
   void load_bots();
@@ -141,7 +146,7 @@ class bs_server {
   /// \param lock         the lock that prevents the bot from beeing deleted
   void on_bot_load(std::shared_ptr<botscript::bot> bot,
                    std::string err,
-                   std::shared_ptr<std::vector<bot_config_ptr>> configs,
+                   std::shared_ptr<std::vector<bot_load_info>> load_infos,
                    std::shared_ptr<bot_load_lock> lock);
 
   /// Callback for activity from bots whose user is currently connected.

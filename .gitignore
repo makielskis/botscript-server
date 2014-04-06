@@ -1,9 +1,7 @@
 src/botscript_server_version.h
 build
-config_store.kch
-user_store.kch
-bot_list.txt
-configs
+win-build
+db
 android-boost
 android-toolchain
 cmake/android.toolchain.cmake
