@@ -52,12 +52,12 @@ function prepareToolchain() {
 
 function prepareBoost() {
   # are boost libs and headers in there expected location?
-  if [ -d $DIR/android-boost/build/lib -a -d $DIR/android-boost/build/include/boost-1_53/ ]; then
+  if [ -d $DIR/android-boost/build/lib -a -d $DIR/android-boost/build/include/boost-1_55/ ]; then
     # update symlinks
     rm $TOOLCHAIN_SYSROOT/usr/lib/libboost*.a;
     rm $TOOLCHAIN_SYSROOT/usr/include/boost;
     ln -s $DIR/android-boost/build/lib/libboost*.a $TOOLCHAIN_SYSROOT/usr/lib/;
-    ln -s $DIR/android-boost/build/include/boost-1_53/boost $TOOLCHAIN_SYSROOT/usr/include/;
+    ln -s $DIR/android-boost/build/include/boost-1_55/boost $TOOLCHAIN_SYSROOT/usr/include/;
     echo_bold "Boost is ready.";
   else
     if [ "$1" == "checkonly" ]; then
@@ -71,12 +71,11 @@ function prepareBoost() {
     rm -rf $DIR/android-boost;
 
     # get a known working copy of the boost for android scripts
-    git clone https://github.com/MysticTreeGames/Boost-for-Android.git android-boost;
+    git clone git@bitbucket.org:makielski/boost-for-android.git android-boost;
     cd android-boost; # always remember to go back to $DIR
-    git reset --hard 02f7e8d384ad5cdca65528ddae12ea53cb897c3a; # latest checked commit; uses boost 1.53
 
     # build boost
-    ./build-android.sh --with-libraries=system,thread,date_time,chrono,regex,filesystem,iostreams,random,program_options $NDK;
+    ./build-android.sh --boost=1.55.0 --with-libraries=system,thread,date_time,chrono,regex,filesystem,iostreams,random,program_options $NDK;
 
     # go back to the default dir
     cd $DIR;
