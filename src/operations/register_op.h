@@ -50,8 +50,6 @@ class register_op : public operation {
                                        op_callback cb) const override;
 
  private:
-  bool allowed(const std::string& allowed_users_file) const;
-
   std::string username_;
   std::string password_;
   std::string email_;

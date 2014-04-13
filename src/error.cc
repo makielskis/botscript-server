@@ -76,6 +76,9 @@ std::string error_category_impl::message(int ev) const BSS_NOEXCEPT {
     case error::user_in_blocklist:
       return "You can only create one bot at the time";
 
+    case error::bot_not_allowed:
+      return "You are not allowed to create this bot";
+
     case error::unknown_error:
     default:
       return "Unknown error";

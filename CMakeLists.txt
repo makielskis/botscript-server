@@ -66,6 +66,7 @@ endif(Boost_FOUND)
 # Include Paths
 ################################
 include_directories("external_lib/websocketpp")
+include_directories("external_lib/cereal/include")
 include_directories("external_lib/botscript/src")
 include_directories("external_lib/botscript/external_lib/rapidjson/include")
 include_directories("external_lib/botscript/external_lib/pugixml-1.2/src")
@@ -306,6 +307,7 @@ if (NOT MSVC AND NOT  MINGW)
   include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
   add_executable(botscript-server-tests EXCLUDE_FROM_ALL
+    test/allowed_users_parser_test.cpp
     test/error_test.cpp
     test/rapid_json_exception_test.cpp
     test/outgoing_messages_test.cpp
