@@ -15,6 +15,7 @@
 #include "../messages/account_msg.h"
 #include "../messages/packages_msg.h"
 #include "../messages/bots_msg.h"
+#include "../allowed_users_parser.h"
 
 namespace botscript_server {
 
@@ -47,32 +48,9 @@ std::vector<std::string> register_op::type() const {
   return {"register"};
 }
 
-bool register_op::allowed(const std::string& allowed_users_file) const {
-  std::ifstream f;
-  f.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-  try {
-    f.open(allowed_users_file);
-    while (!f.eof() && f.peek() != EOF) {
-      std::string allowed;
-      std::getline(f, allowed);
-
-      if (username() == allowed) {
-        return true;
-      }
-    }
-    f.close();
-  } catch (const std::ifstream::failure&) {
-    throw boost::system::system_error(error::allowed_users_read_error);
-  }
-  return false;
-}
-
 std::vector<msg_ptr> register_op::execute(bs_server& server,
                                           op_callback cb) const {
-  if (!server.options_.allowed_users().empty() &&
-      !allowed(server.options_.allowed_users())) {
-    throw boost::system::system_error(error::user_not_allowed);
-  }
+  check_user_allowed(server.options_, username());
 
   user u(server.users_[username()], password(), email());
 

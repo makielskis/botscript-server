@@ -16,3 +16,6 @@
 [submodule "external_lib/dust-server"]
 	path = external_lib/dust-server
 	url = git@bitbucket.org:makielski/dust-server.git
+[submodule "external_lib/cereal"]
+	path = external_lib/cereal
+	url = https://github.com/USCiLab/cereal.git

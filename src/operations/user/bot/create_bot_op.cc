@@ -16,6 +16,7 @@
 #include "../../../make_unique.h"
 #include "../../../messages/bots_msg.h"
 #include "../../../messages/failure_msg.h"
+#include "../../../allowed_users_parser.h"
 
 namespace botscript_server {
 
@@ -75,7 +76,10 @@ std::vector<msg_ptr> create_bot_op::execute(bs_server& server,
                                             op_callback cb) const {
   user u = get_user_from_session(server);
 
-  auto block = std::make_shared<blocklist_element>(server, u, bot_id());
+  std::string bot_identifier = bot_id();
+  check_bot_allowed(server.options_, u.username(), bot_identifier);
+
+  auto block = std::make_shared<blocklist_element>(server, u, bot_identifier);
 
   auto config = bot_config(server, u);
   if (server.options_.forceproxy() && config->value_of("base_proxy").empty()) {
