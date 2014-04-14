@@ -1,3 +1,5 @@
+#ifndef ANDROID
+
 #include "./allowed_users_parser.h"
 
 #include <string>
@@ -114,3 +116,5 @@ void check_bot_allowed(bs_server_options const& opt, std::string const& name,
 }
 
 }  // namespace botscript_server
+
+#endif
