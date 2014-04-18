@@ -2,7 +2,7 @@
 #define BOTSCRIPT_SERVER_ALLOWED_USERS_PARSER_H_
 
 #include <string>
-#include <vector>
+#include <istream>
 
 #include "./bs_server_options.h"
 
