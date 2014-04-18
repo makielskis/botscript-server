@@ -1,3 +1,7 @@
+// Copyright (c) 2013, makielski.net
+// Licensed under the MIT license
+// https://raw.github.com/makielski/botscript/master/COPYING
+
 #include "./allowed_users_parser.h"
 
 #ifdef ANDROID
@@ -25,6 +29,7 @@ void check_bot_allowed(bs_server_options const& opt, std::string const& name,
 #include "cereal/types/vector.hpp"
 
 #include "./error.h"
+#include "./conf/bs_server_options.h"
 
 namespace botscript_server {
 
@@ -66,14 +71,14 @@ void check_user_allowed(std::istream& in, std::string const& name) {
 }
 
 void check_user_allowed(bs_server_options const& opt, std::string const& name) {
-  if (opt.allowed_users().empty()) {
+  if (opt.allowed_users.empty()) {
     return;
   }
 
   std::ifstream f;
   f.exceptions(std::ifstream::failbit | std::ifstream::badbit);
   try {
-    f.open(opt.allowed_users());
+    f.open(opt.allowed_users);
     check_user_allowed(f, name);
     f.close();
   } catch (const std::ifstream::failure&) {
@@ -113,14 +118,14 @@ void check_bot_allowed(std::istream& in, std::string const& name,
 
 void check_bot_allowed(bs_server_options const& opt, std::string const& name,
                        std::string const& bot) {
-  if (opt.allowed_users().empty()) {
+  if (opt.allowed_users.empty()) {
     return;
   }
 
   std::ifstream f;
   f.exceptions(std::ifstream::failbit | std::ifstream::badbit);
   try {
-    f.open(opt.allowed_users());
+    f.open(opt.allowed_users);
     check_bot_allowed(f, name, bot);
     f.close();
   } catch (const std::ifstream::failure&) {

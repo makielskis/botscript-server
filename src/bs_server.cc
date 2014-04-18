@@ -62,7 +62,7 @@ void bs_server::listen_for_update_packages_signal() {
 
 void bs_server::update_packages() {
   std::cout << "Loading packages... ";
-  botscript::bot::load_packages(options_.packages_path());
+  botscript::bot::load_packages(options_.packages_path);
   packages_.resize(0);
   for (const auto& package : botscript::bot::packages_) {
     std::cout << package.second->name() << " ";
@@ -73,7 +73,7 @@ void bs_server::update_packages() {
 
 update_cb bs_server::sid_cb(const std::string& sid) {
   return [this, sid](std::string id, std::string k, std::string v) {
-    if (options_.botlog() && k == "log") {
+    if (options_.botlog && k == "log") {
       std::cout << v;
     }
 
@@ -85,7 +85,7 @@ update_cb bs_server::sid_cb(const std::string& sid) {
 
 update_cb bs_server::print_cb() {
   return [this](std::string /* id */, std::string k, std::string v) {
-    if (options_.botlog() && k == "log") {
+    if (options_.botlog && k == "log") {
       std::cout << v;
     }
   };
@@ -124,7 +124,7 @@ void bs_server::load_bot(
 
   auto config = load_info.config;
 
-  if (options_.forceproxy() && config->value_of("base_proxy").empty()) {
+  if (options_.forceproxy && config->value_of("base_proxy").empty()) {
     std::cout << "[ERROR] Config without proxy: " << config->identifier()
               << std::endl;
     load_further_bot(load_infos);

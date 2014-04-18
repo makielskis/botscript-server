@@ -68,7 +68,7 @@ std::vector<msg_ptr> user_op::execute(bs_server& server, op_callback cb) const {
 }
 
 user user_op::get_user_from_session(bs_server& server) const {
-  if (server.options_.autologin()) {
+  if (server.options_.autologin) {
     auto guest_doc = server.users_["guest"];
 
     if (!guest_doc.exists()) {
