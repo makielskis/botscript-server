@@ -4,26 +4,28 @@
 
 #include "./allowed_users_parser.h"
 
+
 #ifdef ANDROID
+namespace botscript_server {
 
-void check_user_allowed(bs_server_options const& opt, std::string const& name) {
+void check_user_allowed(bs_server_options const&, std::string const&) {
 }
-void check_bot_allowed(std::istream& in, std::string const& name,
-                       std::string const& bot) {
+void check_bot_allowed(std::istream&, std::string const&,
+                       std::string const&) {
 }
-void check_user_allowed(std::istream& in, std::string const& name) {
+void check_user_allowed(std::istream&, std::string const&) {
 }
-void check_bot_allowed(bs_server_options const& opt, std::string const& name,
-                       std::string const& bot) {
+void check_bot_allowed(bs_server_options const&, std::string const&,
+                       std::string const&) {
 }
 
+}  // namespace botscript_server
 #else
 
 #include <string>
 #include <vector>
 #include <algorithm>
 #include <fstream>
-#include <istream>
 
 #include "cereal/archives/json.hpp"
 #include "cereal/types/vector.hpp"
@@ -134,5 +136,4 @@ void check_bot_allowed(bs_server_options const& opt, std::string const& name,
 }
 
 }  // namespace botscript_server
-
 #endif
