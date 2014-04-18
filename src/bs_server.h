@@ -26,7 +26,7 @@
 #include "./session.h"
 #include "./operations/operation.h"
 #include "./messages/message.h"
-#include "./bs_server_options.h"
+#include "./conf/bs_server_options.h"
 
 namespace boost { namespace asio {
 class io_service;

@@ -57,7 +57,7 @@ ws_server::ws_server(ws_server_options options,
 
 void ws_server::start() {
   websocket_server_.init_asio(io_service_);
-  websocket_server_.listen(options_.host(), options_.port());
+  websocket_server_.listen(options_.host, options_.port);
   websocket_server_.start_accept();
 }
 

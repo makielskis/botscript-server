@@ -8,31 +8,24 @@
 #include <ostream>
 #include <string>
 
-namespace boost {
-namespace program_options {
-class options_description;
-class variables_map;
-}
-}
+#include "./configuration.h"
 
 namespace botscript_server {
 
-class ws_server_options {
+class ws_server_options : public configuration {
 public:
   friend std::ostream& operator<<(std::ostream& out,
                                   const ws_server_options& options);
 
   ws_server_options(std::string host_default, std::string port_default);
 
-  void configure_description(boost::program_options::options_description& desc);
-  void parse(const boost::program_options::variables_map& vm);
+  virtual ~ws_server_options() {
+  }
 
-  std::string host() const;
-  std::string port() const;
+  virtual boost::program_options::options_description desc() override;
 
-private:
-  std::string host_;
-  std::string port_;
+  std::string host;
+  std::string port;
 };
 
 std::ostream& operator<<(std::ostream& out, const ws_server_options& options);

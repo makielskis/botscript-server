@@ -82,7 +82,7 @@ std::vector<msg_ptr> create_bot_op::execute(bs_server& server,
   auto block = std::make_shared<blocklist_element>(server, u, bot_identifier);
 
   auto config = bot_config(server, u);
-  if (server.options_.forceproxy() && config->value_of("base_proxy").empty()) {
+  if (server.options_.forceproxy && config->value_of("base_proxy").empty()) {
     on_load_fail(config, u);
     throw boost::system::system_error(error::proxy_required);
   }

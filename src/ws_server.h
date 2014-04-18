@@ -19,7 +19,7 @@
 
 #include "./bs_server.h"
 #include "./messages/message.h"
-#include "./ws_server_options.h"
+#include "./conf/ws_server_options.h"
 
 namespace dust {
 class key_value_store;
