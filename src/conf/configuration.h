@@ -18,6 +18,13 @@ class configuration {
 public:
   virtual ~configuration() { }
   virtual boost::program_options::options_description desc() = 0;
+  virtual void print(std::ostream& out) const = 0;
+
+  friend std::ostream& operator<<(std::ostream& out,
+                                  configuration const& conf) {
+    conf.print(out);
+    return out;
+  }
 };
 
 }  // namespace botscript_server

@@ -30,29 +30,36 @@ bs_server_options::bs_server_options(bool forceproxy_default,
 po::options_description bs_server_options::desc() {
   po::options_description desc("Botscript Server Options");
   desc.add_options()
-    (FORCEPROXY_OPTION, po::value<bool>(&forceproxy)->default_value(forceproxy),
+    (FORCEPROXY_OPTION,
+        po::value<bool>(&forceproxy)->default_value(forceproxy),
         "forces the user to set a bot proxy")
-    (AUTOLOGIN_OPTION, po::value<bool>(&autologin)->default_value(autologin),
+    (AUTOLOGIN_OPTION,
+        po::value<bool>(&autologin)->default_value(autologin),
         "single user mode with autologin (no authentification needed)")
-    (PACKAGES_PATH_OPTION, po::value<std::string>(&packages_path)->default_value(packages_path),
+    (PACKAGES_PATH_OPTION,
+        po::value<std::string>(&packages_path)->default_value(packages_path),
         "directory where the botscript packages are located")
-    (BOTLOG_OPTION, po::value<bool>(&botlog)->default_value(botlog),
+    (BOTLOG_OPTION,
+        po::value<bool>(&botlog)->default_value(botlog),
         "whether the bots should print their output to stdout")
-    (ALLOWED_USERS_OPTION, po::value<std::string>(&allowed_users)->default_value(allowed_users),
+    (ALLOWED_USERS_OPTION,
+        po::value<std::string>(&allowed_users)->default_value(allowed_users),
         "file containing authorized users (see manual for file format)");
   return desc;
 }
 
-std::ostream& operator<<(std::ostream& out, const bs_server_options& options) {
+void bs_server_options::print(std::ostream& out) const {
   boost::io::ios_all_saver guard(out);
-  return out << "  " << FORCEPROXY_OPTION << ": " << std::boolalpha
-             << options.forceproxy << "\n"
-             << "  " << AUTOLOGIN_OPTION << ": " << std::boolalpha
-             << options.autologin << "\n"
-             << "  " << PACKAGES_PATH_OPTION
-             << ": " << options.packages_path << "\n"
-             << "  " << BOTLOG_OPTION << ": " << options.botlog << "\n"
-             << "  " << ALLOWED_USERS_OPTION << ": " << options.allowed_users;
+  out << "  " << FORCEPROXY_OPTION << ": " << std::boolalpha << forceproxy << "\n"
+      << "  " << AUTOLOGIN_OPTION << ": " << std::boolalpha  << autologin << "\n"
+      << "  " << PACKAGES_PATH_OPTION << ": " << packages_path << "\n"
+      << "  " << BOTLOG_OPTION << ": " << botlog << "\n"
+      << "  " << ALLOWED_USERS_OPTION << ": " << allowed_users;
+}
+
+std::ostream& operator<<(std::ostream& out, const bs_server_options& options) {
+  options.print(out);
+  return out;
 }
 
 }  // namespace botscript_server

@@ -29,9 +29,14 @@ po::options_description ws_server_options::desc() {
   return desc;
 }
 
+void ws_server_options::print(std::ostream& out) const {
+  out << "  " << HOST_OPTION << ": " << host << "\n"
+      << "  " << PORT_OPTION << ": " << port;
+}
+
 std::ostream& operator<<(std::ostream& out, const ws_server_options& options) {
-  return out << "  " << HOST_OPTION << ": " << options.host << "\n"
-             << "  " << PORT_OPTION << ": " << options.port;
+  options.print(out);
+  return out;
 }
 
 }  // namespace botscript_server

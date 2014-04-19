@@ -32,14 +32,19 @@ po::options_description dust_server_options::desc() {
   return desc;
 }
 
+void dust_server_options::print(std::ostream& out) const {
+  bool pw_set = !password_.empty();
+  std::string pw_val = pw_set ? password_ : "!SECURITY WARNING! empty";
+
+  out << "  " << HOST_OPTION << ": " << host_ << "\n"
+      << "  " << PORT_OPTION << ": " << port_ << "\n"
+      << "  " << PASSWORD_OPTION << ": " << pw_val;
+}
+
 std::ostream& operator<<(std::ostream& out,
                          const dust_server_options& options) {
-  bool pw_set = !options.password_.empty();
-  std::string pw_val = pw_set ? options.password_ : "!SECURITY WARNING! empty";
-
-  return out << "  " << HOST_OPTION << ": " << options.host_ << "\n"
-             << "  " << PORT_OPTION << ": " << options.port_ << "\n"
-             << "  " << PASSWORD_OPTION << ": " << pw_val;
+  options.print(out);
+  return out;
 }
 
 }  // namespace botscript_server

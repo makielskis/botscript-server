@@ -24,6 +24,7 @@ public:
   }
 
   virtual boost::program_options::options_description desc() override;
+  virtual void print(std::ostream& out) const override;
 
   bool forceproxy;
   bool autologin;
