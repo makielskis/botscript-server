@@ -8,3 +8,5 @@ cmake/android.toolchain.cmake
 *.class
 .project
 .cproject
+config.ini
+allowed_users*
