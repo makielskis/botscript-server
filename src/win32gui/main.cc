@@ -40,7 +40,7 @@ void on_action(CTrayIcon* pTrayIcon, UINT uMsg) {
   if (GetCursorPos(&pt)) {
     HMENU hMenu = CreatePopupMenu();
     AppendMenu(hMenu, MF_STRING | MF_GRAYED, 1,
-               std::string(std::string("v") + version()).c_str());
+               std::string(std::string("v") + short_version()).c_str());
     AppendMenu(hMenu, MF_STRING, 2, "Bot");
     AppendMenu(hMenu, MF_STRING, 3, "Quit");
 

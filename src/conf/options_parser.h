@@ -24,6 +24,7 @@ public:
   void read_configuration_file();
   bool help();
   void print_help(std::ostream& out);
+  bool version();
   void print_used(std::ostream& out);
   void print_unrecognized(std::ostream& out);
 

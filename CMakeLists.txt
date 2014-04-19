@@ -11,14 +11,32 @@ project(botscript-server)
 # BotScript Server Version
 ################################
 set(botscript_server_gui_address \"http://bot.makielski.net/ui/0.0.10\")
-set(botscript_server_major 0)
-set(botscript_server_minor 2)
-set(botscript_server_patch 7)
+
+execute_process(
+  COMMAND git rev-parse --abbrev-ref HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE botscript_server_git_branch
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+execute_process(
+  COMMAND git --no-pager log -1 --format=%h
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE botscript_server_git_ref
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+execute_process(
+  COMMAND git describe --tags --dirty=-dirty
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE botscript_server_git_tag
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 configure_file (
   "src/botscript_server_version.h.in"
   "${PROJECT_SOURCE_DIR}/src/botscript_server_version.h"
 )
-set(botscript_server_version ${botscript_server_major}.${botscript_server_minor}.${botscript_server_patch})
 
 
 ################################
@@ -213,8 +231,8 @@ if (MINGW OR MSVC)
   ################################
   # Package target
   ################################
-  set(foldername makielskisbot-${botscript_server_version})
-  set(packagename makielskisbot-win-${botscript_server_version}.zip)
+  set(foldername makielskisbot-${botscript_server_git_tag})
+  set(packagename makielskisbot-win-${botscript_server_git_tag}.zip)
   add_custom_target(package
     rm -rf ${foldername} &&
     mkdir -p ${foldername}/packages &&
@@ -282,8 +300,8 @@ endif()
 ################################
 # Server package target
 ################################
-set(server-foldername makielskisbot-server-${botscript_server_version})
-set(server-packagename makielskisbot-server-${botscript_server_version}.zip)
+set(server-foldername makielskisbot-server-${botscript_server_git_tag})
+set(server-packagename makielskisbot-server-${botscript_server_git_tag}.zip)
 add_custom_target(server-package
   rm -rf ${server-foldername} &&
   mkdir -p ${server-foldername}/packages &&

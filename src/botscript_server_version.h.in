@@ -6,20 +6,25 @@
 #define BOTSCRIPT_SERVER_VERSION_H_
 
 #include <sstream>
+#include <string>
 
-#define BOTSCRIPT_SERVER_MAJOR_VERSION @botscript_server_major@
-#define BOTSCRIPT_SERVER_MINOR_VERSION @botscript_server_minor@
-#define BOTSCRIPT_SERVER_PATCH_VERSION @botscript_server_patch@
+#define BOTSCRIPT_SERVER_GIT_REF "@botscript_server_git_ref@"
+#define BOTSCRIPT_SERVER_GIT_TAG "@botscript_server_git_tag@"
+#define BOTSCRIPT_SERVER_GIT_BRANCH "@botscript_server_git_branch@"
 #define MOBILE_UI_URL @botscript_server_gui_address@
 
 namespace botscript_server {
 
-static std::string version() {
-  std::ostringstream v;
-  v << BOTSCRIPT_SERVER_MAJOR_VERSION << "."
-    << BOTSCRIPT_SERVER_MINOR_VERSION << "."
-    << BOTSCRIPT_SERVER_PATCH_VERSION;
-  return v.str();
+static std::string short_version() {
+  return BOTSCRIPT_SERVER_GIT_TAG;
+}
+
+static std::string long_version() {
+  std::stringstream ss;
+  ss << BOTSCRIPT_SERVER_GIT_TAG
+     <<" (git-ref: " << BOTSCRIPT_SERVER_GIT_REF
+     << " on " << BOTSCRIPT_SERVER_GIT_BRANCH << ")";
+  return ss.str();
 }
 
 }  // namespace botscript_server

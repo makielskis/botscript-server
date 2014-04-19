@@ -20,6 +20,7 @@ options_(std::move(options)) {
 void options_parser::configure_description() {
   desc_.add_options()
       ("help", "produce help message")
+      ("version", "print version")
       ("config,c",
           po::value<std::string>(&file_)->default_value("config.ini"),
           "config path");
@@ -63,6 +64,10 @@ void options_parser::read_configuration_file() {
 
 bool options_parser::help() {
   return vm_.count("help");
+}
+
+bool options_parser::version() {
+  return vm_.count("version");
 }
 
 void options_parser::print_used(std::ostream& out) {
