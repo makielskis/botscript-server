@@ -12,8 +12,11 @@
 #include "bot.h"
 
 #include "../ws_server.h"
-#include "../make_unique.h"
 #include "../botscript_server_version.h"
+#include "../conf/options_parser.h"
+#include "../conf/bs_server_options.h"
+#include "../conf/ws_server_options.h"
+#include "../conf/dust_server_options.h"
 
 using namespace botscript_server;
 using namespace dust;
@@ -104,64 +107,14 @@ int main(int argc, char* argv[]) {
   if (!CreateMainWnd())
     return -1;
 
-  // Prepare configurations with default values.
-  std::string file;
   ws_server_options wss_options("127.0.0.1", "9003");
   bs_server_options bss_options(false, true, "packages", false);
 
-  // Prepare program description.
-  std::string config_file;
-  po::options_description desc("\n\tMakielskis Bot v" + version()
-                               + "\n\nOptions", 100);
-  desc.add_options()
-      ("help", "produce help message")
-      ("config,c", po::value<std::string>(&file)->default_value("config.ini"),
-          "name of a file for configuration.");
-  wss_options.configure_description(desc);
-  bss_options.configure_description(desc);
-
-  // Positional argument: config file.
-  po::positional_options_description p;
-  p.add("config", -1);
-
-  // Read cmdline arguments.
-  po::variables_map vm;
-  auto parsed = po::command_line_parser(argc, argv)
-                  .options(desc)
-                    .positional(p)
-                    .allow_unregistered()
-                  .run();
-  po::store(parsed, vm);
-  po::notify(vm);
-
-  // Print help and exit if desired.
-  if (vm.count("help")) {
-    std::cout << desc << "\n";
-    return 0;
-  }
-
-  // List unrecognized options.
-  auto unrecog = po::collect_unrecognized(parsed.options, po::include_positional);
-  for (const auto& opt : unrecog) {
-    std::cout << "Unrecognized option: " << opt << "\n";
-  }
-
-  // Read config file.
-  std::ifstream ifs(file.c_str());
-  if (!ifs) {
-    std::cout << "Configuration file " << file << " not found, skipping\n";
-  } else {
-    po::store(po::parse_config_file(ifs, desc), vm);
-    po::notify(vm);
-  }
-
-  // Read program options.
-  wss_options.parse(vm);
-  bss_options.parse(vm);
-
-  // Print options.
-  std::cout << "Used options:\n" << wss_options << bss_options << "\n";
-
+  options_parser parser({ &wss_options, &bss_options });
+  parser.read_command_line_args(argc, argv);
+  parser.read_configuration_file();
+  parser.print_unrecognized(std::cout);
+  parser.print_used(std::cout);
 
   // Start servers.
   auto store = std::make_shared<cached_db>("db");

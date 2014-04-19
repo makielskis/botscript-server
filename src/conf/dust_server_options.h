@@ -25,6 +25,7 @@ public:
   }
 
   virtual boost::program_options::options_description desc() override;
+  virtual void print(std::ostream& out) const override;
 };
 
 std::ostream& operator<<(std::ostream& out, const dust_server_options& options);
