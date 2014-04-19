@@ -7,8 +7,8 @@
 
 #include "dust/storage/cached_db.h"
 
-#include "../bs_server_options.h"
-#include "../ws_server_options.h"
+#include "../conf/bs_server_options.h"
+#include "../conf/ws_server_options.h"
 #include "../ws_server.h"
 
 namespace bss = botscript_server;
