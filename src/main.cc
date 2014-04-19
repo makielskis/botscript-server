@@ -28,8 +28,6 @@ using namespace dust_server;
 using namespace botscript;
 
 int main(int argc, char* argv[]) {
-  std::cout << "\n\tMakielskis Bot v" + version() << "\n\n";
-
   ws_server_options wss_options("0.0.0.0", "9003");
   bs_server_options bss_options(true, false, "packages", true);
   dust_server_options ds_options("0.0.0.0", "9004", "");
@@ -38,11 +36,18 @@ int main(int argc, char* argv[]) {
   parser.read_command_line_args(argc, argv);
 
   if (parser.help()) {
+    std::cout << "\n\tMakielskis Bot v" << short_version() << "\n\n";
     parser.print_help(std::cout);
+    return 0;
+  } else if (parser.version()) {
+    std::cout << "Makielskis Bot v" << long_version() << "\n";
     return 0;
   }
 
   parser.read_configuration_file();
+
+  std::cout << "\n\tMakielskis Bot v" << short_version() << "\n\n";
+
   parser.print_unrecognized(std::cout);
   parser.print_used(std::cout);
 
