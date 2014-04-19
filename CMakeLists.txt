@@ -13,7 +13,7 @@ project(botscript-server)
 set(botscript_server_gui_address \"http://bot.makielski.net/ui/0.0.10\")
 set(botscript_server_major 0)
 set(botscript_server_minor 2)
-set(botscript_server_patch 6)
+set(botscript_server_patch 7)
 configure_file (
   "src/botscript_server_version.h.in"
   "${PROJECT_SOURCE_DIR}/src/botscript_server_version.h"
