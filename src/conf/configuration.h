@@ -5,6 +5,8 @@
 #ifndef BOTSCRIPT_SERVER_CONFIGURATION_H_
 #define BOTSCRIPT_SERVER_CONFIGURATION_H_
 
+#include <ostream>
+
 namespace boost {
 namespace program_options {
 class options_description;
