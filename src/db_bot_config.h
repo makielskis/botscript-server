@@ -37,6 +37,9 @@ class db_bot_config : public botscript::bot_config {
   virtual std::string server() const override;
   virtual std::map<std::string, botscript::string_map> module_settings() const override;
 
+  virtual std::map<std::string, std::string> cookies() const override;
+  virtual void cookies(std::map<std::string, std::string> const&) override;
+
   virtual void set(const std::string& module,
                    const std::string& key,
                    const std::string& value) override;
