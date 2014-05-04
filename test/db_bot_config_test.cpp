@@ -26,6 +26,30 @@
   "}"\
 "}"
 
+#define COOKIES_JSON "{"\
+  "\"username\":\"test_name\","\
+  "\"password\":\"test_password\","\
+  "\"package\":\"test_package\","\
+  "\"server\":\"test_server\","\
+  "\"cookies\":{"\
+    "\"cookie1\": \"true\","\
+    "\"cookie2\": \"false\""\
+  "},"\
+  "\"modules\":{"\
+    "\"base\":{"\
+      "\"wait_time_factor\":\"1.00\","\
+      "\"proxy\":\"\""\
+    "},"\
+    "\"collect\":{"\
+      "\"active\":\"1\""\
+    "},"\
+    "\"sell\":{"\
+      "\"price\":\"20\","\
+      "\"active\":\"0\""\
+    "}"\
+  "}"\
+"}"
+
 using namespace botscript;
 using namespace botscript_server;
 using namespace dust;
@@ -35,12 +59,14 @@ class bot_config_test : public testing::Test {
   bot_config_test()
     : store_(std::make_shared<mem_store>()),
       doc_(document(store_, "users")["foo"]["bots"]["pg_hh_bot"]),
-      config_(std::make_shared<db_bot_config>(doc_, TEST_JSON)) {
+      doc1_(document(store_, "users")["foo"]["bots"]["pg_sy_bot"]),
+      config_(std::make_shared<db_bot_config>(doc1_, TEST_JSON)),
+      config_w_cookies_(std::make_shared<db_bot_config>(doc_, COOKIES_JSON)) {
   }
 
   std::shared_ptr<key_value_store> store_;
-  document doc_;
-  std::shared_ptr<bot_config> config_;
+  document doc_, doc1_;
+  std::shared_ptr<bot_config> config_, config_w_cookies_;
 };
 
 TEST_F(bot_config_test, invalid_json_test) {
@@ -121,4 +147,10 @@ TEST_F(bot_config_test, json_test) {
   EXPECT_EQ(TEST_JSON, this->config_->to_json(true));
   EXPECT_NE(TEST_JSON, this->config_->to_json(false));
   EXPECT_TRUE(this->config_->to_json(false).find("password") == std::string::npos);
+}
+
+TEST_F(bot_config_test, read_json_with_cookies_test) {
+  EXPECT_EQ(2u, config_w_cookies_->cookies().size());
+  EXPECT_EQ("true", config_w_cookies_->cookies()["cookie1"]);
+  EXPECT_EQ("false", config_w_cookies_->cookies()["cookie2"]);
 }

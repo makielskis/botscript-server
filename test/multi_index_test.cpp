@@ -62,15 +62,6 @@ TEST(multi_index_test, access_test) {
   sessions.insert({ "c", user("user2") });
 
   typedef session_set::index<id>::type session_set_by_sid;
-  for (const auto& session : sessions.get<id>()) {
-    std::cout << "[" << session.session_id << ", " << session.user.name() << "]" << std::endl;
-  }
-
   typedef session_set::index<name>::type session_set_by_name;
   session_set_by_name::iterator a = sessions.get<name>().find("a");
-  if (a != sessions.get<name>().end()) {
-    std::cout << "a found -> " << a->user.name() << std::endl;
-  } else {
-    std::cout << "a not found" << std::endl;
-  }
 }

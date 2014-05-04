@@ -47,7 +47,7 @@ db_bot_config::db_bot_config(
 
 db_bot_config::db_bot_config(
     dust::document document,
-    const std::string& identifier,
+    const std::string& /* identifier */,
     const std::string& username,
     const std::string& password,
     const std::string& package,
@@ -174,6 +174,21 @@ std::map<std::string, string_map> db_bot_config::module_settings() const {
     }
   }
   return module_settings;
+}
+
+std::map<std::string, std::string> db_bot_config::cookies() const {
+  std::map<std::string, std::string> cookies;
+  for (const auto& cookie : doc_["cookies"].children()) {
+    cookies[cookie.index()] = cookie.val();
+  }
+  return cookies;
+}
+
+void db_bot_config::cookies(std::map<std::string, std::string> const& cookies) {
+  doc_["cookies"].remove();
+  for (auto const& cookie : cookies) {
+    doc_["cookies"][cookie.first] = cookie.second;
+  }
 }
 
 void db_bot_config::set(const std::string& module,
