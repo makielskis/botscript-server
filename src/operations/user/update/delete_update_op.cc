@@ -36,6 +36,15 @@ std::vector<msg_ptr> delete_update_op::execute(bs_server& server,
     throw boost::system::system_error(error::password_wrong);
   }
 
+  // Check if any bot is currently in the block list.
+  const auto& blocklist = server.bot_creation_blocklist_;
+  for (const auto& config : u.bot_configs()) {
+    if (blocklist.find(config->identifier()) != blocklist.end()) {
+      throw boost::system::system_error(error::bot_in_blocklist);
+    }
+  }
+
+  // Remove bots.
   for (const auto& config : u.bot_configs()) {
     auto it = server.bots_.find(config->identifier());
     if (it != server.bots_.end()) {
