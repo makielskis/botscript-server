@@ -186,8 +186,11 @@ void ws_server::on_msg(connection_hdl hdl, server::message_ptr msg) {
       error_code send_ec;
       websocket_server_.send(hdl, m.to_json(), TEXT, send_ec);
     }
+  } catch (std::exception e){
+    std::cout << "[FATAL] Unhandled exception in ws_server on_msg: "
+              << e.what() << "\n";
   } catch (...) {
-    std::cout << "[FATAL] Unhandled exception in ws_server on_msg\n";
+    std::cout << "[FATAL] Unknown unhandled exception in ws_server on_msg\n";
   }
 }
 

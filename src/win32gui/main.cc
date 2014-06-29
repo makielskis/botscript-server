@@ -117,21 +117,37 @@ int main(int argc, char* argv[]) {
   parser.print_used(std::cout);
 
   // Start servers.
-  auto store = std::make_shared<cached_db>("db");
-  boost::asio::io_service ios;
-  ws_server wss(std::move(wss_options), std::move(bss_options), &ios, store);
-  s = &wss;
-  s->start();
-  t = boost::thread(([&ios]() { ios.run(); }));
+  try {
+    auto store = std::make_shared<cached_db>("db");
+    boost::asio::io_service ios;
+    ws_server wss(std::move(wss_options), std::move(bss_options), &ios, store);
+    s = &wss;
+    s->start();
+    t = boost::thread(([&ios]() {
+      try {
+        ios.run();
+      } catch (std::exception const& e) {
+        MessageBox(NULL, e.what(), "A serious problem ...", MB_OK);
+      } catch (...) {
+        MessageBox(NULL, "unknown error", "A serious problem ...", MB_OK);
+      }
+    }));
 
-  g_TrayIcon.SetListener(on_action);
-  g_TrayIcon.SetVisible(true);
+    g_TrayIcon.SetListener(on_action);
+    g_TrayIcon.SetVisible(true);
 
-  MSG msg;
-  while (GetMessage(&msg, NULL, 0, 0)) {
-    TranslateMessage(&msg);
-    DispatchMessage(&msg);
+    MSG msg;
+    while (GetMessage(&msg, NULL, 0, 0)) {
+      TranslateMessage(&msg);
+      DispatchMessage(&msg);
+    }
+
+    return (int) msg.wParam;
+  } catch (std::exception const& e) {
+    MessageBox(NULL, e.what(), "A serious initialization problem ...", MB_OK);
+  } catch (...) {
+    MessageBox(NULL, "unknown initialization error", "A serious problem ...", MB_OK);
   }
 
-  return (int) msg.wParam;
+  return 1;
 }
