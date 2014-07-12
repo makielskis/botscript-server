@@ -174,6 +174,14 @@ if (ANDROID)
   set_target_properties(botscript-server PROPERTIES COMPILE_DEFINITIONS "${_def}")
   set_target_properties(botscript-server PROPERTIES COMPILE_FLAGS "-std=c++11")
   set_target_properties(botscript-server PROPERTIES SUFFIX ".so")
+
+  add_custom_target(botscript-server-jar
+    rm -rf android-lib &&
+    mkdir -p android-lib/lib/armeabi &&
+    cp botscript-server.so android-lib/lib/armeabi/botscript-server.so &&
+    zip -9 -r android-lib/lib botscript-server.jar
+  )
+  add_dependencies(botscript-server-jar botscript-server)
 endif()
 
 
