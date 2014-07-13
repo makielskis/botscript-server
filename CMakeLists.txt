@@ -178,8 +178,9 @@ if (ANDROID)
   add_custom_target(botscript-server-jar
     rm -rf android-lib &&
     mkdir -p android-lib/lib/armeabi &&
-    cp botscript-server.so android-lib/lib/armeabi/botscript-server.so &&
-    zip -9 -r android-lib/lib botscript-server.jar
+    cp libbotscript-server.so android-lib/lib/armeabi/ &&
+    cd android-lib &&
+    zip -9 -r ../armeabi.jar lib
   )
   add_dependencies(botscript-server-jar botscript-server)
 endif()
@@ -252,7 +253,7 @@ if (MINGW OR MSVC)
     cp external_lib/botscript/pg/pg.package ${foldername}/packages &&
     cp botscript-server-gui.exe ${foldername}/makielskisbot.exe &&
     cp ${CMAKE_CURRENT_LIST_DIR}/win_res/config.ini ${foldername} &&
-    zip -r -9 ${packagename} ${foldername}
+    zip -r ${packagename} ${foldername}
   )
   add_dependencies(package botscript-server-gui compile_packages)
 
