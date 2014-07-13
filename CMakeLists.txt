@@ -178,6 +178,7 @@ if (ANDROID)
   add_custom_target(botscript-server-jar
     rm -rf android-lib &&
     mkdir -p android-lib/lib/armeabi &&
+    ${ANDROID_STRIP_CMD} libbotscript-server.so &&
     cp libbotscript-server.so android-lib/lib/armeabi/ &&
     cd android-lib &&
     zip -9 -r ../armeabi.jar lib
