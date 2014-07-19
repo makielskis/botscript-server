@@ -39,7 +39,6 @@ void start_server(void* data) {
   s->t = boost::thread([s]() {
     try {
       s->io_s.run();
-      delete s;
     } catch (...) {
       fprintf(stderr, "run stopped: unknown exception\n");
     }
@@ -53,4 +52,5 @@ void stop_server(void* data) {
   if (s->t.joinable()) {
     s->t.join();
   }
+  delete s;
 }
