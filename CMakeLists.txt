@@ -326,9 +326,15 @@ if (NOT STATIC_PACKAGES)
     zip -r -9 ${server-packagename} ${server-foldername}
   )
   add_dependencies(server-package botscript-server-exe compile_packages)
-else()  
-  set(server-foldername makielskisbot-server-${botscript_server_git_tag})
-  set(server-packagename makielskisbot-server-${botscript_server_git_tag}.zip)
+else()
+  if (CROSS_ARM)
+    set(server-foldername makielskisbot-server-arm-${botscript_server_git_tag})
+    set(server-packagename makielskisbot-server-arm-${botscript_server_git_tag}.zip)
+  else()
+    set(server-foldername makielskisbot-server-${botscript_server_git_tag})
+    set(server-packagename makielskisbot-server-${botscript_server_git_tag}.zip)
+  endif()
+
   add_custom_target(server-package
     ${CMAKE_STRIP} botscript-server-exe &&
     zip -9 ${server-packagename} botscript-server-exe
