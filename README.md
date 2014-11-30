@@ -90,6 +90,8 @@ Install `crosstool-ng` dependencies:
 
 **Settings (to reproduce the configuration)**
 
+(Source: http://elinux.org/RPi_Linaro_GCC_Compilation)
+
 - Paths & Misc: 
     - Check "Try features marked as EXPERIMENTAL"
     - Set "Prefix directory" to whereever you want the finished toolchain to be placed (e.g. /home/<yourname>/crosscompile)
@@ -146,3 +148,15 @@ Change the path to your tool-chain accordingly.
     echo "using gcc : arm : /root/x-tools/arm-rpi-linux-gnueabi/bin/arm-rpi-linux-gnueabi-g++ ;" > ~/user-config.jam
     NO_BZIP2=1 ./b2 install --layout=system --with-random --with-program_options --with-date_time --with-chrono --with-system --with-thread --with-regex --with-iostreams --with-filesystem variant=release link=static threading=multi toolset=gcc-arm --prefix=/root/x-tools/arm-rpi-linux-gnueabi/arm-rpi-linux-gnueabi/sysroot -s ZLIB_SOURCE=$HOME/zlib-1.2.8
 
+### Build Botscript Server
+
+
+Install Dependencies (to compile luac for the host machine):
+
+    apt-get install build-essential gcc g++ libc6-dev-i386 g++-multilib zip
+
+
+Build Botscript Server:
+
+    cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/arm.toolchain.cmake -DCMAKE_BUILD_TYPE=MinSizeRel -DSTATIC_PACKAGES:bool=ON -DCROSS_ARM:bool=ON ..
+    make botscript-server-exe
