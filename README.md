@@ -153,7 +153,7 @@ Change the path to your tool-chain accordingly.
 
 Install Dependencies (to compile luac for the host machine):
 
-    apt-get install build-essential gcc g++ libc6-dev-i386 g++-multilib
+    apt-get install build-essential gcc g++ libc6-dev-i386 g++-multilib zip
 
 
 Build Botscript Server:
