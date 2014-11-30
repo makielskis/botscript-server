@@ -314,17 +314,26 @@ endif()
 ################################
 # Server package target
 ################################
-set(server-foldername makielskisbot-server-${botscript_server_git_tag})
-set(server-packagename makielskisbot-server-${botscript_server_git_tag}.zip)
-add_custom_target(server-package
-  rm -rf ${server-foldername} &&
-  mkdir -p ${server-foldername}/packages &&
-  cp external_lib/botscript/kv/kv.package ${server-foldername}/packages &&
-  cp external_lib/botscript/pg/pg.package ${server-foldername}/packages &&
-  cp botscript-server-exe ${server-foldername}/makielskisbot &&
-  zip -r -9 ${server-packagename} ${server-foldername}
-)
-add_dependencies(server-package botscript-server-exe compile_packages)
+if (NOT STATIC_PACKAGES)
+  set(server-foldername makielskisbot-server-${botscript_server_git_tag})
+  set(server-packagename makielskisbot-server-${botscript_server_git_tag}.zip)
+  add_custom_target(server-package
+    rm -rf ${server-foldername} &&
+    mkdir -p ${server-foldername}/packages &&
+    cp external_lib/botscript/kv/kv.package ${server-foldername}/packages &&
+    cp external_lib/botscript/pg/pg.package ${server-foldername}/packages &&
+    cp botscript-server-exe ${server-foldername}/makielskisbot &&
+    zip -r -9 ${server-packagename} ${server-foldername}
+  )
+  add_dependencies(server-package botscript-server-exe compile_packages)
+else()  
+  set(server-foldername makielskisbot-server-${botscript_server_git_tag})
+  set(server-packagename makielskisbot-server-${botscript_server_git_tag}.zip)
+  add_custom_target(server-package
+    ${CMAKE_STRIP} botscript-server-exe &&
+    zip -9 ${server-packagename} botscript-server-exe
+  )
+endif()
 
 
 ################################
