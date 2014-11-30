@@ -90,6 +90,8 @@ Install `crosstool-ng` dependencies:
 
 **Settings (to reproduce the configuration)**
 
+(Source: http://elinux.org/RPi_Linaro_GCC_Compilation)
+
 - Paths & Misc: 
     - Check "Try features marked as EXPERIMENTAL"
     - Set "Prefix directory" to whereever you want the finished toolchain to be placed (e.g. /home/<yourname>/crosscompile)
@@ -158,5 +160,3 @@ Build Botscript Server:
 
     cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/arm.toolchain.cmake -DCMAKE_BUILD_TYPE=MinSizeRel -DSTATIC_PACKAGES:bool=ON -DCROSS_ARM:bool=ON ..
     make botscript-server-exe
-    
-
