@@ -190,7 +190,6 @@ endif()
 ################################
 # C Library
 ################################
-message(${c_api_files})
 if (ANDROID)
   add_library(c_bss STATIC EXCLUDE_FROM_ALL ${c_api_files})
 else()
