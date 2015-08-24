@@ -66,7 +66,7 @@ void bs_server::update_packages() {
   packages_.resize(0);
   for (const auto& package : botscript::bot::packages_) {
     std::cout << package.second->name() << " ";
-    packages_.push_back(package.second->interface());
+    packages_.push_back(package.second->interface_desc());
   }
   std::cout << std::endl;
 }
