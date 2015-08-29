@@ -63,11 +63,11 @@ void options_parser::read_configuration_file() {
 }
 
 bool options_parser::help() {
-  return vm_.count("help");
+  return vm_.count("help") == 0 ? false : true;
 }
 
 bool options_parser::version() {
-  return vm_.count("version");
+  return vm_.count("version") == 0 ? false : true;
 }
 
 void options_parser::print_used(std::ostream& out) {

@@ -103,15 +103,20 @@ bool CreateMainWnd() {
   return true;
 }
 
-int main(int argc, char* argv[]) {
+int CALLBACK WinMain(
+	_In_ HINSTANCE hInstance,
+	_In_ HINSTANCE hPrevInstance,
+	_In_ LPSTR     lpCmdLine,
+	_In_ int       nCmdShow) {
   if (!CreateMainWnd())
     return -1;
 
   ws_server_options wss_options("127.0.0.1", "9003");
   bs_server_options bss_options(false, true, "packages", false);
 
+  char* argv[] = {0};
   options_parser parser({ &wss_options, &bss_options });
-  parser.read_command_line_args(argc, argv);
+  parser.read_command_line_args(1, argv);
   parser.read_configuration_file();
   parser.print_unrecognized(std::cout);
   parser.print_used(std::cout);

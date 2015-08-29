@@ -162,11 +162,11 @@ void ws_server::on_msg(connection_hdl hdl, server::message_ptr msg) {
     std::shared_ptr<operation> op;
     try {
       op = create_op(d);
-    } catch (const rapidjson_exception& e) {
+    } catch (const rapidjson_exception&) {
       std::cerr << "could not parse message \"" << msg->get_payload() << "\" "
                 << "(expected attributes missing)\n";
       return;
-    } catch (const boost::system::system_error& e) {
+    } catch (const boost::system::system_error&) {
       std::cerr << "could not parse message \"" << msg->get_payload() << "\" "
                 << "(unknown type)\n";
       return;
