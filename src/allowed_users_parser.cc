@@ -53,7 +53,7 @@ std::vector<allowed_user> read_allowed_users(std::istream& in) {
   try {
     cereal::JSONInputArchive archive(in);
     archive(allowed_users);
-  } catch (const cereal::Exception& e) {
+  } catch (const cereal::Exception&) {
     throw boost::system::system_error(error::allowed_users_read_error);
   }
   return allowed_users;

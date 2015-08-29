@@ -53,7 +53,7 @@ std::vector<msg_ptr> delete_bot_op::execute(bs_server& server,
   try {
     get_bot(u, server, identifier())->shutdown();
     server.bots_.erase(identifier());
-  } catch(const boost::system::system_error& e) {
+  } catch(const boost::system::system_error&) {
   }
 
   // Remove bot configuration from the database.

@@ -54,7 +54,7 @@ std::string create_new_bot_op::bot_id() const {
   try {
     botscript::mem_bot_config c(config());
     return c.identifier();
-  } catch(const std::runtime_error& e) {
+  } catch(const std::runtime_error&) {
     throw boost::system::system_error(error::invalid_configuration);
   }
 }

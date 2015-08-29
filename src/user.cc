@@ -55,7 +55,7 @@ std::vector<std::shared_ptr<botscript::bot_config>> user::bot_configs() const {
   for (auto& bot : doc_["bots"].children()) {
     try {
       configs.push_back(std::make_shared<db_bot_config>(bot));
-    } catch (std::exception const& e) {
+    } catch (std::exception const&) {
       std::cout << "invalid configuration: " << bot.full_path();
       bot.remove();
     }

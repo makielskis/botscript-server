@@ -1,8 +1,3 @@
-set(CMAKE_USER_MAKE_RULES_OVERRIDE
-   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/c_flag_overrides.cmake)
-set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX
-   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cxx_flag_overrides.cmake)
-
 cmake_minimum_required(VERSION 2.6)
 project(botscript-server)
 
@@ -60,10 +55,12 @@ add_subdirectory(external_lib/dust-server)
 set(_boostlibs
   system
   thread
+  chrono
   filesystem
   iostreams
   regex
   program_options
+  zlib
 )
 if(NOT ANDROID)
   list(APPEND _boostlibs
@@ -246,7 +243,7 @@ if (MINGW OR MSVC)
   ################################
   set(foldername makielskisbot-${botscript_server_git_tag})
   set(packagename makielskisbot-win-${botscript_server_git_tag}.zip)
-  add_custom_target(package
+  add_custom_target(create-package
     rm -rf ${foldername} &&
     mkdir -p ${foldername}/packages &&
     cp external_lib/botscript/kv/kv.package ${foldername}/packages &&
@@ -255,7 +252,7 @@ if (MINGW OR MSVC)
     cp ${CMAKE_CURRENT_LIST_DIR}/win_res/config.ini ${foldername} &&
     zip -r ${packagename} ${foldername}
   )
-  add_dependencies(package botscript-server-gui compile_packages)
+  add_dependencies(create-package botscript-server-gui compile_packages)
 
   ################################
   # Deploy Upload
@@ -263,7 +260,7 @@ if (MINGW OR MSVC)
   add_custom_target(release
     scp ${packagename} perry@5.45.107.68:/var/www/dl/
   )
-  add_dependencies(release package)
+  add_dependencies(release create-package)
 endif()
 
 
