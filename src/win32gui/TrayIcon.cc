@@ -36,7 +36,7 @@ namespace
 		ValueType* find(KeyType k)
 		{
 			if (m_Empty)
-				return false;
+				return NULL;
 			StdMap::iterator it = GetStdMap().find(k);
 			if (it == GetStdMap().end())
 				return NULL;
