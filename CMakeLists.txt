@@ -250,9 +250,7 @@ if (MINGW OR MSVC)
   set(packagename makielskisbot-win-${botscript_server_git_tag}.zip)
   add_custom_target(create-package
     rm -rf ${foldername} &&
-    mkdir -p ${foldername}/packages &&
-    cp external_lib/botscript/kv/kv.package ${foldername}/packages &&
-    cp external_lib/botscript/pg/pg.package ${foldername}/packages &&
+    mkdir -p ${foldername} &&
     cp botscript-server-gui.exe ${foldername}/makielskisbot.exe &&
     cp ${CMAKE_CURRENT_LIST_DIR}/win_res/config.ini ${foldername} &&
     zip -r ${packagename} ${foldername}
