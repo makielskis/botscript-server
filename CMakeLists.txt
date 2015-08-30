@@ -55,12 +55,10 @@ add_subdirectory(external_lib/dust-server)
 set(_boostlibs
   system
   thread
-  chrono
   filesystem
   iostreams
   regex
   program_options
-  zlib
 )
 if(NOT ANDROID)
   list(APPEND _boostlibs
@@ -68,6 +66,13 @@ if(NOT ANDROID)
     random
   )
 endif()
+if (MSVC)
+  list(APPEND _boostlibs
+    chrono
+    zlib
+  )
+endif()
+
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost COMPONENTS ${_boostlibs} REQUIRED)
 if(Boost_FOUND)
