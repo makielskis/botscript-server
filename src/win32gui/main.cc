@@ -103,7 +103,7 @@ bool CreateMainWnd() {
   return true;
 }
 
-#if defined(MSVC)
+#if defined(_MSC_VER) && !defined(__MINGW32__) and !defined(__MINGW64__)
 int CALLBACK WinMain(
 	_In_ HINSTANCE hInstance,
 	_In_ HINSTANCE hPrevInstance,
