@@ -1,9 +1,6 @@
 [submodule "packages/pg"]
 	path = packages/pg
 	url = git@bitbucket.org:makielski/pg_botscript.git
-[submodule "packages/kv"]
-	path = packages/kv
-	url = git@bitbucket.org:makielski/kv_botscript.git
 [submodule "external_lib/botscript"]
 	path = external_lib/botscript
 	url = git@bitbucket.org:makielski/botscript.git
