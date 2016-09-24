@@ -3,6 +3,18 @@ project(botscript-server)
 
 
 ################################
+# Basic Compiler Flags
+################################
+foreach(flags CMAKE_C_FLAGS CMAKE_C_FLAGS_RELEASE CMAKE_C_FLAGS_DEBUG)
+  string(REPLACE "-O3" "-O2" ${flags} "${${flags}}")
+endforeach()
+
+foreach(flags CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_RELEASE CMAKE_CXX_FLAGS_DEBUG)
+  string(REPLACE "-O3" "-O2" ${flags} "${${flags}}")
+endforeach()
+
+
+################################
 # BotScript Server Version
 ################################
 set(botscript_server_gui_address \"http://bot.makielski.net/ui/0.0.10\")
