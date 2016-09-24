@@ -88,7 +88,7 @@ endif()
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost COMPONENTS ${_boostlibs} REQUIRED)
 if(Boost_FOUND)
-  include_directories(${Boost_INCLUDE_DIR})
+  include_directories(SYSTEM ${Boost_INCLUDE_DIR})
 else(Boost_FOUND)
   message("No Boost found.")
 endif(Boost_FOUND)
@@ -97,15 +97,15 @@ endif(Boost_FOUND)
 ################################
 # Include Paths
 ################################
-include_directories("external_lib/websocketpp")
-include_directories("external_lib/cereal/include")
-include_directories("external_lib/botscript/src")
-include_directories("external_lib/botscript/external_lib/rapidjson/include")
-include_directories("external_lib/botscript/external_lib/pugixml-1.2/src")
-include_directories("external_lib/botscript/external_lib/lua-5.2/src")
-include_directories("external_lib/dust-server/external_lib/dust/include")
-include_directories("external_lib/dust-server/external_lib/http_server")
-include_directories("external_lib/dust-server/include")
+include_directories(SYSTEM "external_lib/websocketpp")
+include_directories(SYSTEM "external_lib/cereal/include")
+include_directories(SYSTEM "external_lib/botscript/src")
+include_directories(SYSTEM "external_lib/botscript/external_lib/rapidjson/include")
+include_directories(SYSTEM "external_lib/botscript/external_lib/pugixml-1.2/src")
+include_directories(SYSTEM "external_lib/botscript/external_lib/lua-5.2/src")
+include_directories(SYSTEM "external_lib/dust-server/external_lib/dust/include")
+include_directories(SYSTEM "external_lib/dust-server/external_lib/http_server")
+include_directories(SYSTEM "external_lib/dust-server/include")
 
 
 ################################
@@ -182,8 +182,8 @@ if (ANDROID)
   add_definitions(-DANDROID)
   add_library(botscript-server SHARED EXCLUDE_FROM_ALL ${jni_files})
   target_link_libraries(botscript-server c_bss)
-  #include_directories(/System//Library/Frameworks/JavaVM.framework/Versions/A/Headers/)
-  #include_directories(/usr/lib/jvm/java/include/)
+  #include_directories(SYSTEM /System//Library/Frameworks/JavaVM.framework/Versions/A/Headers/)
+  #include_directories(SYSTEM /usr/lib/jvm/java/include/)
   set(_def _WEBSOCKETPP_CPP11_STL_)
   set_target_properties(botscript-server PROPERTIES COMPILE_DEFINITIONS "${_def}")
   set_target_properties(botscript-server PROPERTIES COMPILE_FLAGS "-std=c++11")
@@ -361,7 +361,7 @@ if (NOT MSVC AND NOT  MINGW)
   endif()
 
   enable_testing()
-  include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+  include_directories(SYSTEM ${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
   add_executable(botscript-server-tests EXCLUDE_FROM_ALL
     test/allowed_users_parser_test.cpp
