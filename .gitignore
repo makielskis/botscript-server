@@ -1,5 +1,7 @@
+/.idea
+/deps
 src/botscript_server_version.h
-build*
+/*build*
 win-build
 db
 android-boost

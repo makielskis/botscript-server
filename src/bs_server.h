@@ -17,6 +17,7 @@
 #include "boost/multi_index/identity.hpp"
 #include "boost/multi_index/member.hpp"
 
+#include "boost/asio/io_service.hpp"
 #include "boost/asio/signal_set.hpp"
 
 #include "dust/storage/key_value_store.h"
@@ -28,9 +29,6 @@
 #include "./messages/message.h"
 #include "./conf/bs_server_options.h"
 
-namespace boost { namespace asio {
-class io_service;
-}}
 namespace botscript {
 class bot;
 class bot_config;

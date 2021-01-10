@@ -1,18 +1,6 @@
 [submodule "packages/pg"]
 	path = packages/pg
 	url = git@bitbucket.org:makielski/pg_botscript.git
-[submodule "external_lib/botscript"]
-	path = external_lib/botscript
-	url = git@bitbucket.org:makielski/botscript.git
-[submodule "external_lib/websocketpp"]
-	path = external_lib/websocketpp
-	url = git@bitbucket.org:makielski/websocketpp.git
 [submodule "external_lib/dust"]
 	path = external_lib/dust
 	url = git@bitbucket.org:makielski/dust.git
-[submodule "external_lib/dust-server"]
-	path = external_lib/dust-server
-	url = git@bitbucket.org:makielski/dust-server.git
-[submodule "external_lib/cereal"]
-	path = external_lib/cereal
-	url = https://github.com/felixguendling/cereal.git

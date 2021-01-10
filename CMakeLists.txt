@@ -1,6 +1,5 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.10)
 project(botscript-server)
-
 
 ################################
 # Basic Compiler Flags
@@ -53,60 +52,7 @@ if (MSVC OR MINGW)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDESKTOP")
 endif()
 
-
-################################
-# Dependencies
-################################
-add_subdirectory(external_lib/botscript)
-add_subdirectory(external_lib/dust-server)
-
-
-################################
-# Boost
-################################
-set(_boostlibs
-  system
-  thread
-  filesystem
-  iostreams
-  regex
-  program_options
-)
-if(NOT ANDROID)
-  list(APPEND _boostlibs
-    date_time
-    random
-  )
-endif()
-if (MSVC)
-  list(APPEND _boostlibs
-    chrono
-    zlib
-  )
-endif()
-
-set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost COMPONENTS ${_boostlibs} REQUIRED)
-if(Boost_FOUND)
-  include_directories(SYSTEM ${Boost_INCLUDE_DIR})
-else(Boost_FOUND)
-  message("No Boost found.")
-endif(Boost_FOUND)
-
-
-################################
-# Include Paths
-################################
-include_directories(SYSTEM "external_lib/websocketpp")
-include_directories(SYSTEM "external_lib/cereal/include")
-include_directories(SYSTEM "external_lib/botscript/src")
-include_directories(SYSTEM "external_lib/botscript/external_lib/rapidjson/include")
-include_directories(SYSTEM "external_lib/botscript/external_lib/pugixml-1.2/src")
-include_directories(SYSTEM "external_lib/botscript/external_lib/lua-5.2/src")
-include_directories(SYSTEM "external_lib/dust-server/external_lib/dust/include")
-include_directories(SYSTEM "external_lib/dust-server/external_lib/http_server")
-include_directories(SYSTEM "external_lib/dust-server/include")
-
+include(cmake/pkg.cmake)
 
 ################################
 # Static library
@@ -122,8 +68,10 @@ list(REMOVE_ITEM botscriptserver_lib_files ${jni_files})
 list(REMOVE_ITEM botscriptserver_lib_files ${c_api_files})
 
 add_library(botscriptserver_lib STATIC ${botscriptserver_lib_files})
+target_include_directories(botscriptserver_lib PUBLIC src deps/websocketpp)
+target_link_libraries(botscriptserver_lib rapidjson bs dust-server cereal boost-program_options)
 if(MSVC)
-  target_link_libraries(botscriptserver_lib bs dust ${Boost_LIBRARIES})
+  target_link_libraries(botscriptserver_lib bs dust boost)
   set(_def
     _VARIADIC_MAX=10
     _WIN32_WINNT=0x0501
@@ -132,7 +80,7 @@ if(MSVC)
 else()
   if(MINGW)
     target_link_libraries(botscriptserver_lib
-      ${Boost_LIBRARIES}
+      boost
       -Wl,-Bstatic
         bs
         dust
@@ -157,11 +105,11 @@ else()
   else()
     set_target_properties(botscriptserver_lib PROPERTIES COMPILE_FLAGS "-Wall -Wextra -std=c++11")
     if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-      target_link_libraries(botscriptserver_lib bs dust ${Boost_LIBRARIES} z)
+      target_link_libraries(botscriptserver_lib bs dust boost z)
     elseif(ANDROID)
-      target_link_libraries(botscriptserver_lib ${Boost_LIBRARIES} bs dust z)
+      target_link_libraries(botscriptserver_lib boost bs dust z)
     else()
-      target_link_libraries(botscriptserver_lib ${Boost_LIBRARIES} bs dust z rt -pthread)
+      target_link_libraries(botscriptserver_lib boost bs dust z rt -pthread)
     endif()
   endif()
 endif()
@@ -355,31 +303,24 @@ endif()
 ################################
 # Unit Tests
 ################################
-if (NOT MSVC AND NOT  MINGW)
-  if (NOT TARGET gtest)
-    add_subdirectory(test/gtest-1.7.0)
-  endif()
+include_directories(SYSTEM ${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
-  enable_testing()
-  include_directories(SYSTEM ${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+add_executable(botscript-server-tests EXCLUDE_FROM_ALL
+  test/allowed_users_parser_test.cpp
+  test/error_test.cpp
+  test/rapid_json_exception_test.cpp
+  test/outgoing_messages_test.cpp
+  test/db_bot_config_test.cpp
+  test/user_test.cpp
+  test/user_bot_config_test.cpp
+  test/multi_index_test.cpp
+)
 
-  add_executable(botscript-server-tests EXCLUDE_FROM_ALL
-    test/allowed_users_parser_test.cpp
-    test/error_test.cpp
-    test/rapid_json_exception_test.cpp
-    test/outgoing_messages_test.cpp
-    test/db_bot_config_test.cpp
-    test/user_test.cpp
-    test/user_bot_config_test.cpp
-    test/multi_index_test.cpp
-  )
-
-  if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    target_link_libraries(botscript-server-tests gtest gtest_main botscriptserver_lib)
-  else()
-    target_link_libraries(botscript-server-tests gtest gtest_main botscriptserver_lib -pthread)
-  endif()
-  set_target_properties(botscript-server-tests PROPERTIES COMPILE_FLAGS "-std=c++11")
-
-  add_test(botscript-server-tests botscript-server-tests)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  target_link_libraries(botscript-server-tests gtest gtest_main botscriptserver_lib)
+else()
+  target_link_libraries(botscript-server-tests gtest gtest_main botscriptserver_lib -pthread)
 endif()
+set_target_properties(botscript-server-tests PROPERTIES COMPILE_FLAGS "-std=c++11")
+
+add_test(botscript-server-tests botscript-server-tests)
