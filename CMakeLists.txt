@@ -52,6 +52,7 @@ if (MSVC OR MINGW)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDESKTOP")
 endif()
 
+set(SKIP_PERFORMANCE_COMPARISON On)
 include(cmake/pkg.cmake)
 
 ################################
