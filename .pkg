@@ -3,7 +3,7 @@
   branch=master
   commit=ceb358f9a411ab94e4087fc4a87da8eaea1f1463
 [websocketpp]
-  url=git@bitbucket.org:makielski/websocketpp.git
+  url=git@github.com:makielskis/websocketpp.git
   branch=botscript-2021
   commit=1a21d5742ad585f4346ead9db058757da2ba18ab
 [cereal]
