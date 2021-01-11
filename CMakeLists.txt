@@ -1,6 +1,17 @@
 cmake_minimum_required(VERSION 3.10)
 project(botscript-server)
 
+
+if (MSVC)
+  # PDB debug information is not supported by buildcache.
+  string(REPLACE "/Zi" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
+  string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+  string(REPLACE "/Zi" "" CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}")
+  string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+endif()
+
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 ################################
 # Basic Compiler Flags
 ################################
@@ -53,6 +64,7 @@ if (MSVC OR MINGW)
 endif()
 
 set(SKIP_PERFORMANCE_COMPARISON On)
+include(cmake/buildcache.cmake)
 include(cmake/pkg.cmake)
 
 ################################
