@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(botscript-server)
 
+add_definitions(-D_WEBSOCKETPP_CPP11_STL_)
 
 if (MSVC)
   # PDB debug information is not supported by buildcache.
