@@ -17,18 +17,17 @@ namespace botscript_server {
 dust_server_options::dust_server_options(std::string host, std::string port,
                                          std::string password)
     : dust_server::options(std::move(host), std::move(port),
-                           std::move(password)) {
-}
+                           std::move(password)) {}
 
 po::options_description dust_server_options::desc() {
   boost::program_options::options_description desc("Database Server Options");
-  desc.add_options()
-    (HOST_OPTION, po::value<std::string>(&host_)->default_value(host_),
-        "the IP the db script interface (e.g. 127.0.0.1 or 0.0.0.0)")
-    (PORT_OPTION, po::value<std::string>(&port_)->default_value(port_),
-        "the port for db interface (1-65536)")
-    (PASSWORD_OPTION, po::value<std::string>(&password_),
-        "admin password for db script interface");
+  desc.add_options()(
+      HOST_OPTION, po::value<std::string>(&host_)->default_value(host_),
+      "the IP the db script interface (e.g. 127.0.0.1 or 0.0.0.0)")(
+      PORT_OPTION, po::value<std::string>(&port_)->default_value(port_),
+      "the port for db interface (1-65536)")(
+      PASSWORD_OPTION, po::value<std::string>(&password_),
+      "admin password for db script interface");
   return desc;
 }
 

@@ -5,9 +5,9 @@
 #ifndef BOTSCRIPT_SERVER_OPTIONS_PARSER_H_
 #define BOTSCRIPT_SERVER_OPTIONS_PARSER_H_
 
-#include <vector>
 #include <ostream>
 #include <string>
+#include <vector>
 
 #include "boost/program_options.hpp"
 

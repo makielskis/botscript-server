@@ -11,8 +11,7 @@
 namespace botscript_server {
 
 bots_msg::bots_msg(const std::map<std::string, std::string>& bot_configs)
-    : bot_configs_(bot_configs) {
-}
+    : bot_configs_(bot_configs) {}
 
 const std::map<std::string, std::string>& bots_msg::bot_configs() const {
   return bot_configs_;

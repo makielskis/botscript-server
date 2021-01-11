@@ -12,24 +12,25 @@ extern "C" {
  * Method:    start
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_net_makielski_botscript_BotscriptServer_start
-  (JNIEnv *, jobject);
+JNIEXPORT void JNICALL
+Java_net_makielski_botscript_BotscriptServer_start(JNIEnv*, jobject);
 
 /*
  * Class:     net_makielski_botscript_BotscriptServer
  * Method:    stop
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_net_makielski_botscript_BotscriptServer_stop
-  (JNIEnv *, jobject);
+JNIEXPORT void JNICALL
+Java_net_makielski_botscript_BotscriptServer_stop(JNIEnv*, jobject);
 
 /*
  * Class:     net_makielski_botscript_BotscriptServer
  * Method:    createService
  * Signature: (Ljava/lang/String;)J
  */
-JNIEXPORT jlong JNICALL Java_net_makielski_botscript_BotscriptServer_createService
-  (JNIEnv *, jclass, jstring);
+JNIEXPORT jlong JNICALL
+Java_net_makielski_botscript_BotscriptServer_createService(JNIEnv*, jclass,
+                                                           jstring);
 
 #ifdef __cplusplus
 }

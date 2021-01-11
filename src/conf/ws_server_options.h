@@ -19,8 +19,7 @@ public:
 
   ws_server_options(std::string host_default, std::string port_default);
 
-  virtual ~ws_server_options() {
-  }
+  virtual ~ws_server_options() {}
 
   virtual boost::program_options::options_description desc() override;
   virtual void print(std::ostream& out) const override;
@@ -33,4 +32,4 @@ std::ostream& operator<<(std::ostream& out, const ws_server_options& options);
 
 }  // namespace botscript_server
 
-#endif   // BOTSCRIPT_SERVER_WS_SERVER_OPTIONS_H_
+#endif  // BOTSCRIPT_SERVER_WS_SERVER_OPTIONS_H_

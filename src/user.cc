@@ -15,15 +15,13 @@ namespace botscript_server {
 
 using websocketpp::md5::md5_hash_hex;
 
-user::user(dust::document doc)
-    : doc_(std::move(doc)) {
+user::user(dust::document doc) : doc_(std::move(doc)) {
   if (!exists()) {
     throw boost::system::system_error(error::user_not_found);
   }
 }
 
-user::user(dust::document doc,
-           const std::string& password,
+user::user(dust::document doc, const std::string& password,
            const std::string& email)
     : doc_(std::move(doc)) {
   if (exists()) {
@@ -42,13 +40,9 @@ bool user::exists() const {
   return password_doc.exists() || email_doc.exists() || session_doc.exists();
 }
 
-std::string user::username() const {
-  return doc_.index();
-}
+std::string user::username() const { return doc_.index(); }
 
-std::string user::email() const {
-  return doc_["email"].val();
-}
+std::string user::email() const { return doc_["email"].val(); }
 
 std::vector<std::shared_ptr<botscript::bot_config>> user::bot_configs() const {
   std::vector<std::shared_ptr<botscript::bot_config>> configs;
@@ -71,13 +65,12 @@ bool user::has_bot(const std::string& identifier) const {
   return doc_["bots"][identifier].exists();
 }
 
-std::shared_ptr<botscript::bot_config> user::bot_config(const std::string& identifier) const {
+std::shared_ptr<botscript::bot_config> user::bot_config(
+    const std::string& identifier) const {
   return std::make_shared<db_bot_config>(doc_["bots"][identifier]);
 }
 
-std::string user::session_id() const {
-  return doc_["session"]["id"].val();
-}
+std::string user::session_id() const { return doc_["session"]["id"].val(); }
 
 std::time_t user::session_expire() const {
   return boost::lexical_cast<time_t>(doc_["session"]["expire"].val());
@@ -120,8 +113,6 @@ bool user::check_password(const std::string& password) {
   return md5_hash_hex(password) == doc_["password"].val();
 }
 
-void user::remove() {
-  doc_.remove();
-}
+void user::remove() { doc_.remove(); }
 
 }  // namespace botscript_server

@@ -23,14 +23,14 @@ namespace botscript_server {
 ///   }
 /// }
 class update_msg : public message {
- public:
+public:
   /// \param request_id  the ID of the request that was successful
   /// \param request     the type array of the request that was successful
   update_msg(const std::string& id, const std::string& k, const std::string& v);
 
   virtual std::string to_json() const override;
 
- private:
+private:
   const std::string id_;
   const std::string k_;
   const std::string v_;

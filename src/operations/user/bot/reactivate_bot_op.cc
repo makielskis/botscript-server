@@ -14,20 +14,14 @@ namespace botscript_server {
 reactivate_bot_op::reactivate_bot_op(const rapidjson::Document& doc)
     : create_bot_op(doc),
       identifier_(doc["arguments"]["identifier"].GetString()),
-      proxy_(doc["arguments"]["proxy"].GetString()) {
-}
+      proxy_(doc["arguments"]["proxy"].GetString()) {}
 
-const std::string& reactivate_bot_op::identifier() const {
-  return identifier_;
-}
+const std::string& reactivate_bot_op::identifier() const { return identifier_; }
 
-const std::string& reactivate_bot_op::proxy() const {
-  return proxy_;
-}
+const std::string& reactivate_bot_op::proxy() const { return proxy_; }
 
 std::shared_ptr<botscript::bot_config> reactivate_bot_op::bot_config(
-    const bs_server& server,
-    const user& u) const {
+    const bs_server& server, const user& u) const {
   auto bot_config = u.bot_config(identifier());
 
   if (!bot_config->inactive()) {
@@ -43,14 +37,10 @@ std::shared_ptr<botscript::bot_config> reactivate_bot_op::bot_config(
   return bot_config;
 }
 
-std::string reactivate_bot_op::bot_id() const {
-  return identifier();
-}
+std::string reactivate_bot_op::bot_id() const { return identifier(); }
 
 void reactivate_bot_op::on_load_fail(
-    std::shared_ptr<botscript::bot_config> /* config */,
-    user /* u */) const {
-}
+    std::shared_ptr<botscript::bot_config> /* config */, user /* u */) const {}
 
 std::vector<std::string> reactivate_bot_op::type() const {
   return {"user", "bot", "create", "reactivate"};

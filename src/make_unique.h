@@ -10,7 +10,7 @@
 namespace botscript_server {
 
 #ifndef _MSC_VER
-template<typename T, typename... Args>
+template <typename T, typename... Args>
 std::unique_ptr<T> make_unique(Args&&... args) {
   return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
@@ -19,6 +19,5 @@ using std::make_unique;
 #endif
 
 }  // namespace botscript_server
-
 
 #endif  // BOTSCRIPT_SERVER_MAKE_UNIQUE_H_

@@ -5,9 +5,9 @@
 #ifndef BOTSCRIPT_SERVER_OPERATIONS_USER_BOT_BOT_UTIL_H_
 #define BOTSCRIPT_SERVER_OPERATIONS_USER_BOT_BOT_UTIL_H_
 
+#include <map>
 #include <memory>
 #include <string>
-#include <map>
 
 namespace botscript {
 class bot;

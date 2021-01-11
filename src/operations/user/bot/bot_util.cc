@@ -3,8 +3,8 @@
 #include "bot_config.h"
 
 #include "../../../bs_server.h"
-#include "../../../user.h"
 #include "../../../error.h"
+#include "../../../user.h"
 
 namespace botscript_server {
 

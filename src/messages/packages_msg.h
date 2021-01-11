@@ -20,7 +20,7 @@ namespace botscript_server {
 ///   'arguments': [Array of Objects]
 /// }
 class packages_msg : public message {
- public:
+public:
   /// \param packages  JSON formatted package descriptions
   packages_msg(const std::vector<std::string>& packages);
 
@@ -29,7 +29,7 @@ class packages_msg : public message {
   /// \return the packages
   const std::vector<std::string>& packages() const;
 
- private:
+private:
   /// JSON formatted package descriptions
   const std::vector<std::string> packages_;
 };

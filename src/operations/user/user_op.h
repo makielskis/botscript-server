@@ -5,9 +5,9 @@
 #ifndef BOTSCRIPT_SERVER_OPERATIONS_USER_USER_OP_
 #define BOTSCRIPT_SERVER_OPERATIONS_USER_USER_OP_
 
-#include <vector>
-#include <string>
 #include <map>
+#include <string>
+#include <vector>
 
 #include "rapidjson/document.h"
 
@@ -31,9 +31,8 @@ class user;
 ///   }
 /// }
 class user_op : public operation {
- public:
-  virtual ~user_op() {
-  }
+public:
+  virtual ~user_op() {}
 
   /// \param sid the session id
   explicit user_op(const std::string& sid);
@@ -51,7 +50,7 @@ class user_op : public operation {
   virtual std::vector<msg_ptr> execute(bs_server& server,
                                        op_callback cb) const override;
 
- protected:
+protected:
   /// Checks whether the session ID is valid.
   /// If it is invalid, this method will throw an session_error.
   ///
@@ -59,10 +58,10 @@ class user_op : public operation {
   /// \return the user that has the session ID contained in this user message
   user get_user_from_session(bs_server& bs) const;
 
- private:
+private:
   std::string sid_;
 };
 
 }  // namespace botscript_server
 
-#endif   // BOTSCRIPT_SERVER_OPERATIONS_USER_USER_OP_
+#endif  // BOTSCRIPT_SERVER_OPERATIONS_USER_USER_OP_

@@ -2,8 +2,8 @@
 
 #include <memory>
 
-#include "boost/thread.hpp"
 #include "boost/filesystem.hpp"
+#include "boost/thread.hpp"
 
 #include "dust/storage/cached_db.h"
 
@@ -18,8 +18,7 @@ public:
   server(std::string packages_path, const std::string& db_path)
       : s(bss::ws_server_options("127.0.0.1", "9003"),
           bss::bs_server_options(false, true, std::move(packages_path), true),
-          &io_s, std::make_shared<dust::cached_db>(db_path)) {
-  }
+          &io_s, std::make_shared<dust::cached_db>(db_path)) {}
   boost::asio::io_service io_s;
   bss::ws_server s;
   boost::thread t;

@@ -15,17 +15,15 @@ namespace botscript_server {
 
 ws_server_options::ws_server_options(std::string host_default,
                                      std::string port_default)
-    : host(std::move(host_default)),
-      port(std::move(port_default)) {
-}
+    : host(std::move(host_default)), port(std::move(port_default)) {}
 
 po::options_description ws_server_options::desc() {
   po::options_description desc("Websocket Server Options");
-  desc.add_options()
-    (HOST_OPTION, po::value<std::string>(&host)->default_value(host),
-        "bot server websocket host (e.g. 127.0.0.1 or 0.0.0.0)")
-    (PORT_OPTION, po::value<std::string>(&port)->default_value(port),
-        "bot server websocket port (1-65536)");
+  desc.add_options()(HOST_OPTION,
+                     po::value<std::string>(&host)->default_value(host),
+                     "bot server websocket host (e.g. 127.0.0.1 or 0.0.0.0)")(
+      PORT_OPTION, po::value<std::string>(&port)->default_value(port),
+      "bot server websocket port (1-65536)");
   return desc;
 }
 
@@ -40,4 +38,3 @@ std::ostream& operator<<(std::ostream& out, const ws_server_options& options) {
 }
 
 }  // namespace botscript_server
-

@@ -6,10 +6,10 @@
 
 #include "bot.h"
 
+#include "../../../bs_server.h"
+#include "../../../error.h"
 #include "../../../make_unique.h"
 #include "../../../messages/bots_msg.h"
-#include "../../../error.h"
-#include "../../../bs_server.h"
 #include "../../../user.h"
 #include "./bot_util.h"
 
@@ -17,18 +17,12 @@ namespace botscript_server {
 
 delete_bot_op::delete_bot_op(const std::string& sid,
                              const std::string& identifier)
-    : user_op(sid),
-      identifier_(identifier) {
-}
+    : user_op(sid), identifier_(identifier) {}
 
 delete_bot_op::delete_bot_op(const rapidjson::Document& doc)
-    : user_op(doc),
-      identifier_(doc["arguments"]["identifier"].GetString()) {
-}
+    : user_op(doc), identifier_(doc["arguments"]["identifier"].GetString()) {}
 
-const std::string& delete_bot_op::identifier() const {
-  return identifier_;
-}
+const std::string& delete_bot_op::identifier() const { return identifier_; }
 
 std::vector<std::string> delete_bot_op::type() const {
   return {"user", "bot", "delete"};
@@ -53,7 +47,7 @@ std::vector<msg_ptr> delete_bot_op::execute(bs_server& server,
   try {
     get_bot(u, server, identifier())->shutdown();
     server.bots_.erase(identifier());
-  } catch(const boost::system::system_error&) {
+  } catch (const boost::system::system_error&) {
   }
 
   // Remove bot configuration from the database.

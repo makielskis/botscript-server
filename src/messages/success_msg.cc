@@ -4,16 +4,14 @@
 
 #include "./success_msg.h"
 
-#include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
+#include "rapidjson/writer.h"
 
 namespace botscript_server {
 
 success_msg::success_msg(unsigned int request_id,
                          const std::vector<std::string>& request)
-    : request_id_(request_id),
-      request_(request) {
-}
+    : request_id_(request_id), request_(request) {}
 
 std::string success_msg::to_json() const {
   rapidjson::StringBuffer buffer;
@@ -32,7 +30,7 @@ std::string success_msg::to_json() const {
       writer.String("request");
       writer.StartArray();
       for (const std::string& s : request_) {
-        writer.String(s.c_str(), (rapidjson::SizeType) s.length());
+        writer.String(s.c_str(), (rapidjson::SizeType)s.length());
       }
       writer.EndArray();
 

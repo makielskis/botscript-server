@@ -5,8 +5,8 @@
 #ifndef BOTSCRIPT_SERVER_OPERATIONS_USER_UPDATE_EMAIL_UPDATE_OP_
 #define BOTSCRIPT_SERVER_OPERATIONS_USER_UPDATE_EMAIL_UPDATE_OP_
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "rapidjson/document.h"
 
@@ -26,7 +26,7 @@ namespace botscript_server {
 ///   }
 /// }
 class email_update_op : public user_op {
- public:
+public:
   explicit email_update_op(const rapidjson::Document& doc);
 
   const std::string& current_pw() const;
@@ -36,12 +36,11 @@ class email_update_op : public user_op {
   virtual std::vector<msg_ptr> execute(bs_server& server,
                                        op_callback cb) const override;
 
- private:
+private:
   std::string current_pw_;
   std::string new_email_;
 };
 
-
 }  // namespace botscript_server
 
-#endif   // BOTSCRIPT_SERVER_OPERATIONS_USER_UPDATE_EMAIL_UPDATE_OP_
+#endif  // BOTSCRIPT_SERVER_OPERATIONS_USER_UPDATE_EMAIL_UPDATE_OP_

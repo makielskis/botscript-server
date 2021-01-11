@@ -23,7 +23,7 @@ namespace botscript_server {
 ///   }
 /// }
 class session_msg : public message {
- public:
+public:
   /// \param expire  session expiration timestamp
   /// \param sid     session ID
   session_msg(const time_t expire, const std::string& sid);
@@ -33,7 +33,7 @@ class session_msg : public message {
   /// \return the session ID
   const std::string& sid() const;
 
- private:
+private:
   /// Session expiration timestamp
   const time_t expire_;
 

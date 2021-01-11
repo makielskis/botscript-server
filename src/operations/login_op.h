@@ -28,7 +28,7 @@ namespace botscript_server {
 /// If login was successful: success message + session + packages + botlist
 /// If login failed: failure message
 class login_op : public operation {
- public:
+public:
   explicit login_op(const rapidjson::Document& doc);
 
   login_op(const std::string& username, const std::string& password);
@@ -43,7 +43,7 @@ class login_op : public operation {
   virtual std::vector<msg_ptr> execute(bs_server& server,
                                        op_callback cb) const override;
 
- private:
+private:
   std::string username_;
   std::string password_;
 };

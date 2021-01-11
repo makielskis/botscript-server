@@ -4,18 +4,14 @@
 
 #include "./account_msg.h"
 
-#include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
+#include "rapidjson/writer.h"
 
 namespace botscript_server {
 
-account_msg::account_msg(const std::string& email)
-    : email_(email)  {
-}
+account_msg::account_msg(const std::string& email) : email_(email) {}
 
-const std::string& account_msg::email() const {
-  return email_;
-}
+const std::string& account_msg::email() const { return email_; }
 
 std::string account_msg::to_json() const {
   rapidjson::StringBuffer buffer;
@@ -32,7 +28,7 @@ std::string account_msg::to_json() const {
       writer.StartObject();
 
       writer.String("email");
-      writer.String(email_.c_str(), (rapidjson::SizeType) email_.length());
+      writer.String(email_.c_str(), (rapidjson::SizeType)email_.length());
 
       writer.EndObject();
     }

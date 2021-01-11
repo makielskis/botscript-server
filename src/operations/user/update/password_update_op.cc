@@ -4,25 +4,22 @@
 
 #include "./password_update_op.h"
 
-#include "../../../user.h"
 #include "../../../make_unique.h"
 #include "../../../messages/success_msg.h"
+#include "../../../user.h"
 
 namespace botscript_server {
 
 password_update_op::password_update_op(const rapidjson::Document& doc)
     : user_op(doc),
       current_pw_(doc["arguments"]["current_pw"].GetString()),
-      new_pw_(doc["arguments"]["new_pw"].GetString()) {
-}
+      new_pw_(doc["arguments"]["new_pw"].GetString()) {}
 
 const std::string& password_update_op::current_pw() const {
   return current_pw_;
 }
 
-const std::string& password_update_op::new_pw() const {
-  return new_pw_;
-}
+const std::string& password_update_op::new_pw() const { return new_pw_; }
 
 std::vector<std::string> password_update_op::type() const {
   return {"user", "update", "password"};

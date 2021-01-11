@@ -4,14 +4,14 @@
 
 #include "./db_bot_config.h"
 
-#include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
+#include "rapidjson/writer.h"
 
 #include "dust/json_util.h"
 #include "dust/json_visitor.h"
 
-using botscript::string_map;
 using botscript::command_sequence;
+using botscript::string_map;
 
 namespace botscript_server {
 
@@ -28,9 +28,8 @@ db_bot_config::db_bot_config(dust::document document)
   }
 }
 
-db_bot_config::db_bot_config(
-    dust::document document,
-    const std::string& json_config)
+db_bot_config::db_bot_config(dust::document document,
+                             const std::string& json_config)
     : doc_(std::move(document)) {
   dust::insert_json(doc_, json_config);
 
@@ -46,12 +45,9 @@ db_bot_config::db_bot_config(
 }
 
 db_bot_config::db_bot_config(
-    dust::document document,
-    const std::string& /* identifier */,
-    const std::string& username,
-    const std::string& password,
-    const std::string& package,
-    const std::string& server,
+    dust::document document, const std::string& /* identifier */,
+    const std::string& username, const std::string& password,
+    const std::string& package, const std::string& server,
     const std::map<std::string, string_map>& module_settings)
     : doc_(std::move(document)) {
   doc_["username"] = username;
@@ -137,17 +133,13 @@ std::string db_bot_config::value_of(const std::string& key) const {
   return "";
 }
 
-void db_bot_config::inactive(bool flag) {
-  doc_["inactive"] = flag ? "1" : "0";
-}
+void db_bot_config::inactive(bool flag) { doc_["inactive"] = flag ? "1" : "0"; }
 
 bool db_bot_config::inactive() const {
   return doc_["inactive"].exists() ? (doc_["inactive"].val() == "1") : false;
 }
 
-std::string db_bot_config::identifier() const {
-  return doc_.index();
-}
+std::string db_bot_config::identifier() const { return doc_.index(); }
 
 std::string db_bot_config::username() const {
   return doc_["username"].exists() ? doc_["username"].val() : "";
@@ -191,14 +183,12 @@ void db_bot_config::cookies(std::map<std::string, std::string> const& cookies) {
   }
 }
 
-void db_bot_config::set(const std::string& module,
-                        const std::string& key,
+void db_bot_config::set(const std::string& module, const std::string& key,
                         const std::string& value) {
   doc_["modules"][module][key] = value;
 }
 
-void db_bot_config::set(const std::string& key,
-                        const std::string& value) {
+void db_bot_config::set(const std::string& key, const std::string& value) {
   auto pos = key.find("_");
   if (pos != std::string::npos) {
     std::string module = key.substr(0, pos);

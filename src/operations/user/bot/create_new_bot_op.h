@@ -20,7 +20,7 @@ namespace botscript_server {
 ///   }
 /// }
 class create_new_bot_op : public create_bot_op {
- public:
+public:
   /// \param sid     the session id
   /// \param config  the configuration to load the bot with
   create_new_bot_op(const std::string& sid, const std::string& config);
@@ -35,21 +35,19 @@ class create_new_bot_op : public create_bot_op {
 
   virtual std::vector<std::string> type() const override;
 
- protected:
+protected:
   virtual std::shared_ptr<botscript::bot_config> bot_config(
-      const bs_server& server,
-      const user& u) const override;
+      const bs_server& server, const user& u) const override;
 
-  virtual void on_load_fail(
-      std::shared_ptr<botscript::bot_config> config,
-      user u) const override;
+  virtual void on_load_fail(std::shared_ptr<botscript::bot_config> config,
+                            user u) const override;
 
   virtual std::string bot_id() const override;
 
- private:
+private:
   std::string config_;
 };
 
-}  // namespace botscritp_server
+}  // namespace botscript_server
 
 #endif  // BOTSCRIPT_SERVER_OPERATIONS_USER_BOT_CREATE_NEW_BOT_OP_

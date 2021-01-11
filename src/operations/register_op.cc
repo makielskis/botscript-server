@@ -4,18 +4,18 @@
 
 #include "./register_op.h"
 
-#include <istream>
 #include <fstream>
+#include <istream>
 
-#include "../bs_server.h"
-#include "../user.h"
-#include "../make_unique.h"
-#include "../error.h"
-#include "../messages/session_msg.h"
-#include "../messages/account_msg.h"
-#include "../messages/packages_msg.h"
-#include "../messages/bots_msg.h"
 #include "../allowed_users_parser.h"
+#include "../bs_server.h"
+#include "../error.h"
+#include "../make_unique.h"
+#include "../messages/account_msg.h"
+#include "../messages/bots_msg.h"
+#include "../messages/packages_msg.h"
+#include "../messages/session_msg.h"
+#include "../user.h"
 
 namespace botscript_server {
 
@@ -27,26 +27,15 @@ register_op::register_op(const rapidjson::Document& doc) {
 
 register_op::register_op(const std::string& username,
                          const std::string& password, const std::string& email)
-    : username_(username),
-      password_(password),
-      email_(email) {
-}
+    : username_(username), password_(password), email_(email) {}
 
-const std::string& register_op::username() const {
-  return username_;
-}
+const std::string& register_op::username() const { return username_; }
 
-const std::string& register_op::password() const {
-  return password_;
-}
+const std::string& register_op::password() const { return password_; }
 
-const std::string& register_op::email() const {
-  return email_;
-}
+const std::string& register_op::email() const { return email_; }
 
-std::vector<std::string> register_op::type() const {
-  return {"register"};
-}
+std::vector<std::string> register_op::type() const { return {"register"}; }
 
 std::vector<msg_ptr> register_op::execute(bs_server& server,
                                           op_callback cb) const {

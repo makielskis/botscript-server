@@ -5,8 +5,8 @@
 #ifndef BOTSCRIPT_SERVER_SESSION_H_
 #define BOTSCRIPT_SERVER_SESSION_H_
 
-#include <string>
 #include <set>
+#include <string>
 
 #include "./user.h"
 
@@ -25,9 +25,7 @@ struct session {
   ///
   /// \param o  the other session to compare with
   /// \return id < o.id
-  bool operator<(const session& o) {
-    return id < o.id;
-  }
+  bool operator<(const session& o) { return id < o.id; }
 };
 
 #endif  // BOTSCRIPT_SERVER_SESSION_H_

@@ -4,8 +4,8 @@
 
 #include "./bs_server_options.h"
 
-#include "boost/program_options.hpp"
 #include "boost/io/ios_state.hpp"
+#include "boost/program_options.hpp"
 
 #define FORCEPROXY_OPTION "botscript_server.forceproxy"
 #define AUTOLOGIN_OPTION "botscript_server.autologin"
@@ -24,34 +24,31 @@ bs_server_options::bs_server_options(bool forceproxy_default,
     : forceproxy(forceproxy_default),
       autologin(autologin_default),
       packages_path(default_packages_path),
-      botlog(botlog_default) {
-}
+      botlog(botlog_default) {}
 
 po::options_description bs_server_options::desc() {
   po::options_description desc("Botscript Server Options");
-  desc.add_options()
-    (FORCEPROXY_OPTION,
-        po::value<bool>(&forceproxy)->default_value(forceproxy),
-        "forces the user to set a bot proxy")
-    (AUTOLOGIN_OPTION,
-        po::value<bool>(&autologin)->default_value(autologin),
-        "single user mode with autologin (no authentification needed)")
-    (PACKAGES_PATH_OPTION,
-        po::value<std::string>(&packages_path)->default_value(packages_path),
-        "directory where the botscript packages are located")
-    (BOTLOG_OPTION,
-        po::value<bool>(&botlog)->default_value(botlog),
-        "whether the bots should print their output to stdout")
-    (ALLOWED_USERS_OPTION,
-        po::value<std::string>(&allowed_users)->default_value(allowed_users),
-        "file containing authorized users (see manual for file format)");
+  desc.add_options()(FORCEPROXY_OPTION,
+                     po::value<bool>(&forceproxy)->default_value(forceproxy),
+                     "forces the user to set a bot proxy")(
+      AUTOLOGIN_OPTION, po::value<bool>(&autologin)->default_value(autologin),
+      "single user mode with autologin (no authentification needed)")(
+      PACKAGES_PATH_OPTION,
+      po::value<std::string>(&packages_path)->default_value(packages_path),
+      "directory where the botscript packages are located")(
+      BOTLOG_OPTION, po::value<bool>(&botlog)->default_value(botlog),
+      "whether the bots should print their output to stdout")(
+      ALLOWED_USERS_OPTION,
+      po::value<std::string>(&allowed_users)->default_value(allowed_users),
+      "file containing authorized users (see manual for file format)");
   return desc;
 }
 
 void bs_server_options::print(std::ostream& out) const {
   boost::io::ios_all_saver guard(out);
-  out << "  " << FORCEPROXY_OPTION << ": " << std::boolalpha << forceproxy << "\n"
-      << "  " << AUTOLOGIN_OPTION << ": " << std::boolalpha  << autologin << "\n"
+  out << "  " << FORCEPROXY_OPTION << ": " << std::boolalpha << forceproxy
+      << "\n"
+      << "  " << AUTOLOGIN_OPTION << ": " << std::boolalpha << autologin << "\n"
       << "  " << PACKAGES_PATH_OPTION << ": " << packages_path << "\n"
       << "  " << BOTLOG_OPTION << ": " << botlog << "\n"
       << "  " << ALLOWED_USERS_OPTION << ": " << allowed_users;

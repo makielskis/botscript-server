@@ -2,25 +2,24 @@
 // Licensed under the MIT license
 // https://raw.github.com/makielski/botscript/master/COPYING
 
-#include <iostream>
-#include <iostream>
-#include <fstream>
-#include <memory>
 #include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <memory>
 
-#include "boost/program_options.hpp"
 #include "boost/asio/io_service.hpp"
+#include "boost/program_options.hpp"
 
 #include "dust/storage/cached_db.h"
 
 #include "dust-server/http_service.h"
 
-#include "./ws_server.h"
 #include "./botscript_server_version.h"
-#include "./conf/options_parser.h"
 #include "./conf/bs_server_options.h"
-#include "./conf/ws_server_options.h"
 #include "./conf/dust_server_options.h"
+#include "./conf/options_parser.h"
+#include "./conf/ws_server_options.h"
+#include "./ws_server.h"
 
 using namespace botscript_server;
 using namespace dust;
@@ -32,7 +31,7 @@ int main(int argc, char* argv[]) {
   bs_server_options bss_options(true, false, "packages", true);
   dust_server_options ds_options("0.0.0.0", "9004", "");
 
-  options_parser parser({ &wss_options, &bss_options, &ds_options });
+  options_parser parser({&wss_options, &bss_options, &ds_options});
   parser.read_command_line_args(argc, argv);
 
   if (parser.help()) {

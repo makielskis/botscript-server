@@ -5,8 +5,8 @@
 #ifndef BOTSCRIPT_SERVER_OPERATIONS_USER_BOT_REACTIVATE_BOT_OP_
 #define BOTSCRIPT_SERVER_OPERATIONS_USER_BOT_REACTIVATE_BOT_OP_
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "rapidjson/document.h"
 
@@ -26,7 +26,7 @@ namespace botscript_server {
 ///   }
 /// }
 class reactivate_bot_op : public create_bot_op {
- public:
+public:
   /// Reads the identifier from a reactivate message.
   ///
   /// \param msg the delete message
@@ -38,18 +38,16 @@ class reactivate_bot_op : public create_bot_op {
 
   virtual std::vector<std::string> type() const override;
 
- protected:
+protected:
   virtual std::shared_ptr<botscript::bot_config> bot_config(
-      const bs_server& server,
-      const user& u) const override;
+      const bs_server& server, const user& u) const override;
 
-  virtual void on_load_fail(
-      std::shared_ptr<botscript::bot_config> config,
-      user u) const override;
+  virtual void on_load_fail(std::shared_ptr<botscript::bot_config> config,
+                            user u) const override;
 
   virtual std::string bot_id() const;
 
- private:
+private:
   std::string identifier_;
   std::string proxy_;
 };

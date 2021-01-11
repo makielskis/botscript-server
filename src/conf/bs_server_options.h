@@ -20,8 +20,7 @@ public:
   bs_server_options(bool forceproxy_default, bool autologin_default,
                     std::string default_packages_path, bool botlog_default);
 
-  virtual ~bs_server_options() {
-  }
+  virtual ~bs_server_options() {}
 
   virtual boost::program_options::options_description desc() override;
   virtual void print(std::ostream& out) const override;
@@ -35,6 +34,6 @@ public:
 
 std::ostream& operator<<(std::ostream& out, const bs_server_options& options);
 
-}  // botscript_server
+}  // namespace botscript_server
 
 #endif  // BOTSCRIPT_SERVER_BS_SERVER_OPTIONS_H_

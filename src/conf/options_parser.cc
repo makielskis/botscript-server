@@ -4,26 +4,23 @@
 
 #include "./options_parser.h"
 
-#include <istream>
 #include <fstream>
+#include <istream>
 
 namespace po = boost::program_options;
 
 namespace botscript_server {
 
 options_parser::options_parser(std::vector<configuration*> options)
-: desc_("General"),
-options_(std::move(options)) {
+    : desc_("General"), options_(std::move(options)) {
   configure_description();
 }
 
 void options_parser::configure_description() {
-  desc_.add_options()
-      ("help", "produce help message")
-      ("version", "print version")
-      ("config,c",
-          po::value<std::string>(&file_)->default_value("config.ini"),
-          "config path");
+  desc_.add_options()("help", "produce help message")("version",
+                                                      "print version")(
+      "config,c", po::value<std::string>(&file_)->default_value("config.ini"),
+      "config path");
 
   for (auto& option : options_) {
     desc_.add(option->desc());
@@ -35,15 +32,15 @@ void options_parser::read_command_line_args(int argc, char* argv[]) {
   p.add("config", -1);
 
   auto parsed = po::command_line_parser(argc, argv)
-                  .options(desc_)
-                  .positional(p)
-                  .allow_unregistered()
-                  .run();
+                    .options(desc_)
+                    .positional(p)
+                    .allow_unregistered()
+                    .run();
   po::store(parsed, vm_);
   po::notify(vm_);
 
-  auto unrecog_cmdl = po::collect_unrecognized(parsed.options,
-                                               po::include_positional);
+  auto unrecog_cmdl =
+      po::collect_unrecognized(parsed.options, po::include_positional);
   unrecog_.insert(unrecog_.end(), unrecog_cmdl.begin(), unrecog_cmdl.end());
 }
 
@@ -62,24 +59,21 @@ void options_parser::read_configuration_file() {
   }
 }
 
-bool options_parser::help() {
-  return vm_.count("help") == 0 ? false : true;
-}
+bool options_parser::help() { return vm_.count("help") == 0 ? false : true; }
 
 bool options_parser::version() {
   return vm_.count("version") == 0 ? false : true;
 }
 
 void options_parser::print_used(std::ostream& out) {
-  out << "Used Options: " << "\n\n";
+  out << "Used Options: "
+      << "\n\n";
   for (auto const* option : options_) {
     out << *option << "\n\n";
   }
 }
 
-void options_parser::print_help(std::ostream& out) {
-  out << desc_ << "\n";
-}
+void options_parser::print_help(std::ostream& out) { out << desc_ << "\n"; }
 
 void options_parser::print_unrecognized(std::ostream& out) {
   if (unrecog_.empty()) {

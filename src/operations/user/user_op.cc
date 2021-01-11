@@ -4,37 +4,31 @@
 
 #include "./user_op.h"
 
-#include "bot_config.h"
 #include "bot.h"
+#include "bot_config.h"
 
-#include "../../make_unique.h"
-#include "../../error.h"
-#include "../../user.h"
-#include "../../messages/update_msg.h"
-#include "../../messages/session_msg.h"
-#include "../../messages/account_msg.h"
-#include "../../messages/packages_msg.h"
-#include "../../messages/bots_msg.h"
 #include "../../bs_server.h"
+#include "../../error.h"
+#include "../../make_unique.h"
+#include "../../messages/account_msg.h"
+#include "../../messages/bots_msg.h"
+#include "../../messages/packages_msg.h"
+#include "../../messages/session_msg.h"
+#include "../../messages/update_msg.h"
+#include "../../user.h"
 #include "./bot/bot_util.h"
 
 namespace botscript_server {
 
-user_op::user_op(const std::string& sid)
-    : sid_(sid) {
-}
+user_op::user_op(const std::string& sid) : sid_(sid) {}
 
 user_op::user_op(const rapidjson::Document& doc) {
   sid_ = doc["arguments"]["sid"].GetString();
 }
 
-const std::string& user_op::sid() const {
-  return sid_;
-}
+const std::string& user_op::sid() const { return sid_; }
 
-std::vector<std::string> user_op::type() const {
-  return {"user"};
-}
+std::vector<std::string> user_op::type() const { return {"user"}; }
 
 std::vector<msg_ptr> user_op::execute(bs_server& server, op_callback cb) const {
   user u = get_user_from_session(server);
@@ -43,8 +37,8 @@ std::vector<msg_ptr> user_op::execute(bs_server& server, op_callback cb) const {
   auto bot_configurations = bot_configs(u, server);
 
   std::vector<msg_ptr> out;
-  out.emplace_back(make_unique<session_msg>(u.session_expire(),
-                                            u.session_id()));
+  out.emplace_back(
+      make_unique<session_msg>(u.session_expire(), u.session_id()));
   out.emplace_back(make_unique<account_msg>(u.email()));
   out.emplace_back(make_unique<packages_msg>(server.packages_));
   out.emplace_back(make_unique<bots_msg>(bot_configurations));

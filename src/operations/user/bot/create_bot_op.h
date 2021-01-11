@@ -6,8 +6,8 @@
 #define BOTSCRIPT_SERVER_OPERATIONS_USER_BOT_CREATE_BOT_OP_
 
 #include <memory>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "rapidjson/document.h"
 
@@ -16,7 +16,7 @@
 namespace botscript {
 class bot;
 class bot_config;
-}
+}  // namespace botscript
 
 namespace botscript_server {
 
@@ -28,9 +28,9 @@ class user;
 ///
 /// Requires the bot_config() method to be overriden to get the
 /// actual bot configuration to load.
-class create_bot_op: public user_op,
-                     public std::enable_shared_from_this<create_bot_op> {
- public:
+class create_bot_op : public user_op,
+                      public std::enable_shared_from_this<create_bot_op> {
+public:
   explicit create_bot_op(const std::string& sid);
   create_bot_op(const rapidjson::Document& doc);
 
@@ -39,11 +39,10 @@ class create_bot_op: public user_op,
   virtual std::vector<msg_ptr> execute(bs_server& server,
                                        op_callback cb) const override;
 
- protected:
+protected:
   /// \return returns the bot configuration
   virtual std::shared_ptr<botscript::bot_config> bot_config(
-      const bs_server& server,
-      const user& u) const = 0;
+      const bs_server& server, const user& u) const = 0;
 
   /// \return the identifier thats given by the configuration
   virtual std::string bot_id() const = 0;
@@ -54,9 +53,8 @@ class create_bot_op: public user_op,
   ///
   /// \param config  the config that failed to load
   /// \param u       the user that triggered this operation
-  virtual void on_load_fail(
-      std::shared_ptr<botscript::bot_config> config,
-      user u) const = 0;
+  virtual void on_load_fail(std::shared_ptr<botscript::bot_config> config,
+                            user u) const = 0;
 };
 
 }  // namespace botscript_server

@@ -2,24 +2,24 @@
 // Licensed under the MIT license
 // https://raw.github.com/makielski/botscript/master/COPYING
 
-#ifndef  BOTSCRIPT_SERVER_WS_SERVER_H_
-#define  BOTSCRIPT_SERVER_WS_SERVER_H_
+#ifndef BOTSCRIPT_SERVER_WS_SERVER_H_
+#define BOTSCRIPT_SERVER_WS_SERVER_H_
 
-#include <memory>
 #include <functional>
+#include <memory>
 
-#include "boost/asio/io_service.hpp"
 #include "boost/asio.hpp"
+#include "boost/asio/io_service.hpp"
 
-#include "websocketpp/config/boost_config.hpp"
 #include "websocketpp/config/asio_no_tls.hpp"
+#include "websocketpp/config/boost_config.hpp"
 #include "websocketpp/server.hpp"
 
 #include "rapidjson/document.h"
 
 #include "./bs_server.h"
-#include "./messages/message.h"
 #include "./conf/ws_server_options.h"
+#include "./messages/message.h"
 
 namespace dust {
 class key_value_store;
@@ -31,14 +31,13 @@ class bs_server_options;
 
 /// Websocket server that uses the bs_server class to respond to requests.
 class ws_server {
- public:
+public:
   /// \param autologin    \see the autologin parameter of bs_server
   /// \param force_proxy  \see the force proxy parameter of bs_server
   /// \param io_service   the Asio I/O service for asynchronous networking
   /// \param store        the key value store for users and configurations
   /// \param packages     the packages to work with
-  ws_server(ws_server_options options,
-            bs_server_options mgr_options,
+  ws_server(ws_server_options options, bs_server_options mgr_options,
             boost::asio::io_service* io_service,
             std::shared_ptr<dust::key_value_store> store);
 
@@ -51,7 +50,7 @@ class ws_server {
   /// \return the used Asio I/O service
   boost::asio::io_service* io_service() const;
 
- private:
+private:
   /// We use the Boost Asio powered websocket server.
   typedef websocketpp::server<websocketpp::config::asio> server;
 
@@ -108,7 +107,9 @@ class ws_server {
   ws_server_options options_;
 
   std::map<std::string, websocketpp::connection_hdl> sid_con_map_;
-  std::map<websocketpp::connection_hdl, std::string, std::owner_less<websocketpp::connection_hdl>> con_sid_map_;
+  std::map<websocketpp::connection_hdl, std::string,
+           std::owner_less<websocketpp::connection_hdl>>
+      con_sid_map_;
   server websocket_server_;
 };
 

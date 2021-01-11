@@ -5,69 +5,63 @@
 #ifndef BOTSCRIPT_SERVER_BS_SERVER_H_
 #define BOTSCRIPT_SERVER_BS_SERVER_H_
 
+#include <functional>
+#include <map>
+#include <memory>
+#include <set>
 #include <string>
 #include <vector>
-#include <map>
-#include <set>
-#include <memory>
-#include <functional>
 
-#include "boost/multi_index_container.hpp"
-#include "boost/multi_index/ordered_index.hpp"
 #include "boost/multi_index/identity.hpp"
 #include "boost/multi_index/member.hpp"
+#include "boost/multi_index/ordered_index.hpp"
+#include "boost/multi_index_container.hpp"
 
 #include "boost/asio/io_service.hpp"
 #include "boost/asio/signal_set.hpp"
 
-#include "dust/storage/key_value_store.h"
 #include "dust/document.h"
+#include "dust/storage/key_value_store.h"
 
-#include "./user.h"
-#include "./session.h"
-#include "./operations/operation.h"
-#include "./messages/message.h"
 #include "./conf/bs_server_options.h"
+#include "./messages/message.h"
+#include "./operations/operation.h"
+#include "./session.h"
+#include "./user.h"
 
 namespace botscript {
 class bot;
 class bot_config;
-}
+}  // namespace botscript
 
 namespace botscript_server {
 
 typedef std::unique_ptr<message> msg_ptr;
-typedef std::function<void (std::string, std::vector<msg_ptr>)> sid_callback;
-typedef std::function<void (std::string)> session_end_cb;
-typedef std::function<void (std::string, std::string, std::string)> update_cb;
+typedef std::function<void(std::string, std::vector<msg_ptr>)> sid_callback;
+typedef std::function<void(std::string)> session_end_cb;
+typedef std::function<void(std::string, std::string, std::string)> update_cb;
 typedef std::shared_ptr<botscript::bot_config> bot_config_ptr;
 
 /// Used as index tag for session multi-set.
-struct index_session_id {
-};
+struct index_session_id {};
 
 /// Used as index tag for session multi-set.
-struct index_user {
-};
+struct index_user {};
 
 /// Data structure holding session information.
 /// Indexed in both directions: username <-> session ID
 typedef boost::multi_index_container<
-  session,
-  boost::multi_index::indexed_by<
-    boost::multi_index::ordered_unique<
-      boost::multi_index::tag<index_user>,
-      BOOST_MULTI_INDEX_MEMBER(session, user, u)
-    >,
-    boost::multi_index::ordered_unique<
-      boost::multi_index::tag<index_session_id>,
-      BOOST_MULTI_INDEX_MEMBER(session, std::string, id)
-    >
-  >
-> session_set;
+    session, boost::multi_index::indexed_by<
+                 boost::multi_index::ordered_unique<
+                     boost::multi_index::tag<index_user>,
+                     BOOST_MULTI_INDEX_MEMBER(session, user, u)>,
+                 boost::multi_index::ordered_unique<
+                     boost::multi_index::tag<index_session_id>,
+                     BOOST_MULTI_INDEX_MEMBER(session, std::string, id)>>>
+    session_set;
 
 struct bot_load_lock {
- public:
+public:
   bot_load_lock(bs_server& server, std::string identifier);
 
   bot_load_lock(const bot_load_lock&) = delete;
@@ -75,7 +69,7 @@ struct bot_load_lock {
 
   virtual ~bot_load_lock();
 
- private:
+private:
   bs_server& server_;
   std::string identifier_;
 };
@@ -87,17 +81,15 @@ struct bot_load_info {
 
 /// Main bot and user management class.
 class bs_server {
- public:
+public:
   /// \param io_service            the io_service used to create the bots
   /// \param store                 the storage to use (bot configs + users)
   /// \param packages              the bot packages to provide
   /// \param activity_cb           callback for bot activity (log, status upd.)
   /// \param session_end_callback  callback to inform about session end
-  bs_server(bs_server_options options,
-            boost::asio::io_service* io_service,
+  bs_server(bs_server_options options, boost::asio::io_service* io_service,
             std::shared_ptr<dust::key_value_store> store,
-            sid_callback activity_cb,
-            session_end_cb session_end_callback);
+            sid_callback activity_cb, session_end_cb session_end_callback);
 
   /// Starts listening for SIGUSR1 and reloads the packages on this signal.
   void listen_for_update_packages_signal();
@@ -142,8 +134,7 @@ class bs_server {
   /// \param err          the load result (empty string = success)
   /// \param configs_ptr  pointer to the remaining configurations
   /// \param lock         the lock that prevents the bot from beeing deleted
-  void on_bot_load(std::shared_ptr<botscript::bot> bot,
-                   std::string err,
+  void on_bot_load(std::shared_ptr<botscript::bot> bot, std::string err,
                    std::shared_ptr<std::vector<bot_load_info>> load_infos,
                    std::shared_ptr<bot_load_lock> lock);
 

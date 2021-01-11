@@ -11,14 +11,14 @@ namespace boost {
 namespace program_options {
 class options_description;
 class variables_map;
-}
-}
+}  // namespace program_options
+}  // namespace boost
 
 namespace botscript_server {
 
 class configuration {
 public:
-  virtual ~configuration() { }
+  virtual ~configuration() {}
   virtual boost::program_options::options_description desc() = 0;
   virtual void print(std::ostream& out) const = 0;
 

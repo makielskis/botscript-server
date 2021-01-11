@@ -7,22 +7,18 @@
 #include "bot.h"
 #include "bot_config.h"
 
-#include "../../../user.h"
 #include "../../../bs_server.h"
 #include "../../../error.h"
 #include "../../../make_unique.h"
 #include "../../../messages/success_msg.h"
+#include "../../../user.h"
 
 namespace botscript_server {
 
 delete_update_op::delete_update_op(const rapidjson::Document& doc)
-    : user_op(doc),
-      current_pw_(doc["arguments"]["current_pw"].GetString()) {
-}
+    : user_op(doc), current_pw_(doc["arguments"]["current_pw"].GetString()) {}
 
-const std::string& delete_update_op::current_pw() const {
-  return current_pw_;
-}
+const std::string& delete_update_op::current_pw() const { return current_pw_; }
 
 std::vector<std::string> delete_update_op::type() const {
   return {"user", "update", "delete"};

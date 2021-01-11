@@ -18,20 +18,13 @@ execute_bot_op::execute_bot_op(const rapidjson::Document& doc)
     : user_op(doc),
       identifier_(doc["arguments"]["identifier"].GetString()),
       command_(doc["arguments"]["execute"]["command"].GetString()),
-      argument_(doc["arguments"]["execute"]["argument"].GetString()) {
-}
+      argument_(doc["arguments"]["execute"]["argument"].GetString()) {}
 
-const std::string& execute_bot_op::identifier() const {
-  return identifier_;
-}
+const std::string& execute_bot_op::identifier() const { return identifier_; }
 
-const std::string& execute_bot_op::command() const {
-  return command_;
-}
+const std::string& execute_bot_op::command() const { return command_; }
 
-const std::string& execute_bot_op::argument() const {
-  return argument_;
-}
+const std::string& execute_bot_op::argument() const { return argument_; }
 
 std::vector<std::string> execute_bot_op::type() const {
   return {"user", "bot", "execute"};

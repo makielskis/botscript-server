@@ -4,46 +4,41 @@
 
 #include "./ws_server.h"
 
-#include <memory>
 #include <signal.h>
-#include <iostream>
 #include <functional>
+#include <iostream>
+#include <memory>
 
 #include "rapidjson/document.h"
 
-#include "./messages/message.h"
-#include "./messages/failure_msg.h"
-#include "./operations/all_ops.h"
 #include "./error.h"
+#include "./messages/failure_msg.h"
+#include "./messages/message.h"
+#include "./operations/all_ops.h"
 
 using websocketpp::connection_hdl;
+using websocketpp::frame::opcode::TEXT;
 using websocketpp::lib::bind;
 using websocketpp::lib::error_code;
-using websocketpp::frame::opcode::TEXT;
 
 namespace botscript_server {
 
-ws_server::ws_server(ws_server_options options,
-                     bs_server_options mgr_options,
+ws_server::ws_server(ws_server_options options, bs_server_options mgr_options,
                      boost::asio::io_service* io_service,
                      std::shared_ptr<dust::key_value_store> store)
     : io_service_(io_service),
       signals_(*io_service),
-      mgr_(std::move(mgr_options),
-           io_service_,
-           std::move(store),
-           std::bind(&ws_server::on_activity, this,
-                     std::placeholders::_1,
+      mgr_(std::move(mgr_options), io_service_, std::move(store),
+           std::bind(&ws_server::on_activity, this, std::placeholders::_1,
                      std::placeholders::_2),
-           std::bind(&ws_server::on_session_end, this,
-                     std::placeholders::_1)),
+           std::bind(&ws_server::on_session_end, this, std::placeholders::_1)),
       options_(std::move(options)) {
   websocket_server_.set_access_channels(websocketpp::log::alevel::none);
-  websocket_server_.set_close_handler(bind(&ws_server::on_close, this,
-                                           websocketpp::lib::placeholders::_1));
-  websocket_server_.set_message_handler(bind(&ws_server::on_msg, this,
-                                             websocketpp::lib::placeholders::_1,
-                                             websocketpp::lib::placeholders::_2));
+  websocket_server_.set_close_handler(
+      bind(&ws_server::on_close, this, websocketpp::lib::placeholders::_1));
+  websocket_server_.set_message_handler(
+      bind(&ws_server::on_msg, this, websocketpp::lib::placeholders::_1,
+           websocketpp::lib::placeholders::_2));
 
 #if !defined(_WIN32) && !defined(_WIN64)
   signals_.add(SIGINT);
@@ -66,12 +61,9 @@ void ws_server::stop() {
   websocket_server_.stop();
 }
 
-boost::asio::io_service* ws_server::io_service() const {
-  return io_service_;
-}
+boost::asio::io_service* ws_server::io_service() const { return io_service_; }
 
-void ws_server::on_activity(std::string sid,
-                            const std::vector<msg_ptr>& msgs) {
+void ws_server::on_activity(std::string sid, const std::vector<msg_ptr>& msgs) {
   const auto it = sid_con_map_.find(sid);
   if (it != sid_con_map_.cend()) {
     // Connection active, send messagewebsocket_server_.
@@ -89,8 +81,8 @@ void ws_server::on_activity(std::string sid,
     }
   } else {
     mgr_.handle_connection_close(sid);
-    std::cerr << "[FATAL] message for unknown session "
-              << sid << " not delivered\n";
+    std::cerr << "[FATAL] message for unknown session " << sid
+              << " not delivered\n";
   }
 }
 
@@ -186,9 +178,9 @@ void ws_server::on_msg(connection_hdl hdl, server::message_ptr msg) {
       error_code send_ec;
       websocket_server_.send(hdl, m.to_json(), TEXT, send_ec);
     }
-  } catch (std::exception e){
-    std::cout << "[FATAL] Unhandled exception in ws_server on_msg: "
-              << e.what() << "\n";
+  } catch (std::exception e) {
+    std::cout << "[FATAL] Unhandled exception in ws_server on_msg: " << e.what()
+              << "\n";
   } catch (...) {
     std::cout << "[FATAL] Unknown unhandled exception in ws_server on_msg\n";
   }

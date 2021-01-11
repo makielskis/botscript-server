@@ -15,17 +15,14 @@
 
 namespace botscript_server {
 
-bot_load_lock::bot_load_lock(bs_server& server,
-                                               std::string identifier)
-    : server_(server),
-      identifier_(std::move(identifier)) {
+bot_load_lock::bot_load_lock(bs_server& server, std::string identifier)
+    : server_(server), identifier_(std::move(identifier)) {
   server.bot_creation_blocklist_.insert(identifier_);
 }
 
 bot_load_lock::~bot_load_lock() {
   server_.bot_creation_blocklist_.erase(identifier_);
 }
-
 
 bs_server::bs_server(bs_server_options options,
                      boost::asio::io_service* io_service,
@@ -111,9 +108,7 @@ void bs_server::handle_connection_close(const std::string& sid) {
   }
 
   // Trigger session end callback.
-  io_service_->post([this, sid]() {
-    session_end_cb_(sid);
-  });
+  io_service_->post([this, sid]() { session_end_cb_(sid); });
 }
 
 void bs_server::load_bot(
@@ -133,8 +128,8 @@ void bs_server::load_bot(
   }
 
   std::cout << "Loading bot " << config->identifier() << std::endl;
-  auto load_cb = std::bind(&bs_server::on_bot_load, this, _1, _2,
-                           load_infos, load_info.load_lock);
+  auto load_cb = std::bind(&bs_server::on_bot_load, this, _1, _2, load_infos,
+                           load_info.load_lock);
   auto bot = std::make_shared<botscript::bot>(io_service_);
   bot->update_callback_ = print_cb();
   bot->init(config, load_cb);
@@ -147,15 +142,14 @@ void bs_server::load_bots() {
     auto user_bots = user(user_doc).bot_configs();
 
     std::cerr << "Adding bots from user " << user(user_doc).username() << ":\n";
-    std::for_each(user_bots.begin(), user_bots.end(),
-                  [&load_infos, this](const bot_config_ptr& conf) {
-                    std::cout << "\t" << conf->identifier() << "\n";
+    std::for_each(
+        user_bots.begin(), user_bots.end(),
+        [&load_infos, this](const bot_config_ptr& conf) {
+          std::cout << "\t" << conf->identifier() << "\n";
 
-                    load_infos->push_back({
-                      conf,
-                      std::make_shared<bot_load_lock>(*this, conf->identifier())
-                    });
-                  });
+          load_infos->push_back({conf, std::make_shared<bot_load_lock>(
+                                           *this, conf->identifier())});
+        });
   }
 
   // Load the first N bots.
@@ -175,8 +169,7 @@ void bs_server::load_further_bot(
 }
 
 void bs_server::on_bot_load(
-    std::shared_ptr<botscript::bot> bot,
-    std::string err,
+    std::shared_ptr<botscript::bot> bot, std::string err,
     std::shared_ptr<std::vector<bot_load_info>> load_infos,
     std::shared_ptr<bot_load_lock>) {
   bool success = err.empty();
@@ -184,8 +177,8 @@ void bs_server::on_bot_load(
 
   if (success) {
     bots_[bot->config()->identifier()] = bot;
-    std::cout << "[INFO ] Successfully loaded "
-              << bot->config()->identifier() << std::endl;
+    std::cout << "[INFO ] Successfully loaded " << bot->config()->identifier()
+              << std::endl;
   } else {
     std::cout << "[ERROR] Could not load " << bot->config()->identifier()
               << ": " << err << std::endl;
@@ -212,7 +205,7 @@ void bs_server::update_session(const user& u) {
   auto& users_indexed_by_name = sessions_.get<index_user>();
   user_index::iterator it = users_indexed_by_name.find(u);
   if (it == users_indexed_by_name.end()) {
-    sessions_.insert( { u.session_id(), u });
+    sessions_.insert({u.session_id(), u});
   } else {
     session s = *it;
     s.id = u.session_id();

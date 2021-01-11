@@ -21,8 +21,7 @@ public:
 
   dust_server_options(std::string host, std::string port, std::string password);
 
-  virtual ~dust_server_options() {
-  }
+  virtual ~dust_server_options() {}
 
   virtual boost::program_options::options_description desc() override;
   virtual void print(std::ostream& out) const override;

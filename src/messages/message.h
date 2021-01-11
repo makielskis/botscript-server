@@ -5,19 +5,17 @@
 #ifndef BOTSCRIPT_SERVER_MESSAGES_MESSAGE_
 #define BOTSCRIPT_SERVER_MESSAGES_MESSAGE_
 
-#include <vector>
 #include <functional>
 #include <memory>
+#include <vector>
 
 /// Interface for classes repesenting outgoing messages.
 class message {
- public:
+public:
   /// \return the message as JSON encoded string
   virtual std::string to_json() const = 0;
 
-  virtual ~message() {
-  }
+  virtual ~message() {}
 };
 
 #endif  // BOTSCRIPT_SERVER_MESSAGES_MESSAGE_
-

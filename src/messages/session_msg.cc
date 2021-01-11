@@ -4,15 +4,13 @@
 
 #include "./session_msg.h"
 
-#include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
+#include "rapidjson/writer.h"
 
 namespace botscript_server {
 
 session_msg::session_msg(const time_t expire, const std::string& sid)
-    : expire_(expire),
-      sid_(sid) {
-}
+    : expire_(expire), sid_(sid) {}
 
 std::string session_msg::to_json() const {
   rapidjson::StringBuffer buffer;
@@ -29,7 +27,7 @@ std::string session_msg::to_json() const {
       writer.StartObject();
 
       writer.String("sid");
-      writer.String(sid_.c_str(), (rapidjson::SizeType) sid_.length());
+      writer.String(sid_.c_str(), (rapidjson::SizeType)sid_.length());
 
       writer.String("expire");
       writer.Uint(expire_);
@@ -43,8 +41,6 @@ std::string session_msg::to_json() const {
   return buffer.GetString();
 }
 
-const std::string& session_msg::sid() const {
-  return sid_;
-}
+const std::string& session_msg::sid() const { return sid_; }
 
 }  // namespace botscript_server

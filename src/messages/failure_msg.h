@@ -25,15 +25,13 @@ namespace botscript_server {
 ///   }
 /// }
 class failure_msg : public message {
- public:
+public:
   /// \param request_id  the ID of the request that was successful
   /// \param request     the type array of the request that was successful
   /// \param error_code  error code that corresponds to the failure
   /// \param reason      string describing the reason of the error
-  failure_msg(unsigned int request_id,
-              const std::vector<std::string>& request,
-              unsigned int error_code,
-              const std::string& reason);
+  failure_msg(unsigned int request_id, const std::vector<std::string>& request,
+              unsigned int error_code, const std::string& reason);
 
   virtual std::string to_json() const override;
 
@@ -49,7 +47,7 @@ class failure_msg : public message {
   /// \retrun the error reason
   const std::string& reason() const;
 
- private:
+private:
   /// The ID of the request that was successful
   const unsigned int request_id_;
 

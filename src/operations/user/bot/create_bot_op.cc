@@ -9,19 +9,19 @@
 #include "bot.h"
 #include "bot_config.h"
 
-#include "bot_util.h"
+#include "../../../allowed_users_parser.h"
 #include "../../../bs_server.h"
 #include "../../../error.h"
-#include "../../../user.h"
 #include "../../../make_unique.h"
 #include "../../../messages/bots_msg.h"
 #include "../../../messages/failure_msg.h"
-#include "../../../allowed_users_parser.h"
+#include "../../../user.h"
+#include "bot_util.h"
 
 namespace botscript_server {
 
 struct blocklist_element {
- public:
+public:
   blocklist_element(bs_server& server, user u, std::string identifier)
       : server_(server),
         u_(std::move(u)),
@@ -43,9 +43,7 @@ struct blocklist_element {
   blocklist_element(const blocklist_element&) = delete;
   blocklist_element& operator=(const blocklist_element&) = delete;
 
-  virtual ~blocklist_element() {
-      free_block_list();
-  }
+  virtual ~blocklist_element() { free_block_list(); }
 
   void free_block_list() {
     if (!freed_) {
@@ -61,16 +59,11 @@ struct blocklist_element {
   bool freed_;
 };
 
-create_bot_op::create_bot_op(const std::string& sid)
-    : user_op(sid) {
-}
+create_bot_op::create_bot_op(const std::string& sid) : user_op(sid) {}
 
-create_bot_op::create_bot_op(const rapidjson::Document& doc)
-    : user_op(doc) {
-}
+create_bot_op::create_bot_op(const rapidjson::Document& doc) : user_op(doc) {}
 
-create_bot_op::~create_bot_op() {
-}
+create_bot_op::~create_bot_op() {}
 
 std::vector<msg_ptr> create_bot_op::execute(bs_server& server,
                                             op_callback cb) const {
@@ -91,8 +84,7 @@ std::vector<msg_ptr> create_bot_op::execute(bs_server& server,
   auto bot = std::make_shared<botscript::bot>(server.io_service_);
   bot->update_callback_ = server.sid_cb(sid());
   bot->init(config, [cb, u, &server, self, block](
-      std::shared_ptr<botscript::bot> bot,
-      std::string err) {
+                        std::shared_ptr<botscript::bot> bot, std::string err) {
     try {
       std::vector<msg_ptr> out;
       std::string identifier = bot->config()->identifier();
@@ -109,29 +101,28 @@ std::vector<msg_ptr> create_bot_op::execute(bs_server& server,
         bot->shutdown();
         boost::system::error_code ec = error::bot_creation_failed;
         std::string message = ec.message() + ": " + err;
-        out.emplace_back(make_unique<failure_msg>(0, self->type(), ec.value(),
-                                                  message));
+        out.emplace_back(
+            make_unique<failure_msg>(0, self->type(), ec.value(), message));
       }
 
       return cb("", std::move(out));
     } catch (const boost::system::system_error& e) {
       std::vector<msg_ptr> out;
-      out.emplace_back(make_unique<failure_msg>(0, self->type(),
-                                                e.code().value(),
-                                                e.code().message()));
+      out.emplace_back(make_unique<failure_msg>(
+          0, self->type(), e.code().value(), e.code().message()));
       return cb("", std::move(out));
     } catch (const std::exception& e) {
       std::vector<msg_ptr> out;
       boost::system::error_code ec = error::unknown_error;
       std::string message = ec.message() + e.what();
-      out.emplace_back(make_unique<failure_msg>(0, self->type(), ec.value(),
-                                                message));
+      out.emplace_back(
+          make_unique<failure_msg>(0, self->type(), ec.value(), message));
       return cb("", std::move(out));
     } catch (...) {
       std::vector<msg_ptr> out;
       boost::system::error_code ec = error::unknown_error;
-      out.emplace_back(make_unique<failure_msg>(0, self->type(), ec.value(),
-                                                ec.message()));
+      out.emplace_back(
+          make_unique<failure_msg>(0, self->type(), ec.value(), ec.message()));
       return cb("", std::move(out));
     }
   });

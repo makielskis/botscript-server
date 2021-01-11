@@ -28,13 +28,11 @@ namespace botscript_server {
 /// If registration was successful: success message
 /// If registration failed: failure message
 class register_op : public operation {
- public:
+public:
   explicit register_op(const rapidjson::Document& doc);
 
-  register_op(
-      const std::string& username,
-      const std::string& password,
-      const std::string& email);
+  register_op(const std::string& username, const std::string& password,
+              const std::string& email);
 
   /// \return the account username
   const std::string& username() const;
@@ -49,7 +47,7 @@ class register_op : public operation {
   virtual std::vector<msg_ptr> execute(bs_server& server,
                                        op_callback cb) const override;
 
- private:
+private:
   std::string username_;
   std::string password_;
   std::string email_;

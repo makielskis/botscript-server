@@ -9,8 +9,7 @@
 namespace botscript_server {
 
 packages_msg::packages_msg(const std::vector<std::string>& packages)
-    : packages_(packages) {
-}
+    : packages_(packages) {}
 
 const std::vector<std::string>& packages_msg::packages() const {
   return packages_;

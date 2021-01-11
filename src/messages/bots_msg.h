@@ -5,8 +5,8 @@
 #ifndef BOTSCRIPT_SERVER_MESSAGES_BOTS_MSG_
 #define BOTSCRIPT_SERVER_MESSAGES_BOTS_MSG_
 
-#include <string>
 #include <map>
+#include <string>
 
 #include "./message.h"
 
@@ -23,7 +23,7 @@ namespace botscript_server {
 ///   }
 /// }
 class bots_msg : public message {
- public:
+public:
   /// \param  map from bot identifier to the configuration of this bot
   bots_msg(const std::map<std::string, std::string>& bot_configs);
 
@@ -32,7 +32,7 @@ class bots_msg : public message {
 
   virtual std::string to_json() const override;
 
- private:
+private:
   /// Map from bot identifier to the configuration of this bot
   const std::map<std::string, std::string> bot_configs_;
 };

@@ -21,7 +21,7 @@ namespace botscript_server {
 ///   }
 /// }
 class account_msg : public message {
- public:
+public:
   /// \param email  email address
   account_msg(const std::string& email);
 
@@ -30,7 +30,7 @@ class account_msg : public message {
 
   virtual std::string to_json() const override;
 
- private:
+private:
   /// Email address
   const std::string email_;
 };

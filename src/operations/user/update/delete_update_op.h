@@ -5,8 +5,8 @@
 #ifndef BOTSCRIPT_SERVER_OPERATIONS_USER_UPDATE_DELETE_UPDATE_OP_
 #define BOTSCRIPT_SERVER_OPERATIONS_USER_UPDATE_DELETE_UPDATE_OP_
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "rapidjson/document.h"
 
@@ -25,7 +25,7 @@ namespace botscript_server {
 ///   }
 /// }
 class delete_update_op : public user_op {
- public:
+public:
   explicit delete_update_op(const rapidjson::Document& doc);
 
   /// \return the users current password
@@ -35,12 +35,11 @@ class delete_update_op : public user_op {
   virtual std::vector<msg_ptr> execute(bs_server& server,
                                        op_callback cb) const override;
 
- private:
+private:
   /// The users current password
   std::string current_pw_;
 };
 
-
 }  // namespace botscript_server
 
-#endif   // BOTSCRIPT_SERVER_OPERATIONS_USER_UPDATE_DELETE_UPDATE_OP_
+#endif  // BOTSCRIPT_SERVER_OPERATIONS_USER_UPDATE_DELETE_UPDATE_OP_

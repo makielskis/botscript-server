@@ -5,8 +5,8 @@
 #ifndef BOTSCRIPT_SERVER_OPERATIONS_USER_BOT_DELETE_BOT_OP_
 #define BOTSCRIPT_SERVER_OPERATIONS_USER_BOT_DELETE_BOT_OP_
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "rapidjson/document.h"
 
@@ -25,7 +25,7 @@ namespace botscript_server {
 ///   }
 /// }
 class delete_bot_op : public user_op {
- public:
+public:
   /// \param sid         the session id
   /// \param identifier  the id if the bot to delete
   delete_bot_op(const std::string& sid, const std::string& identifier);
@@ -43,7 +43,7 @@ class delete_bot_op : public user_op {
   virtual std::vector<msg_ptr> execute(bs_server& server,
                                        op_callback cb) const override;
 
- private:
+private:
   std::string identifier_;
 };
 

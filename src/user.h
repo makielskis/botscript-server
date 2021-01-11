@@ -5,10 +5,10 @@
 #ifndef BOTSCRIPT_SERVER_USER_H_
 #define BOTSCRIPT_SERVER_USER_H_
 
+#include <ctime>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
-#include <ctime>
 
 #include "dust/document.h"
 
@@ -41,7 +41,7 @@ namespace botscript_server {
 /// }
 /// \endcode
 class user {
- public:
+public:
   /// Creates a user object from an existing document.
   /// Throws user_not_found if the document does not contain a valid user.
   user(dust::document doc);
@@ -51,8 +51,7 @@ class user {
   ///
   /// \param doc       the document to store this user in
   /// \param password  the password of this user
-  user(dust::document doc,
-       const std::string& password,
+  user(dust::document doc, const std::string& password,
        const std::string& email);
 
   /// \return whether the bot exists in the database
@@ -78,7 +77,8 @@ class user {
 
   /// \param identifier  the identifier of the bot get the configuration for
   /// \return the bot configuration
-  std::shared_ptr<botscript::bot_config> bot_config(const std::string& identifier) const;
+  std::shared_ptr<botscript::bot_config> bot_config(
+      const std::string& identifier) const;
 
   /// \return the users current session id
   std::string session_id() const;
@@ -124,7 +124,7 @@ class user {
     return username() < u.username();
   }
 
- private:
+private:
   /// The database document containing the stored user information.
   dust::document doc_;
 };

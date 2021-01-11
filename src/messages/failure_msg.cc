@@ -4,20 +4,18 @@
 
 #include "./failure_msg.h"
 
-#include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
+#include "rapidjson/writer.h"
 
 namespace botscript_server {
 
 failure_msg::failure_msg(unsigned int request_id,
                          const std::vector<std::string>& request,
-                         unsigned int error_code,
-                         const std::string& reason)
+                         unsigned int error_code, const std::string& reason)
     : request_id_(request_id),
       request_(request),
       error_code_(error_code),
-      reason_(reason) {
-}
+      reason_(reason) {}
 
 std::string failure_msg::to_json() const {
   rapidjson::StringBuffer buffer;
@@ -36,7 +34,7 @@ std::string failure_msg::to_json() const {
       writer.String("request");
       writer.StartArray();
       for (const std::string& s : request_) {
-        writer.String(s.c_str(), (rapidjson::SizeType) s.length());
+        writer.String(s.c_str(), (rapidjson::SizeType)s.length());
       }
       writer.EndArray();
 
@@ -58,21 +56,14 @@ std::string failure_msg::to_json() const {
   return buffer.GetString();
 }
 
-
-unsigned int failure_msg::request_id() const {
-  return request_id_;
-}
+unsigned int failure_msg::request_id() const { return request_id_; }
 
 const std::vector<std::string>& failure_msg::request() const {
   return request_;
 }
 
-unsigned int failure_msg::error_code() const {
-  return error_code_;
-}
+unsigned int failure_msg::error_code() const { return error_code_; }
 
-const std::string& failure_msg::reason() const {
-  return reason_;
-}
+const std::string& failure_msg::reason() const { return reason_; }
 
 }  // namespace botscript_server

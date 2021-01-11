@@ -23,15 +23,14 @@ namespace botscript_server {
 ///   }
 /// }
 class success_msg : public message {
- public:
+public:
   /// \param request_id  the ID of the request that was successful
   /// \param request     the type array of the request that was successful
-  success_msg(unsigned int request_id,
-              const std::vector<std::string>& request);
+  success_msg(unsigned int request_id, const std::vector<std::string>& request);
 
   virtual std::string to_json() const override;
 
- private:
+private:
   /// the ID of the request that was successful
   const unsigned int request_id_;
 

@@ -5,8 +5,8 @@
 #ifndef BOTSCRIPT_SERVER_OPERATIONS_USER_BOT_EXECUTE_BOT_OP_
 #define BOTSCRIPT_SERVER_OPERATIONS_USER_BOT_EXECUTE_BOT_OP_
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "rapidjson/document.h"
 
@@ -29,7 +29,7 @@ namespace botscript_server {
 ///   }
 /// }
 class execute_bot_op : public user_op {
- public:
+public:
   /// Reads the identifier, command and argument from the given message.
   ///
   /// param msg the execute message
@@ -49,7 +49,7 @@ class execute_bot_op : public user_op {
   virtual std::vector<msg_ptr> execute(bs_server& server,
                                        op_callback cb) const override;
 
- private:
+private:
   std::string identifier_;
   std::string command_;
   std::string argument_;
