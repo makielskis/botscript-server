@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(botscript-server)
 
 add_definitions(-D_WEBSOCKETPP_CPP11_STL_)
+find_package(Threads)
 
 if (MSVC)
   # PDB debug information is not supported by buildcache.
@@ -83,7 +84,7 @@ list(REMOVE_ITEM botscriptserver_lib_files ${c_api_files})
 
 add_library(botscriptserver_lib STATIC ${botscriptserver_lib_files})
 target_include_directories(botscriptserver_lib PUBLIC src deps/websocketpp)
-target_link_libraries(botscriptserver_lib rapidjson bs dust-server cereal boost-program_options)
+target_link_libraries(botscriptserver_lib rapidjson bs dust-server cereal boost-program_options ${CMAKE_THREAD_LIBS_INIT})
 if(MSVC)
   target_link_libraries(botscriptserver_lib bs dust boost)
   set(_def
@@ -123,7 +124,7 @@ else()
     elseif(ANDROID)
       target_link_libraries(botscriptserver_lib boost bs dust z)
     else()
-      target_link_libraries(botscriptserver_lib boost bs dust z rt -pthread)
+      target_link_libraries(botscriptserver_lib boost bs dust z rt)
     endif()
   endif()
 endif()
@@ -245,7 +246,7 @@ endif()
 # Server executable
 ################################
 add_executable(botscript-server-exe src/main.cc)
-
+target_link_libraries(botscript-server-exe ${CMAKE_THREAD_LIBS_INIT})
 if(MSVC)
   target_link_libraries(botscript-server-exe botscriptserver_lib dust-server)
   set(_def
@@ -280,7 +281,7 @@ else()
   if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     target_link_libraries(botscript-server-exe botscriptserver_lib dust-server)
   else()
-    target_link_libraries(botscript-server-exe botscriptserver_lib dust-server rt -pthread)
+    target_link_libraries(botscript-server-exe botscriptserver_lib dust-server rt)
   endif()
 endif()
 
@@ -333,7 +334,7 @@ add_executable(botscript-server-tests EXCLUDE_FROM_ALL
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   target_link_libraries(botscript-server-tests gtest gtest_main botscriptserver_lib)
 else()
-  target_link_libraries(botscript-server-tests gtest gtest_main botscriptserver_lib -pthread)
+  target_link_libraries(botscript-server-tests gtest gtest_main botscriptserver_lib)
 endif()
 set_target_properties(botscript-server-tests PROPERTIES COMPILE_FLAGS "-std=c++11")
 

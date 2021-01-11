@@ -1,3 +1,5 @@
+/.vs
+/out
 /.idea
 /deps
 src/botscript_server_version.h

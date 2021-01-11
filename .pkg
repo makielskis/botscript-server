@@ -1,7 +1,7 @@
 [dust-server]
   url=git@github.com:makielskis/dust-server.git
   branch=master
-  commit=409bb662e09fae3d06a11b106fe5be25e04e7767
+  commit=cd6ea41edccc29f89839fcdce14aa7766d5f113c
 [websocketpp]
   url=git@github.com:makielskis/websocketpp.git
   branch=botscript-2021
@@ -13,7 +13,7 @@
 [botscript]
   url=git@github.com:makielskis/botscript.git
   branch=master
-  commit=d912894688f6c4e5ebe54df95fb2a232aa38cffc
+  commit=a2bf979af53d95d97516295b540a304da0c61bf9
 [boost]
   url=git@github.com:motis-project/boost.git
   branch=master
