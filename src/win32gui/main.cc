@@ -1,11 +1,12 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#include <thread>
+
 #include "TrayIcon.h"
 
 #include "boost/asio/io_service.hpp"
 #include "boost/program_options.hpp"
-#include "boost/thread.hpp"
 
 #include "dust/storage/cached_db.h"
 
@@ -28,7 +29,7 @@ CTrayIcon g_TrayIcon("Makielskis Bot", true,
 
 boost::asio::io_service io_service;
 botscript_server::ws_server* s;
-boost::thread t;
+std::thread t;
 
 void on_action(CTrayIcon* pTrayIcon, UINT uMsg) {
   if (uMsg != WM_RBUTTONUP) {
@@ -105,7 +106,6 @@ int main(int argc, char* argv[]) {
   bs_server_options bss_options(false, true, "packages", false);
 
   options_parser parser({&wss_options, &bss_options});
-  parser.read_command_line_args(argc, argv);
   parser.read_configuration_file();
   parser.print_unrecognized(std::cout);
   parser.print_used(std::cout);
@@ -117,7 +117,7 @@ int main(int argc, char* argv[]) {
     ws_server wss(std::move(wss_options), std::move(bss_options), &ios, store);
     s = &wss;
     s->start();
-    t = boost::thread(([&ios]() {
+    t = std::thread(([&ios]() {
       try {
         ios.run();
       } catch (std::exception const& e) {

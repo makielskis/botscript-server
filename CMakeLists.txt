@@ -89,7 +89,7 @@ if(MSVC)
   target_link_libraries(botscriptserver_lib bs dust boost)
   set(_def
     _VARIADIC_MAX=10
-    _WIN32_WINNT=0x0501
+    _WIN32_WINNT=0x0601
   )
   set_target_properties(botscriptserver_lib PROPERTIES COMPILE_DEFINITIONS "${_def}")
 else()
@@ -109,9 +109,9 @@ else()
     ### Compiler Definitions
     set(_def
       BOOST_THREAD_USE_LIB
-      WINVER=0x0501
-      _WIN32_WINNT=0x0501
-      _WIN32_IE=0x0501
+      WINVER=0x0601
+      _WIN32_WINNT=0x0601
+      _WIN32_IE=0x0601
     )
     set_target_properties(botscriptserver_lib PROPERTIES COMPILE_DEFINITIONS "${_def}")
 
@@ -200,14 +200,14 @@ if (MINGW OR MSVC)
   if (MINGW)
     set(_def
       BOOST_THREAD_USE_LIB
-      _WIN32_WINNT=0x0501
-      WINVER=0x0501
-      _WIN32_IE=0x0501
+      _WIN32_WINNT=0x0601
+      WINVER=0x0601
+      _WIN32_IE=0x0601
     )
   else() # MSVC
     set(_def
       _VARIADIC_MAX=10
-      _WIN32_WINNT=0x0501
+      _WIN32_WINNT=0x0601
     )
   endif()
   set_target_properties(botscript-server-gui PROPERTIES COMPILE_DEFINITIONS "${_def}")
@@ -251,7 +251,7 @@ if(MSVC)
   target_link_libraries(botscript-server-exe botscriptserver_lib dust-server)
   set(_def
     _VARIADIC_MAX=10
-    _WIN32_WINNT=0x0501
+    _WIN32_WINNT=0x0601
   )
   set_target_properties(botscript-server-exe PROPERTIES COMPILE_DEFINITIONS "${_def}")
 elseif(MINGW)
@@ -268,9 +268,9 @@ elseif(MINGW)
   ### Compiler Definitions
   set(_def
     BOOST_THREAD_USE_LIB
-    WINVER=0x0501
-    _WIN32_WINNT=0x0501
-    _WIN32_IE=0x0501
+    WINVER=0x0601
+    _WIN32_WINNT=0x0601
+    _WIN32_IE=0x0601
   )
   set_target_properties(botscript-server-exe PROPERTIES COMPILE_DEFINITIONS "${_def}")
 
