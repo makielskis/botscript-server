@@ -9,7 +9,7 @@
 #include <iostream>
 #include <functional>
 
-#include "rapidjson_with_exception.h"
+#include "rapidjson/document.h"
 
 #include "./messages/message.h"
 #include "./messages/failure_msg.h"
@@ -162,9 +162,9 @@ void ws_server::on_msg(connection_hdl hdl, server::message_ptr msg) {
     std::shared_ptr<operation> op;
     try {
       op = create_op(d);
-    } catch (const rapidjson_exception&) {
+    } catch (const std::exception& e) {
       std::cerr << "could not parse message \"" << msg->get_payload() << "\" "
-                << "(expected attributes missing)\n";
+                << "(expected attributes missing): " << e.what() << "\n";
       return;
     } catch (const boost::system::system_error&) {
       std::cerr << "could not parse message \"" << msg->get_payload() << "\" "

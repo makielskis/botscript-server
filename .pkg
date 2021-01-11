@@ -1,19 +1,19 @@
 [dust-server]
   url=git@github.com:makielskis/dust-server.git
   branch=master
-  commit=655de794f04c0bc4b3d337fa5d930de2b6f4abac
+  commit=f0fb9b04d28075924d8298ebcadb1c0604b20939
 [websocketpp]
   url=git@github.com:makielskis/websocketpp.git
   branch=botscript-2021
   commit=1a21d5742ad585f4346ead9db058757da2ba18ab
 [cereal]
-  url=git@github.com:USCiLab/cereal.git
+  url=git@github.com:makielskis/cereal.git
   branch=master
-  commit=48fda3f0a6b58f9a9278ec15c15e7b7c3dceeceb
+  commit=fcc55ede3d4317155f03e8dc49a0b75805f12f0d
 [botscript]
   url=git@github.com:makielskis/botscript.git
   branch=master
-  commit=d0332200de843f030b2de99d362fbf9028ccfd15
+  commit=9b1318a52b0fead1c0c1966557bea15304af021a
 [boost]
   url=git@github.com:motis-project/boost.git
   branch=master
@@ -23,6 +23,6 @@
   branch=master
   commit=4090e5108a370c72459d58dabb02b4eaa159d7c8
 [rapidjson]
-  url=git@github.com:makielskis/rapidjson.git
+  url=git@github.com:motis-project/rapidjson.git
   branch=master
-  commit=5b13fac45f840b49e79429e860d29be748e5c300
+  commit=d00b1ceed14d146944ac3ad4f956396141f86f48

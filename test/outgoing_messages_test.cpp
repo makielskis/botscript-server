@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-#include "rapidjson_with_exception.h"
+#include "rapidjson/document.h"
 
 #include "../src/messages/success_msg.h"
 #include "../src/messages/failure_msg.h"

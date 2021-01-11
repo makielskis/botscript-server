@@ -8,7 +8,7 @@
 #include <vector>
 #include <string>
 
-#include "rapidjson_with_exception.h"
+#include "rapidjson/document.h"
 
 #include "./create_bot_op.h"
 

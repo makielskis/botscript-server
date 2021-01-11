@@ -5,7 +5,7 @@
 #ifndef BOTSCRIPT_SERVER_OPERATIONS_LOGIN_OP_
 #define BOTSCRIPT_SERVER_OPERATIONS_LOGIN_OP_
 
-#include "rapidjson_with_exception.h"
+#include "rapidjson/document.h"
 
 #include <string>
 

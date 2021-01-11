@@ -9,7 +9,7 @@
 #include <vector>
 #include <string>
 
-#include "rapidjson_with_exception.h"
+#include "rapidjson/document.h"
 
 #include "../user_op.h"
 

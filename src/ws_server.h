@@ -15,7 +15,7 @@
 #include "websocketpp/config/asio_no_tls.hpp"
 #include "websocketpp/server.hpp"
 
-#include "rapidjson_with_exception.h"
+#include "rapidjson/document.h"
 
 #include "./bs_server.h"
 #include "./messages/message.h"

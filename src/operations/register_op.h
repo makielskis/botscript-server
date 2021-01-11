@@ -8,7 +8,7 @@
 #include <string>
 
 #include "./operation.h"
-#include "./rapidjson_with_exception.h"
+#include "rapidjson/document.h"
 
 namespace botscript_server {
 

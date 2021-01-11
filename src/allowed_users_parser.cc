@@ -5,6 +5,7 @@
 #include "./allowed_users_parser.h"
 
 
+//#define ANDROID 1
 #ifdef ANDROID
 namespace botscript_server {
 
@@ -53,7 +54,7 @@ std::vector<allowed_user> read_allowed_users(std::istream& in) {
   try {
     cereal::JSONInputArchive archive(in);
     archive(allowed_users);
-  } catch (const cereal::Exception&) {
+  } catch (const cereal::Exception& e) {
     throw boost::system::system_error(error::allowed_users_read_error);
   }
   return allowed_users;

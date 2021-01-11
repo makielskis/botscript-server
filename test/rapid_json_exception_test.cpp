@@ -49,7 +49,7 @@ TEST(rapid_json_exception_test, invalid_json_test) {
     rapidjson::Document d;
     d.Parse<0>(INVALID_JSON_MESSAGE);
     login_op msg(d);
-  }, rapidjson_exception);
+  }, std::exception);
 }
 
 TEST(rapid_json_exception_test, missing_attribute_test) {
@@ -57,5 +57,5 @@ TEST(rapid_json_exception_test, missing_attribute_test) {
     rapidjson::Document d;
     d.Parse<0>(MISSING_ATTRIBUTE_MESSAGE);
     login_op msg(d);
-  }, rapidjson_exception);
+  }, std::exception);
 }

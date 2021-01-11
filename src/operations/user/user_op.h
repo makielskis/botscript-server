@@ -9,7 +9,7 @@
 #include <string>
 #include <map>
 
-#include "rapidjson_with_exception.h"
+#include "rapidjson/document.h"
 
 #include "../operation.h"
 

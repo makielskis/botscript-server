@@ -29,7 +29,7 @@ class session_info {
 public:
   session_info(std::string session_id, user u)
       : session_id(std::move(session_id)),
-        user(u) {
+        user_(u) {
   }
 
   bool operator<(const session_info& o) {
@@ -37,7 +37,7 @@ public:
   }
 
   std::string session_id;
-  user user;
+  user user_;
 };
 
 using namespace boost::multi_index;
@@ -48,7 +48,7 @@ struct name{};
 typedef multi_index_container<
   session_info,
   indexed_by<
-    ordered_unique<tag<id>, BOOST_MULTI_INDEX_MEMBER(session_info, user, user)>,
+    ordered_unique<tag<id>, BOOST_MULTI_INDEX_MEMBER(session_info, user, user_)>,
     ordered_unique<tag<name>, BOOST_MULTI_INDEX_MEMBER(session_info, std::string, session_id)>
   >
 > session_set;
