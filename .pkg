@@ -21,7 +21,7 @@
 [googletest]
   url=git@github.com:motis-project/googletest.git
   branch=master
-  commit=4090e5108a370c72459d58dabb02b4eaa159d7c8
+  commit=7b1897f1e728c8d160b53ce969c6c6850d1fda3a
 [rapidjson]
   url=git@github.com:motis-project/rapidjson.git
   branch=master
