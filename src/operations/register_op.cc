@@ -10,7 +10,6 @@
 #include "../allowed_users_parser.h"
 #include "../bs_server.h"
 #include "../error.h"
-#include "../make_unique.h"
 #include "../messages/account_msg.h"
 #include "../messages/bots_msg.h"
 #include "../messages/packages_msg.h"
@@ -48,10 +47,10 @@ std::vector<msg_ptr> register_op::execute(bs_server& server,
 
   std::vector<msg_ptr> out;
   out.emplace_back(
-      make_unique<session_msg>(u.session_expire(), u.session_id()));
-  out.emplace_back(make_unique<account_msg>(u.email()));
-  out.emplace_back(make_unique<packages_msg>(server.packages_));
-  out.emplace_back(make_unique<bots_msg>(std::map<std::string, std::string>()));
+      std::make_unique<session_msg>(u.session_expire(), u.session_id()));
+  out.emplace_back(std::make_unique<account_msg>(u.email()));
+  out.emplace_back(std::make_unique<packages_msg>(server.packages_));
+  out.emplace_back(std::make_unique<bots_msg>(std::map<std::string, std::string>()));
   return out;
 }
 

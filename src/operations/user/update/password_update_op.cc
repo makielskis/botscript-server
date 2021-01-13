@@ -4,7 +4,6 @@
 
 #include "./password_update_op.h"
 
-#include "../../../make_unique.h"
 #include "../../../messages/success_msg.h"
 #include "../../../user.h"
 
@@ -32,7 +31,7 @@ std::vector<msg_ptr> password_update_op::execute(bs_server& server,
   u.password(current_pw(), new_pw());
 
   std::vector<msg_ptr> out;
-  out.emplace_back(make_unique<success_msg>(0, type()));
+  out.emplace_back(std::make_unique<success_msg>(0, type()));
   return out;
 }
 
