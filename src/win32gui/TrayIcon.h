@@ -6,8 +6,9 @@
 #define __TRAY_ICON_H__
 #pragma once
 
-#include <shellapi.h>
 #include <windows.h>
+
+#include <shellapi.h>
 
 #include <map>
 #include <string>

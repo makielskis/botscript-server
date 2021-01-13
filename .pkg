@@ -5,7 +5,7 @@
 [websocketpp]
   url=git@github.com:makielskis/websocketpp.git
   branch=botscript-2021
-  commit=c853d1808941b34b21d38613ac95560653f6e09f
+  commit=a19cd3402d8596b181d9bb97fe4b90665e45c446
 [cereal]
   url=git@github.com:makielskis/cereal.git
   branch=master
