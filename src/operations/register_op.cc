@@ -50,7 +50,8 @@ std::vector<msg_ptr> register_op::execute(bs_server& server,
       std::make_unique<session_msg>(u.session_expire(), u.session_id()));
   out.emplace_back(std::make_unique<account_msg>(u.email()));
   out.emplace_back(std::make_unique<packages_msg>(server.packages_));
-  out.emplace_back(std::make_unique<bots_msg>(std::map<std::string, std::string>()));
+  out.emplace_back(
+      std::make_unique<bots_msg>(std::map<std::string, std::string>()));
   return out;
 }
 
