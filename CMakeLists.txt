@@ -84,6 +84,7 @@ list(REMOVE_ITEM botscriptserver_lib_files ${c_api_files})
 
 add_library(botscriptserver_lib STATIC ${botscriptserver_lib_files})
 target_include_directories(botscriptserver_lib PUBLIC src deps/websocketpp)
+target_compile_features(botscriptserver_lib PUBLIC cxx_std_17)
 target_link_libraries(botscriptserver_lib rapidjson bs dust-server cereal boost-program_options ${CMAKE_THREAD_LIBS_INIT})
 if(MSVC)
   target_link_libraries(botscriptserver_lib bs dust boost)
