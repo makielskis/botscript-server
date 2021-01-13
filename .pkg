@@ -13,7 +13,7 @@
 [botscript]
   url=git@github.com:makielskis/botscript.git
   branch=master
-  commit=5c4b349e83e3d6ac51bc1a56b76e6a2f8cc6e729
+  commit=54e607c261fced770e80114f8b8477899b26a697
 [boost]
   url=git@github.com:motis-project/boost.git
   branch=master
