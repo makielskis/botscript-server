@@ -217,28 +217,6 @@ if (MINGW OR MSVC)
     set_target_properties(botscript-server-gui PROPERTIES COMPILE_FLAGS "-std=c++11 -s")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s")
   endif()
-
-  ################################
-  # Package target
-  ################################
-  set(foldername makielskisbot-${botscript_server_git_tag})
-  set(packagename makielskisbot-win-${botscript_server_git_tag}.zip)
-  add_custom_target(create-package
-    rm -rf ${foldername} &&
-    mkdir -p ${foldername} &&
-    cp botscript-server-gui.exe ${foldername}/makielskisbot.exe &&
-    cp ${CMAKE_CURRENT_LIST_DIR}/win_res/config.ini ${foldername} &&
-    zip -r ${packagename} ${foldername}
-  )
-  add_dependencies(create-package botscript-server-gui compile_packages)
-
-  ################################
-  # Deploy Upload
-  ################################
-  add_custom_target(release
-    scp ${packagename} perry@5.45.107.68:/var/www/dl/
-  )
-  add_dependencies(release create-package)
 endif()
 
 
