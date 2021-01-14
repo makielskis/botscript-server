@@ -66,7 +66,7 @@ jobs:
 
       # ==== DISTRIBUTION ====
       - name: Rename
-        run: mv build/botscrpit-server-gui.exe build/makielskisbot.exe
+        run: mv build/botscript-server-gui.exe build/makielskisbot.exe
 
       - name: Create Distribution
         if: matrix.mode == 'Release'
