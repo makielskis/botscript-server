@@ -1,9 +1,9 @@
 #include "botscript_server.h"
 
 #include <memory>
+#include <thread>
 
 #include "boost/filesystem.hpp"
-#include "boost/thread.hpp"
 
 #include "dust/storage/cached_db.h"
 
@@ -21,7 +21,7 @@ public:
           &io_s, std::make_shared<dust::cached_db>(db_path)) {}
   boost::asio::io_service io_s;
   bss::ws_server s;
-  boost::thread t;
+  std::thread t;
 };
 
 void* create_server(const char* arg0) {
@@ -35,7 +35,7 @@ void* create_server(const char* arg0) {
 void start_server(void* data) {
   server* s = reinterpret_cast<server*>(data);
   s->s.start();
-  s->t = boost::thread([s]() {
+  s->t = std::thread([s]() {
     try {
       s->io_s.run();
     } catch (...) {
