@@ -139,7 +139,7 @@ jobs:
       - name: Build
         run: |
           ./build/bin/buildcache -z
-          cmake --build build --target botscript-server-tests
+          cmake --build build --target botscript-server-tests botscript-server-exe c_bss
           ./build/bin/buildcache -s
 
       # ==== TESTS ====
@@ -150,3 +150,42 @@ jobs:
       - name: Run Tests Valgrind
         if: matrix.config.mode == 'Debug' && matrix.config.cc == 'gcc-10'
         run: valgrind --error-exitcode=1 --show-reachable=yes --leak-check=full ./build/botscript-server-tests
+
+      # ==== PACKAGING ====
+      - name: Package Linux
+        if: matrix.config.mode == 'Release' && matrix.config.cc == 'gcc-10'
+        run: |
+          VERSION=`git describe --tags --dirty=-dirty --always`
+          RELEASE_DIR=makielskisbot-server-${VERSION}
+          mkdir ${RELEASE_DIR}
+          strip build/botscript-server-exe
+          cp build/botscript-server-exe ${RELEASE_DIR}/makielskisbot
+          zip -9 -r makielskisbot-${{ matrix.config.artifact }}.zip ${RELEASE_DIR}
+
+      - name: Package Mac OS
+        if: matrix.config.os == 'macos-latest'
+        run: |
+          VERSION=`git describe --tags --dirty=-dirty --always`
+          strip build/libc_bss.dylib
+          cp build/libc_bss.dylib mac_res/makielskisbot-mac.app/Contents
+          zip -9 -r makielskisbot-${{ matrix.config.artifact }}.zip mac_res/makielskisbot-mac.app
+
+      # ==== DISTRIBUTION ====
+      - name: Upload Distribution
+        if: matrix.config.mode == 'Release' && (matrix.config.cc == 'gcc-10' || matrix.config.os == 'macos-latest')
+        uses: actions/upload-artifact@v1
+        with:
+          name: makielskisbot-${{ matrix.config.artifact }}
+          path: makielskisbot-${{ matrix.config.artifact }}.zip
+
+      # ==== RELEASE ====
+      - name: Upload Release
+        if: github.event.action == 'published' && matrix.config.mode == 'Release' && (matrix.config.cc == 'gcc-10' || matrix.config.os == 'macos-latest')
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: makielskisbot-${{ matrix.config.artifact }}.zip
+          asset_name: makielskisbot-${{ matrix.config.artifact }}.zip
+          asset_content_type: application/zip

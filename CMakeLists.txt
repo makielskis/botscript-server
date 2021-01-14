@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(botscript-server)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_definitions(-D_WEBSOCKETPP_CPP11_STL_)
 find_package(Threads)
 
@@ -46,7 +47,7 @@ execute_process(
 )
 
 execute_process(
-  COMMAND git describe --tags --dirty=-dirty
+  COMMAND git describe --tags --dirty=-dirty --always
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   OUTPUT_VARIABLE botscript_server_git_tag
   OUTPUT_STRIP_TRAILING_WHITESPACE

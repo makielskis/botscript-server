@@ -63,3 +63,32 @@ jobs:
       # ==== TESTS ====
       - name: Run Tests
         run: .\build\botscript-server-tests.exe
+
+      # ==== DISTRIBUTION ====
+      - name: Rename
+        run: mv build/botscrpit-server-gui.exe build/makielskisbot.exe
+
+      - name: Create Distribution
+        if: matrix.mode == 'Release'
+        run: >
+          7z a makielskisbot-windows.zip
+          win_res/config.ini
+          build/makielskisbot.exe
+
+      - name: Upload Distribution
+        if: matrix.mode == 'Release'
+        uses: actions/upload-artifact@v1
+        with:
+          name: makielskisbot-windows
+          path: makielskisbot-windows.zip
+
+      - name: Upload Release
+        if: github.event.action == 'published' && matrix.mode == 'Release'
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: makielskisbot-windows.zip
+          asset_name: makielskisbot-windows.zip
+          asset_content_type: application/zip
