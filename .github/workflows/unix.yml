@@ -169,6 +169,7 @@ jobs:
           cp build/libc_bss.dylib mac_res/makielskisbot-mac.app/Contents/Resources
           cd mac_res
           zip -9 -r makielskisbot-${{ matrix.config.artifact }}.zip makielskisbot-mac.app
+          mv makielskisbot-${{ matrix.config.artifact }}.zip ..
 
       # ==== DISTRIBUTION ====
       - name: Upload Distribution
