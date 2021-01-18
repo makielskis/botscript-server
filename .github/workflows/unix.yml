@@ -166,8 +166,9 @@ jobs:
         if: matrix.config.os == 'macos-latest'
         run: |
           VERSION=`git describe --tags --dirty=-dirty --always`
-          cp build/libc_bss.dylib mac_res/makielskisbot-mac.app/Contents
-          zip -9 -r makielskisbot-${{ matrix.config.artifact }}.zip mac_res/makielskisbot-mac.app
+          cp build/libc_bss.dylib mac_res/makielskisbot-mac.app/Contents/Resources
+          cd mac_res
+          zip -9 -r makielskisbot-${{ matrix.config.artifact }}.zip makielskisbot-mac.app
 
       # ==== DISTRIBUTION ====
       - name: Upload Distribution
