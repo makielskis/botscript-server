@@ -65,11 +65,11 @@ jobs:
         run: .\build\botscript-server-tests.exe
 
       # ==== DISTRIBUTION ====
-      - name: Rename
+      - name: Prepare Package
         run: |
           mkdir makielskisbot-windows-${{ env.GITHUB_REF }}
-          mv build/botscript-server-gui.exe makielskisbot-windows-${{ env.GITHUB_REF }}
-          mv build/makielskisbot.exe makielskisbot-windows-${{ env.GITHUB_REF }}
+          mv build/botscript-server-gui.exe makielskisbot-windows-${{ env.GITHUB_REF }}/makielskisbot.exe
+          mv win_res/config.ini makielskisbot-windows-${{ env.GITHUB_REF }}
 
       - name: Create Distribution
         if: matrix.mode == 'Release'
