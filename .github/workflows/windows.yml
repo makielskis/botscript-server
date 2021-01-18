@@ -66,14 +66,14 @@ jobs:
 
       # ==== DISTRIBUTION ====
       - name: Rename
-        run: mv build/botscript-server-gui.exe build/makielskisbot.exe
+        run: |
+          mkdir makielskisbot-windows-${{ GITHUB_REF }}
+          mv build/botscript-server-gui.exe makielskisbot-windows-${{ GITHUB_REF }}
+          mv build/makielskisbot.exe makielskisbot-windows-${{ GITHUB_REF }}
 
       - name: Create Distribution
         if: matrix.mode == 'Release'
-        run: >
-          7z a makielskisbot-windows.zip
-          win_res/config.ini
-          build/makielskisbot.exe
+        run: 7z a makielskisbot-windows.zip makielskisbot-windows-${{ GITHUB_REF }}
 
       - name: Upload Distribution
         if: matrix.mode == 'Release'
