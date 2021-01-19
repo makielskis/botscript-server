@@ -189,6 +189,7 @@ if (MINGW OR MSVC)
   )
 
   ### Library Dependencies
+  target_link_libraries(botscript-server-gui pg-res)
   target_link_libraries(botscript-server-gui
     -Wl,-Bstatic
       botscriptserver_lib
