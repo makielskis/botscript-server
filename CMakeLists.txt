@@ -227,7 +227,7 @@ endif()
 # Server executable
 ################################
 add_executable(botscript-server-exe src/main.cc)
-target_link_libraries(botscript-server-exe ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(botscript-server-exe pg-res ${CMAKE_THREAD_LIBS_INIT})
 if(MSVC)
   target_link_libraries(botscript-server-exe botscriptserver_lib dust-server)
   set(_def
