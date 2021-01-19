@@ -41,9 +41,10 @@ void* create_server(const char* arg0) {
     home_dir = pwd->pw_dir;
   }
 #endif
-  auto const db_path = home_dir.empty()
-     ? std::string{arg0} + "/db"
-     : home_dir + "/Library/Application Support/makielskisbot-db";
+  auto const db_path =
+      home_dir.empty()
+          ? std::string{arg0} + "/db"
+          : home_dir + "/Library/Application Support/makielskisbot-db";
   return new server(packages_path, db_path);
 }
 
