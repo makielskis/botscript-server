@@ -176,7 +176,7 @@ else()
 endif()
 target_link_libraries(c_bss botscriptserver_lib)
 set_target_properties(c_bss PROPERTIES COMPILE_FLAGS "-std=c++11")
-
+set_target_properties(c_bss PROPERTIES CXX_VISIBILITY_PRESET default)
 
 ################################
 # GUI executable
