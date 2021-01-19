@@ -3,6 +3,11 @@
 #include <memory>
 #include <thread>
 
+#if defined(__APPLE__) || defined(__linux__)
+#include <pwd.h>
+#include <unistd.h>
+#endif
+
 #include "boost/filesystem.hpp"
 
 #include "dust/storage/cached_db.h"
@@ -28,7 +33,17 @@ void* create_server(const char* arg0) {
   using boost::filesystem::path;
   std::string exe_dir = path(arg0).parent_path().generic_string();
   std::string packages_path = std::string(exe_dir) + "/../Resources/packages";
-  std::string db_path = std::string(exe_dir) + "/db";
+
+  auto home_dir = std::string{};
+#if defined(__APPLE__) || defined(__linux__)
+  auto const pwd = getpwuid(getuid());
+  if (pwd) {
+    home_dir = pwd->pw_dir;
+  }
+#endif
+  auto const db_path = home_dir.empty()
+     ? std::string{arg0} + "/db"
+     : home_dir + "/Library/Application Support/makielskisbot-db";
   return new server(packages_path, db_path);
 }
 
